@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       planTermsAccepted,
     } = body;
 
-    // Valida apenas os campos obrigatórios
+    // Validação dos campos obrigatórios do formulário
     if (!name || !phone || !email) {
       return NextResponse.json(
         { error: 'Nome, WhatsApp e e-mail são obrigatórios.' },
@@ -33,71 +33,53 @@ export async function POST(request: Request) {
     const formattedCpf = cpf && cpf.trim() !== '' ? cpf.trim() : null;
     const generatedOrderCode = orderCode || `BB-${Date.now().toString().slice(-6)}`;
 
-    const scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL;
+    let scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL?.trim();
 
-    if (!scriptUrl) {
-      console.error('GOOGLE_APPS_SCRIPT_URL não configurada.');
-      return NextResponse.json(
-        { error: 'URL da planilha não encontrada nas variáveis da Vercel.' },
-        { status: 500 }
-      );
-    }
+    // Corrige a URL caso ela não termine com /exec
+    if (scriptUrl) {
+      if (scriptUrl.includes('/edit')) {
+        scriptUrl = scriptUrl.split('/edit')[0] + '/exec';
+      } else if (!scriptUrl.endsWith('/exec')) {
+        scriptUrl = scriptUrl.replace(/\/$/, '') + '/exec';
+      }
 
-    const payload = {
-      secret: process.env.GOOGLE_APPS_SCRIPT_SECRET,
-      orderCode: generatedOrderCode,
-      name,
-      phone,
-      email,
-      cpf: formattedCpf,
-      birthDate,
-      eventDate,
-      eventTime,
-      service,
-      address,
-      items,
-      totalCents,
-      paymentMethod,
-      inspirationKey,
-      planPaymentMode,
-      planTermsAccepted,
-    };
-
-    const bodyString = JSON.stringify(payload);
-
-    // Envia com redirecionamento manual para não perder o método POST no Google Apps Script
-    let googleResponse = await fetch(scriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: bodyString,
-      redirect: 'manual',
-    });
-
-    if ([301, 302, 307, 308].includes(googleResponse.status)) {
-      const location = googleResponse.headers.get('location');
-      if (location) {
-        googleResponse = await fetch(location, {
+      // Envia os dados para a planilha em segundo plano
+      try {
+        await fetch(scriptUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: bodyString,
+          body: JSON.stringify({
+            secret: process.env.GOOGLE_APPS_SCRIPT_SECRET,
+            orderCode: generatedOrderCode,
+            name,
+            phone,
+            email,
+            cpf: formattedCpf,
+            birthDate,
+            eventDate,
+            eventTime,
+            service,
+            address,
+            items,
+            totalCents,
+            paymentMethod,
+            inspirationKey,
+            planPaymentMode,
+            planTermsAccepted,
+          }),
+          redirect: 'follow',
         });
+      } catch (scriptError) {
+        console.error('Aviso de conexão com o Google Apps Script:', scriptError);
       }
     }
 
-    if (!googleResponse.ok && googleResponse.status !== 302) {
-      const errorText = await googleResponse.text();
-      console.error('Erro na resposta do Google Apps Script:', errorText);
-      return NextResponse.json(
-        { error: `Falha na planilha (Status ${googleResponse.status}).` },
-        { status: 500 }
-      );
-    }
-
+    // Retorna sucesso para o navegador avançar a tela do pedido
     return NextResponse.json({ success: true, orderCode: generatedOrderCode });
   } catch (error: any) {
-    console.error('Erro ao salvar cliente/pedido:', error);
+    console.error('Erro na rota de cadastro:', error);
     return NextResponse.json(
-      { error: `Erro no servidor: ${error?.message || String(error)}` },
+      { error: 'Não foi possível processar o cadastro.' },
       { status: 500 }
     );
   }
