@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1785186994581,
+      "tag": "0000_tense_madrox",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1785191657318,
+      "tag": "0001_famous_apocalypse",
+      "breakpoints": true
+    }
+  ]
+}

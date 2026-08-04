@@ -1,0 +1,1 @@
+ALTER TABLE `customer_orders` ADD `inspiration_key` text;
