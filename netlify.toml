@@ -1,6 +1,5 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "bash scripts/build-verified.sh"
 
 [build.environment]
   NODE_VERSION = "20"
