@@ -1218,15 +1218,14 @@ export default function Home() {
       setToast("Adicione pelo menos um item ao pedido");
       return;
     }
-   if (
-      !customer.name.trim() ||
-      !customer.phone.trim() ||
-      !customer.email.trim()
-    ) {
-      setCheckoutStep(2);
-      setToast("Preencha nome, WhatsApp e e-mail para continuar");
-      return;
-    }
+if (
+  !customer.name.trim() ||
+  !customer.phone.trim()
+) {
+  setCheckoutStep(2);
+  setToast("Preencha nome e WhatsApp para continuar");
+  return;
+}
     if (customer.cpf && customer.cpf.trim() !== "" && !isValidCpf(customer.cpf)) {
       setCheckoutStep(2);
       setToast("Confira o CPF informado");
