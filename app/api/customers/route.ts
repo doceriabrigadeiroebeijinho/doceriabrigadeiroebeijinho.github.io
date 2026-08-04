@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/db';
-import { customerOrders } from '@/db/schema';
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +22,7 @@ export async function POST(request: Request) {
       planTermsAccepted,
     } = body;
 
-    // Valida apenas os campos obrigatórios
+    // Validação de campos obrigatórios
     if (!name || !phone || !email) {
       return NextResponse.json(
         { error: 'Nome, WhatsApp e e-mail são obrigatórios.' },
@@ -32,75 +30,58 @@ export async function POST(request: Request) {
       );
     }
 
-    // CPF opcional: se vier vazio ou com espaços, salva como null
     const formattedCpf = cpf && cpf.trim() !== '' ? cpf.trim() : null;
     const generatedOrderCode = orderCode || `BB-${Date.now().toString().slice(-6)}`;
 
-    // 1. Tenta salvar no Banco Cloudflare D1 (sem derrubar a Vercel caso falhar)
-    try {
-      const db = getDb();
-      await db.insert(customerOrders).values({
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
+    const scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL;
+
+    if (!scriptUrl) {
+      console.error('GOOGLE_APPS_SCRIPT_URL não configurada.');
+      return NextResponse.json(
+        { error: 'Servidor não configurado para envio (URL ausente).' },
+        { status: 500 }
+      );
+    }
+
+    // Envia o pedido diretamente para o Google Apps Script (Planilha)
+    const googleResponse = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: process.env.GOOGLE_APPS_SCRIPT_SECRET,
         orderCode: generatedOrderCode,
         name,
         phone,
-        email: email || null,
+        email,
         cpf: formattedCpf,
-        birthDate: birthDate || null,
-        eventDate: eventDate || '',
-        eventTime: eventTime || '',
-        service: service || 'Retirada',
-        address: address || null,
-        itemsJson: JSON.stringify(items || []),
-        totalCents: totalCents || 0,
-        paymentMethod: paymentMethod || 'Pix',
-        inspirationKey: inspirationKey || null,
-        planPaymentMode: planPaymentMode || null,
-        planTermsAccepted: Boolean(planTermsAccepted),
-        source: 'site',
-      });
-    } catch (dbError) {
-      console.warn('Banco D1 não disponível neste ambiente (Vercel):', dbError);
-    }
+        birthDate,
+        eventDate,
+        eventTime,
+        service,
+        address,
+        items,
+        totalCents,
+        paymentMethod,
+        inspirationKey,
+        planPaymentMode,
+        planTermsAccepted,
+      }),
+    });
 
-    // 2. Envia para a Planilha do Google Apps Script
-    const scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL;
-    if (scriptUrl) {
-      try {
-        await fetch(scriptUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            secret: process.env.GOOGLE_APPS_SCRIPT_SECRET,
-            orderCode: generatedOrderCode,
-            name,
-            phone,
-            email,
-            cpf: formattedCpf,
-            birthDate,
-            eventDate,
-            eventTime,
-            service,
-            address,
-            items,
-            totalCents,
-            paymentMethod,
-            inspirationKey,
-            planPaymentMode,
-            planTermsAccepted,
-          }),
-        });
-      } catch (scriptError) {
-        console.error('Erro ao enviar dados para o Google Apps Script:', scriptError);
-      }
+    if (!googleResponse.ok) {
+      const errorText = await googleResponse.text();
+      console.error('Erro na resposta do Google Apps Script:', errorText);
+      return NextResponse.json(
+        { error: 'Falha ao gravar pedido na planilha.' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, orderCode: generatedOrderCode });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao salvar cliente/pedido:', error);
     return NextResponse.json(
-      { error: 'Não foi possível salvar o cadastro agora.' },
+      { error: `Erro no servidor: ${error?.message || String(error)}` },
       { status: 500 }
     );
   }
