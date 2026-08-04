@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       planTermsAccepted,
     } = body;
 
-    // Validação de campos obrigatórios
+    // Valida apenas os campos obrigatórios
     if (!name || !phone || !email) {
       return NextResponse.json(
         { error: 'Nome, WhatsApp e e-mail são obrigatórios.' },
@@ -38,41 +38,57 @@ export async function POST(request: Request) {
     if (!scriptUrl) {
       console.error('GOOGLE_APPS_SCRIPT_URL não configurada.');
       return NextResponse.json(
-        { error: 'Servidor não configurado para envio (URL ausente).' },
+        { error: 'URL da planilha não encontrada nas variáveis da Vercel.' },
         { status: 500 }
       );
     }
 
-    // Envia o pedido diretamente para o Google Apps Script (Planilha)
-    const googleResponse = await fetch(scriptUrl, {
+    const payload = {
+      secret: process.env.GOOGLE_APPS_SCRIPT_SECRET,
+      orderCode: generatedOrderCode,
+      name,
+      phone,
+      email,
+      cpf: formattedCpf,
+      birthDate,
+      eventDate,
+      eventTime,
+      service,
+      address,
+      items,
+      totalCents,
+      paymentMethod,
+      inspirationKey,
+      planPaymentMode,
+      planTermsAccepted,
+    };
+
+    const bodyString = JSON.stringify(payload);
+
+    // Envia com redirecionamento manual para não perder o método POST no Google Apps Script
+    let googleResponse = await fetch(scriptUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        secret: process.env.GOOGLE_APPS_SCRIPT_SECRET,
-        orderCode: generatedOrderCode,
-        name,
-        phone,
-        email,
-        cpf: formattedCpf,
-        birthDate,
-        eventDate,
-        eventTime,
-        service,
-        address,
-        items,
-        totalCents,
-        paymentMethod,
-        inspirationKey,
-        planPaymentMode,
-        planTermsAccepted,
-      }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: bodyString,
+      redirect: 'manual',
     });
 
-    if (!googleResponse.ok) {
+    if ([301, 302, 307, 308].includes(googleResponse.status)) {
+      const location = googleResponse.headers.get('location');
+      if (location) {
+        googleResponse = await fetch(location, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: bodyString,
+        });
+      }
+    }
+
+    if (!googleResponse.ok && googleResponse.status !== 302) {
       const errorText = await googleResponse.text();
       console.error('Erro na resposta do Google Apps Script:', errorText);
       return NextResponse.json(
-        { error: 'Falha ao gravar pedido na planilha.' },
+        { error: `Falha na planilha (Status ${googleResponse.status}).` },
         { status: 500 }
       );
     }
