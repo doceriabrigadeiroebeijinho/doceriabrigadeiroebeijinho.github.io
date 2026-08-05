@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    
+    // Desestruturando apenas os campos necessários (sem cpf e email)
     const {
       orderCode,
       name,
@@ -38,8 +40,8 @@ export async function POST(request: Request) {
         scriptUrl = scriptUrl.replace(/\/$/, '') + '/exec';
       }
 
-      // 2. Envia para a planilha em segundo plano (sem fazer o cliente esperar)
-      fetch(scriptUrl, {
+      // 2. Envia para a planilha aguardando a conclusão para evitar cancelamento serverless
+      await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
@@ -59,14 +61,12 @@ export async function POST(request: Request) {
           planTermsAccepted,
         }),
         redirect: 'follow',
-      }).catch((err) => {
-        console.error('Erro em segundo plano no Google Script:', err);
       });
     }
 
-    // Retorna o sucesso IMEDIATAMENTE para o site avançar rápido
+    // 3. Retorna o sucesso para o site
     return NextResponse.json({ success: true, orderCode: generatedOrderCode });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro na rota de cadastro:', error);
     return NextResponse.json(
       { error: 'Não foi possível processar o cadastro.' },
