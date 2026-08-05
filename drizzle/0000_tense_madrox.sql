@@ -4,9 +4,6 @@ CREATE TABLE `customer_orders` (
 	`order_code` text NOT NULL,
 	`name` text NOT NULL,
 	`phone` text NOT NULL,
-	`email` text NOT NULL,
-	`cpf` text NOT NULL,
-	`birth_date` text,
 	`event_date` text NOT NULL,
 	`event_time` text NOT NULL,
 	`service` text NOT NULL,
@@ -19,4 +16,5 @@ CREATE TABLE `customer_orders` (
 	`source` text DEFAULT 'site' NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `customer_orders_order_code_unique` ON `customer_orders` (`order_code`);
+CREATE UNIQUE INDEX `customer_orders_order_code_unique`
+ON `customer_orders` (`order_code`);
