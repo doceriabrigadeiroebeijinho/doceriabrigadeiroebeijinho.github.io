@@ -661,8 +661,6 @@ export default function Home() {
   const [planPaymentMode, setPlanPaymentMode] =
     useState<PlanPaymentMode>("Mensal");
   const [orderSubmitting, setOrderSubmitting] = useState(false);
-  const [inspirationFile, setInspirationFile] = useState<File | null>(null);
-  const [inspirationPreview, setInspirationPreview] = useState("");
   const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
   const [minimumOrderTime, setMinimumOrderTime] = useState(0);
   const [busyWindows, setBusyWindows] = useState<BusyWindow[]>([]);
@@ -758,13 +756,6 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [catalogTab, monthlyPaused]);
 
-  useEffect(
-    () => () => {
-      if (inspirationPreview) URL.revokeObjectURL(inspirationPreview);
-    },
-    [inspirationPreview],
-  );
-
   useEffect(() => {
     if (!details.eventDate) {
       const timer = window.setTimeout(() => {
@@ -805,9 +796,6 @@ export default function Home() {
 
   const activeSweetGroup =
     sweetGroups.find((group) => group.id === sweetGroupId) ?? sweetGroups[0];
-  const hasCakeInCart = cart.some(
-    (item) => item.type === "cake" || item.type === "plan",
-  );
   const availableTimeOptions = useMemo(() => {
     if (!details.eventDate) return [];
 
@@ -963,18 +951,6 @@ export default function Home() {
 
   const removeItem = (key: string) => {
     setCart((current) => current.filter((item) => item.key !== key));
-  };
-
-  const selectInspiration = (file?: File) => {
-    if (!file) return;
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type) || file.size > 8 * 1024 * 1024) {
-      setToast("Envie uma imagem JPG, PNG ou WEBP de até 8 MB");
-      return;
-    }
-    if (inspirationPreview) URL.revokeObjectURL(inspirationPreview);
-    setInspirationFile(file);
-    setInspirationPreview(URL.createObjectURL(file));
   };
 
   const applyCoupon = () => {
@@ -1338,9 +1314,6 @@ if (
       items,
       `*Data:* ${formattedEventDate} às ${details.eventTime}`,
       personalization ? `Personalização: ${personalization}` : "",
-      hasCakeInCart && inspirationFile
-        ? "*Foto de inspiração:* anexada ao cadastro deste pedido"
-        : "",
       `*Serviço:* ${serviceLine}`,
       "",
       `Produtos: ${formatMoney(regularSubtotal)}`,
@@ -1386,28 +1359,6 @@ if (
 
     setOrderSubmitting(true);
     try {
-      let inspirationKey: string | null = null;
-
-      if (hasCakeInCart && inspirationFile) {
-        const formData = new FormData();
-        formData.append("file", inspirationFile);
-        formData.append("orderCode", orderCode);
-        const uploadResponse = await fetch("/api/inspiration", {
-          method: "POST",
-          body: formData,
-        });
-        const uploadResult = (await uploadResponse.json()) as {
-          key?: string;
-          error?: string;
-        };
-        if (!uploadResponse.ok || !uploadResult.key) {
-          throw new Error(
-            uploadResult.error || "Não foi possível salvar a foto de inspiração",
-          );
-        }
-        inspirationKey = uploadResult.key;
-      }
-
       const response = await fetch("/api/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1430,7 +1381,6 @@ if (
           })),
           totalCents: Math.round(total * 100),
           paymentMethod: `${paymentMethod} · restante: ${balancePaymentMethod}`,
-          inspirationKey,
           planPaymentMode: planSubtotal > 0 ? planPaymentMode : null,
           planTermsAccepted:
             planSubtotal > 0 ? monthlyTermsAccepted : false,
@@ -2642,52 +2592,6 @@ if (
                         placeholder="Tema, estilo, detalhes importantes e referência..."
                       />
                     </label>
-                    {hasCakeInCart && (
-                      <div className="inspiration-upload full-field">
-                        <div>
-                          <strong>Foto de inspiração</strong>
-                          <span>
-                            Opcional · envie uma referência em JPG, PNG ou WEBP
-                            de até 8 MB.
-                          </span>
-                        </div>
-                        <label>
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            onChange={(event) =>
-                              selectInspiration(event.target.files?.[0])
-                            }
-                          />
-                          <span>
-                            {inspirationFile
-                              ? "Trocar imagem"
-                              : "Selecionar uma imagem"}
-                          </span>
-                        </label>
-                        {inspirationPreview && (
-                          <div className="inspiration-preview">
-                            <img
-                              src={inspirationPreview}
-                              alt="Prévia da foto de inspiração selecionada"
-                            />
-                            <div>
-                              <strong>{inspirationFile?.name}</strong>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  URL.revokeObjectURL(inspirationPreview);
-                                  setInspirationFile(null);
-                                  setInspirationPreview("");
-                                }}
-                              >
-                                Remover
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
                     <p className="form-hint full-field order-deadline-hint">
                       Pedidos com 24 a 48 horas de antecedência ficam sujeitos à
                       aprovação. Para mais tranquilidade e opções de
