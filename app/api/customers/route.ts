@@ -7,9 +7,6 @@ export async function POST(request: Request) {
       orderCode,
       name,
       phone,
-      email,
-      cpf,
-      birthDate,
       eventDate,
       eventTime,
       service,
@@ -23,15 +20,14 @@ export async function POST(request: Request) {
     } = body;
 
     // Validação dos campos obrigatórios do formulário
-    if (!name || !phone || !email) {
+    if (!name || !phone) {
       return NextResponse.json(
-        { error: 'Nome, WhatsApp e e-mail são obrigatórios.' },
+        { error: 'Nome e WhatsApp são obrigatórios.' },
         { status: 400 }
       );
     }
 
-    const formattedCpf = cpf && cpf.trim() !== '' ? cpf.trim() : null;
-    const generatedOrderCode = orderCode || `BB-${Date.now().toString().slice(-6)}`;
+const generatedOrderCode = orderCode || `BB-${Date.now().toString().slice(-6)}`;
 
     let scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL?.trim();
 
@@ -53,9 +49,6 @@ export async function POST(request: Request) {
             orderCode: generatedOrderCode,
             name,
             phone,
-            email,
-            cpf: formattedCpf,
-            birthDate,
             eventDate,
             eventTime,
             service,
