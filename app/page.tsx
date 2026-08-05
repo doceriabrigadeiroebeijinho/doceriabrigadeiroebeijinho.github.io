@@ -496,38 +496,6 @@ const formatMoney = (value: number) =>
     currency: "BRL",
   }).format(value);
 
-const formatCpf = (value: string) => {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  return digits
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-};
-
-const isValidCpf = (value: string) => {
-  const cpf = value.replace(/\D/g, "");
-  if (!cpf) return true;
-  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-
-  const calculateDigit = (length: number) => {
-    const sum = cpf
-      .slice(0, length)
-      .split("")
-      .reduce(
-        (total, digit, index) =>
-          total + Number(digit) * (length + 1 - index),
-        0,
-      );
-    const remainder = (sum * 10) % 11;
-    return remainder === 10 ? 0 : remainder;
-  };
-
-  return (
-    calculateDigit(9) === Number(cpf[9]) &&
-    calculateDigit(10) === Number(cpf[10])
-  );
-};
-
 type DateOption = {
   value: string;
   label: string;
@@ -722,8 +690,6 @@ export default function Home() {
     name: "",
     birth: "",
     phone: "",
-    email: "",
-    cpf: "",
     dataConsent: false,
     remember: true,
   });
@@ -753,7 +719,19 @@ export default function Home() {
       try {
         const saved = window.localStorage.getItem("doceria-client");
         if (saved) {
-          setCustomer((current) => ({ ...current, ...JSON.parse(saved) }));
+          const savedCustomer = JSON.parse(saved) as {
+            name?: string;
+            birth?: string;
+            phone?: string;
+            remember?: boolean;
+          };
+          setCustomer((current) => ({
+            ...current,
+            name: savedCustomer.name ?? "",
+            birth: savedCustomer.birth ?? "",
+            phone: savedCustomer.phone ?? "",
+            remember: savedCustomer.remember ?? true,
+          }));
         }
       } catch {
         // O pedido continua funcionando mesmo sem armazenamento local.
@@ -1050,7 +1028,6 @@ export default function Home() {
             name: customer.name,
             birth: customer.birth,
             phone: customer.phone,
-            email: customer.email,
             remember: true,
           }),
         );
@@ -1226,11 +1203,6 @@ if (
   setToast("Preencha nome e WhatsApp para continuar");
   return;
 }
-    if (customer.cpf && customer.cpf.trim() !== "" && !isValidCpf(customer.cpf)) {
-      setCheckoutStep(2);
-      setToast("Confira o CPF informado");
-      return;
-    }
     if (!customer.dataConsent) {
       setCheckoutStep(2);
       setToast("Autorize o uso dos dados para concluir o cadastro");
@@ -1443,8 +1415,6 @@ if (
           orderCode,
           name: customer.name,
           phone: customer.phone,
-          email: customer.email,
-          cpf: customer.cpf,
           birthDate: customer.birth || null,
           eventDate: details.eventDate,
           eventTime: details.eventTime,
@@ -2773,33 +2743,6 @@ if (
                           setCustomer((current) => ({ ...current, phone: event.target.value }))
                         }
                         placeholder="(31) 99999-9999"
-                      />
-                    </label>
-                    <label>
-                      E-mail *
-                      <input
-                        type="email"
-                        value={customer.email}
-                        onChange={(event) =>
-                          setCustomer((current) => ({ ...current, email: event.target.value }))
-                        }
-                        placeholder="voce@exemplo.com"
-                      />
-                    </label>
-                    <label>
-                      CPF (opcional)
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={14}
-                        value={customer.cpf}
-                        onChange={(event) =>
-                          setCustomer((current) => ({
-                            ...current,
-                            cpf: formatCpf(event.target.value),
-                          }))
-                        }
-                        placeholder="000.000.000-00"
                       />
                     </label>
                     <label className="check-field full-field">
