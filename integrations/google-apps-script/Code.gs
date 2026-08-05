@@ -56,7 +56,9 @@ function doGet(event) {
     const start = new Date(`${date}T00:00:00-03:00`);
     const end = new Date(`${date}T23:59:59-03:00`);
 
-    const calendar = CalendarApp.getCalendarById(SETTINGS.calendarId);
+    const calendar = CalendarApp.getCalendarById(
+      SETTINGS.calendarId,
+    );
 
     if (!calendar) {
       throw new Error("Calendário não encontrado");
@@ -106,14 +108,21 @@ function doPost(event) {
       spreadsheet,
       "Pedidos",
       ORDER_HEADERS,
-      ["E-mail", "CPF (opcional)", "Foto de inspiração"],
+      [
+        "E-mail",
+        "CPF (opcional)",
+        "Foto de inspiração",
+      ],
     );
 
     const customers = ensureSheet_(
       spreadsheet,
       "Clientes",
       CUSTOMER_HEADERS,
-      ["E-mail", "CPF (opcional)"],
+      [
+        "E-mail",
+        "CPF (opcional)",
+      ],
     );
 
     const summary = payload.summary || {};
@@ -128,8 +137,9 @@ function doPost(event) {
       })
       .join("\n");
 
-    const methods = String(payload.paymentMethod || "")
-      .split(" · restante: ");
+    const methods = String(
+      payload.paymentMethod || "",
+    ).split(" · restante: ");
 
     const total = cents_(
       summary.totalCents || payload.totalCents,
@@ -166,7 +176,9 @@ function doPost(event) {
       cents_(summary.depositCents),
       cents_(summary.balanceCents),
       methods[0] || "",
-      summary.balancePaymentMethod || methods[1] || "",
+      summary.balancePaymentMethod ||
+        methods[1] ||
+        "",
       cents_(summary.planCents),
       observations,
     ]);
@@ -193,7 +205,10 @@ function doPost(event) {
   }
 }
 
-function createCalendarEvent_(payload, itemsText) {
+function createCalendarEvent_(
+  payload,
+  itemsText,
+) {
   if (!payload.eventDate || !payload.eventTime) {
     throw new Error(
       "Data e horário da encomenda não foram informados",
@@ -217,7 +232,9 @@ function createCalendarEvent_(payload, itemsText) {
   }
 
   calendar.createEvent(
-    `[PEDIDO] ${payload.orderCode || ""} · ${payload.name || ""}`,
+    `[PEDIDO] ${payload.orderCode || ""} · ${
+      payload.name || ""
+    }`,
     start,
     end,
     {
@@ -234,9 +251,18 @@ function createCalendarEvent_(payload, itemsText) {
   );
 }
 
-function upsertCustomer_(sheet, payload, orderTotal) {
-  const rows = sheet.getDataRange().getValues();
-  const phone = String(payload.phone || "").trim();
+function upsertCustomer_(
+  sheet,
+  payload,
+  orderTotal,
+) {
+  const rows = sheet
+    .getDataRange()
+    .getValues();
+
+  const phone = String(
+    payload.phone || "",
+  ).trim();
 
   if (!phone) {
     throw new Error(
@@ -288,7 +314,8 @@ function upsertCustomer_(sheet, payload, orderTotal) {
       [
         payload.name || rows[index][0],
         phone,
-        dateValue_(payload.birthDate) || rows[index][2],
+        dateValue_(payload.birthDate) ||
+          rows[index][2],
         rows[index][3] || today,
         today,
         previousOrderCount + 1,
@@ -314,7 +341,12 @@ function ensureSheet_(
   );
 
   sheet
-    .getRange(1, 1, 1, headers.length)
+    .getRange(
+      1,
+      1,
+      1,
+      headers.length,
+    )
     .setValues([headers]);
 
   sheet.setFrozenRows(1);
@@ -322,7 +354,10 @@ function ensureSheet_(
   return sheet;
 }
 
-function removeObsoleteColumns_(sheet, obsoleteHeaders) {
+function removeObsoleteColumns_(
+  sheet,
+  obsoleteHeaders,
+) {
   if (
     sheet.getLastRow() === 0 ||
     sheet.getLastColumn() === 0 ||
