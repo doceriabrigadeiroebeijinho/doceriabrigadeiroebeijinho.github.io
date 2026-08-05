@@ -7,8 +7,6 @@ export async function POST(request: Request) {
       orderCode,
       name,
       phone,
-      email,
-      cpf,
       birthDate,
       eventDate,
       eventTime,
@@ -17,12 +15,11 @@ export async function POST(request: Request) {
       items,
       totalCents,
       paymentMethod,
-      inspirationKey,
       planPaymentMode,
       planTermsAccepted,
     } = body;
 
-    // 1. Apenas Nome e WhatsApp são obrigatórios agora
+    // 1. Apenas Nome e WhatsApp são obrigatórios
     if (!name || !phone) {
       return NextResponse.json(
         { error: 'Nome e WhatsApp são obrigatórios.' },
@@ -30,8 +27,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const formattedCpf = cpf && cpf.trim() !== '' ? cpf.trim() : null;
-    const formattedEmail = email && email.trim() !== '' ? email.trim() : null;
     const generatedOrderCode = orderCode || `BB-${Date.now().toString().slice(-6)}`;
 
     let scriptUrl = process.env.GOOGLE_APPS_SCRIPT_URL?.trim();
@@ -52,8 +47,6 @@ export async function POST(request: Request) {
           orderCode: generatedOrderCode,
           name,
           phone,
-          email: formattedEmail,
-          cpf: formattedCpf,
           birthDate,
           eventDate,
           eventTime,
@@ -62,7 +55,6 @@ export async function POST(request: Request) {
           items,
           totalCents,
           paymentMethod,
-          inspirationKey,
           planPaymentMode,
           planTermsAccepted,
         }),
