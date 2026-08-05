@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0f53e6bc-3415-480f-ab79-087f060f8b45",
-  "prevId": "a7c0ebfe-d58e-46bd-bee7-266c7d219249",
+  "id": "a7c0ebfe-d58e-46bd-bee7-266c7d219249",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "customer_orders": {
       "name": "customer_orders",
@@ -37,20 +37,6 @@
         },
         "phone": {
           "name": "phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "cpf": {
-          "name": "cpf",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -110,13 +96,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "inspiration_key": {
-          "name": "inspiration_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "plan_payment_mode": {
