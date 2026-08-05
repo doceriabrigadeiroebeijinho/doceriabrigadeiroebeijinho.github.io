@@ -1,42 +1,8 @@
 import { NextResponse } from "next/server";
 
-type OrderBody = {
-  orderCode?: string;
-  name?: string;
-  phone?: string;
-  birthDate?: string | null;
-  eventDate?: string;
-  eventTime?: string;
-  service?: string;
-  address?: string;
-  items?: Array<{
-    name?: string;
-    variant?: string;
-    type?: string;
-    quantity?: number;
-    totalCents?: number;
-  }>;
-  totalCents?: number;
-  paymentMethod?: string;
-  planPaymentMode?: string | null;
-  planTermsAccepted?: boolean;
-  summary?: {
-    productsCents?: number;
-    couponCode?: string;
-    couponDiscountCents?: number;
-    pixDiscountCents?: number;
-    deliveryCents?: number;
-    totalCents?: number;
-    depositCents?: number;
-    balanceCents?: number;
-    planCents?: number;
-    balancePaymentMethod?: string;
-  };
-};
-
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as OrderBody;
+    const body = await request.json();
 
     const {
       orderCode,
@@ -85,7 +51,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Corrige automaticamente a URL do Google Apps Script
+    // Corrige a URL do Google Apps Script
     if (scriptUrl.includes("/edit")) {
       scriptUrl = `${scriptUrl.split("/edit")[0]}/exec`;
     } else if (!scriptUrl.endsWith("/exec")) {
@@ -98,6 +64,7 @@ export async function POST(request: Request) {
         "Content-Type": "text/plain;charset=utf-8",
       },
       body: JSON.stringify({
+        // Campos exigidos pelo Google Apps Script
         action: "new-order",
         token: process.env.GOOGLE_APPS_SCRIPT_SECRET,
 
@@ -123,12 +90,16 @@ export async function POST(request: Request) {
             summary?.couponDiscountCents || 0,
           pixDiscountCents:
             summary?.pixDiscountCents || 0,
-          deliveryCents: summary?.deliveryCents || 0,
+          deliveryCents:
+            summary?.deliveryCents || 0,
           totalCents:
             summary?.totalCents || totalCents || 0,
-          depositCents: summary?.depositCents || 0,
-          balanceCents: summary?.balanceCents || 0,
-          planCents: summary?.planCents || 0,
+          depositCents:
+            summary?.depositCents || 0,
+          balanceCents:
+            summary?.balanceCents || 0,
+          planCents:
+            summary?.planCents || 0,
           balancePaymentMethod:
             summary?.balancePaymentMethod || "",
         },
