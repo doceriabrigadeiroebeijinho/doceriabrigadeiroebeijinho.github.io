@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a7c0ebfe-d58e-46bd-bee7-266c7d219249",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "0f53e6bc-3415-480f-ab79-087f060f8b45",
+  "prevId": "a7c0ebfe-d58e-46bd-bee7-266c7d219249",
   "tables": {
     "customer_orders": {
       "name": "customer_orders",
