@@ -1555,8 +1555,10 @@ if (
             ["4", "Confirme", "Revise os dados e envie a solicitação para conferirmos a disponibilidade."],
           ].map(([number, title, text]) => (
             <article key={number}>
-              <span>{number}</span>
-              <h3>{title}</h3>
+              <div className="step-inline-title">
+                <span>{number}</span>
+                <h3>{title}</h3>
+              </div>
               <p>{text}</p>
             </article>
           ))}
