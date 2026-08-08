@@ -690,9 +690,6 @@ export default function Home() {
   >(
     "cakes",
   );
-  const [cakeSlide, setCakeSlide] = useState(0);
-  const [monthlySlide, setMonthlySlide] = useState(0);
-  const [sweetsSlide, setSweetsSlide] = useState(0);
   const [sweetGroupId, setSweetGroupId] = useState(sweetGroups[0].id);
   const [sweetQuantities, setSweetQuantities] = useState<Record<string, number>>(
     {},
@@ -815,37 +812,7 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  useEffect(() => {
-    if (catalogTab !== "cakes") return;
 
-    const timer = window.setInterval(() => {
-      setCakeSlide((current) => (current + 1) % cakeCatalogGallery.length);
-    }, 4500);
-
-    return () => window.clearInterval(timer);
-  }, [catalogTab]);
-
-  useEffect(() => {
-    if (catalogTab !== "monthly") return;
-
-    const timer = window.setInterval(() => {
-      setMonthlySlide(
-        (current) => (current + 1) % monthlyCakeGallery.length,
-      );
-    }, 4500);
-
-    return () => window.clearInterval(timer);
-  }, [catalogTab]);
-
-  useEffect(() => {
-    if (catalogTab !== "sweets") return;
-
-    const timer = window.setInterval(() => {
-      setSweetsSlide((current) => (current + 1) % sweetsCatalogGallery.length);
-    }, 4500);
-
-    return () => window.clearInterval(timer);
-  }, [catalogTab]);
 
   useEffect(() => {
     if (!details.eventDate) {
@@ -1688,16 +1655,14 @@ if (
               </div>
             </div>
             <div
-              className="compact-rotator compact-rotator-cakes"
+              className="static-photo-strip"
               aria-label="Fotos de bolos produzidos pela Doceria Brigadeiro & Beijinho"
-              aria-live="polite"
             >
-              <img
-                key={cakeCatalogGallery[cakeSlide].src}
-                className="compact-rotator-photo"
-                src={cakeCatalogGallery[cakeSlide].src}
-                alt={cakeCatalogGallery[cakeSlide].alt}
-              />
+              {cakeCatalogGallery.map((photo) => (
+                <figure key={photo.src}>
+                  <img src={photo.src} alt={photo.alt} />
+                </figure>
+              ))}
             </div>
             <div className="cake-grid">
             {cakeTiers.map((tier) => {
@@ -1862,18 +1827,16 @@ if (
 
         {catalogTab === "monthly" && (
           <div className="monthly-section">
-            <div className="monthly-hero">
+            <div className="monthly-hero monthly-static-layout">
               <div
-                className="compact-rotator monthly-rotator"
+                className="static-photo-strip monthly-static-photo-strip"
                 aria-label="Inspirações de Bolos Mini para mesversário"
-                aria-live="polite"
               >
-                <img
-                  key={monthlyCakeGallery[monthlySlide].src}
-                  className="compact-rotator-photo"
-                  src={monthlyCakeGallery[monthlySlide].src}
-                  alt={monthlyCakeGallery[monthlySlide].alt}
-                />
+                {monthlyCakeGallery.slice(0, 4).map((photo) => (
+                  <figure key={photo.src}>
+                    <img src={photo.src} alt={photo.alt} />
+                  </figure>
+                ))}
               </div>
               <div className="monthly-hero-copy">
                 <span className="section-kicker">Um bolo para cada mês</span>
@@ -2011,16 +1974,14 @@ if (
               ))}
             </div>
             <div
-              className="compact-rotator compact-rotator-sweets"
+              className="static-photo-strip"
               aria-label="Fotos de doces e bombons da Doceria Brigadeiro & Beijinho"
-              aria-live="polite"
             >
-              <img
-                key={sweetsCatalogGallery[sweetsSlide].src}
-                className="compact-rotator-photo"
-                src={sweetsCatalogGallery[sweetsSlide].src}
-                alt={sweetsCatalogGallery[sweetsSlide].alt}
-              />
+              {sweetsCatalogGallery.map((photo) => (
+                <figure key={photo.src}>
+                  <img src={photo.src} alt={photo.alt} />
+                </figure>
+              ))}
             </div>
             <div className="sweet-group-title">
               <div>
