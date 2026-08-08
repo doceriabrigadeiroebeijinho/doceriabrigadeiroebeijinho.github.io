@@ -646,14 +646,53 @@ const monthlyCakeGallery = [
   },
 ] as const;
 
+const cakeCatalogGallery = [
+  {
+    src: "/assets/hero-arca-noe.webp",
+    alt: "Bolo temático Arca de Noé",
+  },
+  {
+    src: "/assets/hero-lacos-vermelhos.webp",
+    alt: "Bolo branco com laços vermelhos",
+  },
+  {
+    src: "/assets/hero-princesas.webp",
+    alt: "Bolo personalizado com tema de princesas",
+  },
+  {
+    src: "/assets/hero-baloes.webp",
+    alt: "Bolo delicado com balões e arco-íris",
+  },
+] as const;
+
+const sweetsCatalogGallery = [
+  {
+    src: "/assets/sweets-chocolate.webp",
+    alt: "Doces de chocolate da Doceria Brigadeiro & Beijinho",
+  },
+  {
+    src: "/assets/sweets-ninho.webp",
+    alt: "Doces de Ninho da Doceria Brigadeiro & Beijinho",
+  },
+  {
+    src: "/assets/gift-bombons.webp",
+    alt: "Seleção de bombons artesanais",
+  },
+  {
+    src: "/assets/gift-bombom-gourmet.webp",
+    alt: "Bombons gourmet da Doceria Brigadeiro & Beijinho",
+  },
+] as const;
+
 export default function Home() {
   const [catalogTab, setCatalogTab] = useState<
     "cakes" | "monthly" | "sweets" | "gifts"
   >(
     "cakes",
   );
+  const [cakeSlide, setCakeSlide] = useState(0);
   const [monthlySlide, setMonthlySlide] = useState(0);
-  const [monthlyPaused, setMonthlyPaused] = useState(false);
+  const [sweetsSlide, setSweetsSlide] = useState(0);
   const [sweetGroupId, setSweetGroupId] = useState(sweetGroups[0].id);
   const [sweetQuantities, setSweetQuantities] = useState<Record<string, number>>(
     {},
@@ -777,16 +816,36 @@ export default function Home() {
   }, [toast]);
 
   useEffect(() => {
-    if (catalogTab !== "monthly" || monthlyPaused) return;
+    if (catalogTab !== "cakes") return;
+
+    const timer = window.setInterval(() => {
+      setCakeSlide((current) => (current + 1) % cakeCatalogGallery.length);
+    }, 4500);
+
+    return () => window.clearInterval(timer);
+  }, [catalogTab]);
+
+  useEffect(() => {
+    if (catalogTab !== "monthly") return;
 
     const timer = window.setInterval(() => {
       setMonthlySlide(
         (current) => (current + 1) % monthlyCakeGallery.length,
       );
-    }, 4800);
+    }, 4500);
 
     return () => window.clearInterval(timer);
-  }, [catalogTab, monthlyPaused]);
+  }, [catalogTab]);
+
+  useEffect(() => {
+    if (catalogTab !== "sweets") return;
+
+    const timer = window.setInterval(() => {
+      setSweetsSlide((current) => (current + 1) % sweetsCatalogGallery.length);
+    }, 4500);
+
+    return () => window.clearInterval(timer);
+  }, [catalogTab]);
 
   useEffect(() => {
     if (!details.eventDate) {
@@ -1628,6 +1687,34 @@ if (
                 </p>
               </div>
             </div>
+            <div
+              className="catalog-auto-carousel catalog-auto-carousel-cakes"
+              aria-label="Fotos de bolos produzidos pela Doceria Brigadeiro & Beijinho"
+              aria-roledescription="carrossel automático"
+            >
+              {cakeCatalogGallery.map((photo, index) => (
+                <figure
+                  className={`catalog-auto-slide ${
+                    index === cakeSlide ? "active" : ""
+                  }`}
+                  key={photo.src}
+                  aria-hidden={index !== cakeSlide}
+                >
+                  <img
+                    className="catalog-auto-slide-backdrop"
+                    src={photo.src}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <img
+                    className="catalog-auto-slide-photo"
+                    src={photo.src}
+                    alt={index === cakeSlide ? photo.alt : ""}
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                </figure>
+              ))}
+            </div>
             <div className="cake-grid">
             {cakeTiers.map((tier) => {
               const choice = cakeChoices[tier.id];
@@ -1819,62 +1906,6 @@ if (
                   </div>
                 ))}
 
-                <span className="monthly-carousel-counter">
-                  {monthlySlide + 1} / {monthlyCakeGallery.length}
-                </span>
-
-                <div className="monthly-carousel-controls">
-                  <button
-                    type="button"
-                    className="monthly-carousel-arrow"
-                    aria-label="Ver foto anterior"
-                    onClick={() => {
-                      setMonthlySlide(
-                        (current) =>
-                          (current - 1 + monthlyCakeGallery.length) %
-                          monthlyCakeGallery.length,
-                      );
-                    }}
-                  >
-                    ←
-                  </button>
-                  <div
-                    className="monthly-carousel-dots"
-                    aria-label="Escolher foto"
-                  >
-                    {monthlyCakeGallery.map((photo, index) => (
-                      <button
-                        type="button"
-                        className={index === monthlySlide ? "active" : ""}
-                        key={photo.src}
-                        aria-label={`Ver foto ${index + 1}`}
-                        aria-current={index === monthlySlide ? "true" : undefined}
-                        onClick={() => setMonthlySlide(index)}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    className="monthly-carousel-arrow"
-                    aria-label="Ver próxima foto"
-                    onClick={() => {
-                      setMonthlySlide(
-                        (current) =>
-                          (current + 1) % monthlyCakeGallery.length,
-                      );
-                    }}
-                  >
-                    →
-                  </button>
-                  <button
-                    type="button"
-                    className="monthly-carousel-pause"
-                    aria-pressed={monthlyPaused}
-                    onClick={() => setMonthlyPaused((current) => !current)}
-                  >
-                    {monthlyPaused ? "Continuar" : "Pausar"}
-                  </button>
-                </div>
               </div>
               <div className="monthly-hero-copy">
                 <span className="section-kicker">Um bolo para cada mês</span>
@@ -2009,6 +2040,34 @@ if (
                 >
                   {group.name}
                 </button>
+              ))}
+            </div>
+            <div
+              className="catalog-auto-carousel catalog-auto-carousel-sweets"
+              aria-label="Fotos de doces e bombons da Doceria Brigadeiro & Beijinho"
+              aria-roledescription="carrossel automático"
+            >
+              {sweetsCatalogGallery.map((photo, index) => (
+                <figure
+                  className={`catalog-auto-slide ${
+                    index === sweetsSlide ? "active" : ""
+                  }`}
+                  key={photo.src}
+                  aria-hidden={index !== sweetsSlide}
+                >
+                  <img
+                    className="catalog-auto-slide-backdrop"
+                    src={photo.src}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <img
+                    className="catalog-auto-slide-photo"
+                    src={photo.src}
+                    alt={index === sweetsSlide ? photo.alt : ""}
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                </figure>
               ))}
             </div>
             <div className="sweet-group-title">
