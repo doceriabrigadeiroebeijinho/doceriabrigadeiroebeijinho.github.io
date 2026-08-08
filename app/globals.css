@@ -4703,3 +4703,35 @@ footer a:hover {
     aspect-ratio: 3 / 4 !important;
   }
 }
+
+
+/* =========================================================
+   AJUSTE FINAL DAS FOTOS — ZOOM LEVE
+   Mantém o formato retrato, mas preenche melhor o quadro
+   para evitar faixas claras nas imagens mais largas.
+   ========================================================= */
+
+.static-photo-strip figure {
+  background: #f7f2ee !important;
+}
+
+.static-photo-strip img {
+  object-fit: contain !important;
+  object-position: center !important;
+  transform: scale(1.14) !important;
+  transform-origin: center !important;
+}
+
+/* Um pouco mais de zoom nas telas pequenas, onde as faixas
+   ficam mais perceptíveis. */
+@media (max-width: 760px) {
+  .static-photo-strip img {
+    transform: scale(1.16) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .static-photo-strip img {
+    transform: scale(1.17) !important;
+  }
+}
