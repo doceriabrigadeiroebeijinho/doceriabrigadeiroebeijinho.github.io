@@ -4665,3 +4665,41 @@ footer a:hover {
     padding: 22px 18px 24px !important;
   }
 }
+
+
+/* =========================================================
+   GALERIAS EM FORMATO RETRATO — FOTO INTEIRA, SEM CORTE
+   ========================================================= */
+
+.static-photo-strip {
+  align-items: start !important;
+}
+
+.static-photo-strip figure {
+  height: auto !important;
+  aspect-ratio: 3 / 4 !important;
+  overflow: hidden !important;
+  background: #f7f2ee !important;
+}
+
+.static-photo-strip img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  background: #f7f2ee !important;
+}
+
+@media (max-width: 760px) {
+  .static-photo-strip figure {
+    height: auto !important;
+    aspect-ratio: 3 / 4 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .static-photo-strip figure {
+    height: auto !important;
+    aspect-ratio: 3 / 4 !important;
+  }
+}
