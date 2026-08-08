@@ -38,7 +38,7 @@ type CakeDecorationOption = {
 const cakeDecorationOptions: CakeDecorationOption[] = [
   {
     id: "topo",
-    label: "Topo de bolo — sem adicional",
+    label: "Topo de bolo",
     prices: { mini: 0, p: 0, m: 0, g: 0, gg: 0 },
   },
   {
@@ -55,7 +55,7 @@ const cakeDecorationOptions: CakeDecorationOption[] = [
   },
   {
     id: "papel-lateral",
-    label: "Papel de arroz envolvendo a lateral do bolo",
+    label: "Papel de arroz na lateral do bolo",
     prices: { mini: 15, p: 20, m: 30, g: 38, gg: 45 },
     requires48h: true,
   },
@@ -1696,44 +1696,79 @@ if (
                       ))}
                     </select>
                   </label>
-                  {choice.size !== "corte" && (
-                    <div className="decoration-field">
-                      <span>Estilo da decoração</span>
-                      <div className="decoration-options">
-                        {cakeDecorationOptions.map((option) => {
-                          const optionPrice = cakeDecorationPrice(
-                            option.id,
-                            choice.size,
-                          );
-                          return (
-                            <label className="decoration-option" key={option.id}>
-                              <input
-                                type="checkbox"
-                                checked={choice.decorations.includes(option.id)}
-                                onChange={() =>
-                                  toggleCakeDecoration(tier.id, option.id)
-                                }
-                              />
-                              <span>
-                                <strong>{option.label}</strong>
-                                <small>
-                                  {optionPrice > 0
-                                    ? `+ ${formatMoney(optionPrice)}`
-                                    : option.id === "avaliar"
-                                      ? "valor definido após avaliação"
-                                      : "sem adicional"}
-                                </small>
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                      <small className="decoration-help">
-                        Você pode escolher mais de uma opção. Decorações adicionais
-                        precisam de no mínimo 48h de antecedência.
-                      </small>
-                    </div>
-                  )}
+                  {choice.size !== "corte" && (() => {
+                    const selectedDecorationNames = cakeDecorationOptions
+                      .filter((option) => choice.decorations.includes(option.id))
+                      .map((option) => option.label.replace(" — sob avaliação", ""));
+                    const decorationSummary =
+                      selectedDecorationNames.length === 0
+                        ? "Escolher decoração"
+                        : selectedDecorationNames.length <= 2
+                          ? selectedDecorationNames.join(" + ")
+                          : `${selectedDecorationNames[0]} + ${selectedDecorationNames.length - 1} adicionais`;
+
+                    return (
+                      <details className="decoration-picker">
+                        <summary>
+                          <span className="decoration-summary-copy">
+                            <small>Adicionais de decoração</small>
+                            <strong>{decorationSummary}</strong>
+                          </span>
+                          <span className="decoration-summary-meta">
+                            <em>
+                              {decorationTotal > 0
+                                ? `+ ${formatMoney(decorationTotal)}`
+                                : "sem adicional"}
+                            </em>
+                            <b aria-hidden="true">+</b>
+                          </span>
+                        </summary>
+                        <div className="decoration-picker-panel">
+                          <p>
+                            Escolha uma ou mais opções. O valor é calculado de
+                            acordo com o tamanho do bolo.
+                          </p>
+                          <div className="decoration-picker-list">
+                            {cakeDecorationOptions.map((option) => {
+                              const optionPrice = cakeDecorationPrice(
+                                option.id,
+                                choice.size,
+                              );
+                              const selected = choice.decorations.includes(option.id);
+                              return (
+                                <label
+                                  className={`decoration-picker-row ${
+                                    selected ? "selected" : ""
+                                  }`}
+                                  key={option.id}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={selected}
+                                    onChange={() =>
+                                      toggleCakeDecoration(tier.id, option.id)
+                                    }
+                                  />
+                                  <span>{option.label}</span>
+                                  <small>
+                                    {optionPrice > 0
+                                      ? `+ ${formatMoney(optionPrice)}`
+                                      : option.id === "avaliar"
+                                        ? "sob avaliação"
+                                        : "sem adicional"}
+                                  </small>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <small className="decoration-picker-help">
+                            Decorações adicionais precisam de no mínimo 48h de
+                            antecedência.
+                          </small>
+                        </div>
+                      </details>
+                    );
+                  })()}
                   <div className="product-card-footer">
                     <strong>{formatMoney(price)}</strong>
                     <button type="button" onClick={() => addCake(tier)}>
