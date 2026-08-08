@@ -667,20 +667,20 @@ const cakeCatalogGallery = [
 
 const sweetsCatalogGallery = [
   {
-    src: "/assets/sweets-chocolate.webp",
-    alt: "Doces de chocolate da Doceria Brigadeiro & Beijinho",
+    src: "/assets/doces-uva.webp",
+    alt: "Doces de Ninho com uva e doces com cobertura de chocolate",
   },
   {
-    src: "/assets/sweets-ninho.webp",
-    alt: "Doces de Ninho da Doceria Brigadeiro & Beijinho",
+    src: "/assets/doces-variados.webp",
+    alt: "Seleção de doces artesanais variados",
   },
   {
-    src: "/assets/gift-bombons.webp",
-    alt: "Seleção de bombons artesanais",
+    src: "/assets/doces-bombons.webp",
+    alt: "Doces artesanais e bombons com acabamento em chocolate",
   },
   {
-    src: "/assets/gift-bombom-gourmet.webp",
-    alt: "Bombons gourmet da Doceria Brigadeiro & Beijinho",
+    src: "/assets/doces-coloridos.webp",
+    alt: "Doces artesanais com confeitos coloridos",
   },
 ] as const;
 
