@@ -4354,3 +4354,53 @@ footer a:hover {
     white-space: normal;
   }
 }
+
+/* Galerias compactas dentro das categorias do cardápio */
+.catalog-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 28px;
+}
+
+.catalog-photo-grid figure {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--paper-2);
+}
+
+.catalog-photo-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 400ms ease;
+}
+
+.catalog-photo-grid figure:hover img {
+  transform: scale(1.025);
+}
+
+.catalog-photo-grid-sweets figure {
+  aspect-ratio: 1 / 1;
+}
+
+@media (max-width: 760px) {
+  .catalog-photo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .catalog-photo-grid figure {
+    aspect-ratio: 1 / 1.08;
+    border-radius: 16px;
+  }
+
+  .catalog-photo-grid-sweets figure {
+    aspect-ratio: 1 / 1;
+  }
+}
