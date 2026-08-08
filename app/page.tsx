@@ -1325,65 +1325,149 @@ if (
     }
 
     const orderCode = `BB-${Date.now().toString().slice(-6)}`;
-    const items = cart
-      .map(
-        (item) => {
-          const publicVariant = item.variant.replace(
-            / · Forminha [^·]+$/,
-            "",
-          );
 
-          return `• ${item.qty}x ${item.name} — ${publicVariant} — ${formatMoney(
-            item.qty * item.unitPrice,
-          )}`;
-        },
+    const formatCakeItemForWhatsApp = (item: CartItem) => {
+      const parts = item.variant.split(" · ");
+      const sizeLabel = parts[0] ?? "";
+
+      const detailParts = parts.slice(1).filter(
+        (part) =>
+          !/fatias/i.test(part) &&
+          !/pessoas/i.test(part) &&
+          !/^cerca de/i.test(part),
+      );
+
+      const massPart =
+        detailParts.find((part) => /^massa /i.test(part)) ?? "";
+      const modelPart =
+        detailParts.find((part) => /^modelo /i.test(part)) ?? "";
+
+      const remaining = detailParts.filter(
+        (part) => part !== massPart && part !== modelPart,
+      );
+
+      const filling = remaining[0] ?? "";
+      const decoration = remaining.slice(1).join(" · ");
+
+      return [
+        `*${item.qty}x ${item.name}${sizeLabel ? ` — ${sizeLabel}` : ""}*`,
+        massPart ? `• Massa: ${massPart.replace(/^massa /i, "")}` : "",
+        modelPart ? `• Modelo: ${modelPart.replace(/^modelo /i, "")}` : "",
+        filling ? `• Recheio: ${filling}` : "",
+        decoration ? `• Decoração: ${decoration}` : "",
+        `• Valor: *${formatMoney(item.qty * item.unitPrice)}*`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    };
+
+    const formatGiftOrPlanItemForWhatsApp = (item: CartItem) => {
+      const publicVariant = item.variant.replace(/ · Forminha [^·]+$/, "");
+
+      return [
+        `*${item.qty}x ${item.name}*`,
+        publicVariant ? `• ${publicVariant}` : "",
+        `• Valor: *${formatMoney(item.qty * item.unitPrice)}*`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    };
+
+    const regularProductBlocks = cart
+      .filter(
+        (item) =>
+          item.type === "cake" ||
+          item.type === "gift" ||
+          item.type === "plan",
       )
-      .join("\n");
+      .map((item) =>
+        item.type === "cake"
+          ? formatCakeItemForWhatsApp(item)
+          : formatGiftOrPlanItemForWhatsApp(item),
+      );
+
+    const sweetGroups = new Map<string, CartItem[]>();
+
+    cart
+      .filter((item) => item.type === "sweet" || item.type === "bonbon")
+      .forEach((item) => {
+        const groupName = item.variant.split(" · ")[0] || "Doces & bombons";
+        const current = sweetGroups.get(groupName) ?? [];
+        current.push(item);
+        sweetGroups.set(groupName, current);
+      });
+
+    const sweetProductBlocks = Array.from(sweetGroups.entries()).map(
+      ([groupName, groupItems]) => {
+        const itemLines = groupItems.flatMap((item) => {
+          const lines = [
+            `• ${item.name} — ${item.qty} un. — *${formatMoney(
+              item.qty * item.unitPrice,
+            )}*`,
+          ];
+
+          if (item.wrapperColor && item.wrapperColor !== "Branca") {
+            lines.push(`  Forminha: ${item.wrapperColor}`);
+          }
+
+          return lines;
+        });
+
+        return [`*${groupName.toUpperCase()}*`, ...itemLines].join("\n");
+      },
+    );
+
+    const itemsBlock = [...regularProductBlocks, ...sweetProductBlocks].join(
+      "\n\n",
+    );
+
     const wrapperColors = Array.from(
       new Set(
         cart
           .filter(
             (item) =>
               (item.type === "sweet" || item.type === "bonbon") &&
-              item.wrapperColor,
+              item.wrapperColor &&
+              item.wrapperColor !== "Branca",
           )
           .map((item) => item.wrapperColor as string),
       ),
     );
-    const personalization = [
-      wrapperColors.length > 0 && `forminhas: ${wrapperColors.join(", ")}`,
-      details.phrase && `frase: ${details.phrase}`,
-      details.age && `idade: ${details.age}`,
-      details.colors && `cores: ${details.colors}`,
-      details.decoration && `decoração: ${details.decoration}`,
-    ]
-      .filter(Boolean)
-      .join(" · ");
-    const serviceLine =
-      delivery.service === "Entrega"
-        ? `Entrega: ${formattedAddress} · ${formatMoney(deliveryFee)}`
-        : `Retirada: ${ORIGIN}`;
+
+    const personalizationLines = [
+      details.phrase && `• Frase: ${details.phrase}`,
+      details.age && `• Idade: ${details.age}`,
+      details.colors && `• Cores: ${details.colors}`,
+      details.decoration && `• Observações da decoração: ${details.decoration}`,
+      wrapperColors.length > 0 &&
+        `• Forminhas especiais: ${wrapperColors.join(", ")}`,
+    ].filter(Boolean);
+
     const formattedEventDate = new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
       weekday: "long",
     }).format(selectedDateTime);
-    const paymentLine =
-      paymentMethod === "Pix"
-        ? `Chave: ${PIX_KEY} · Déborah Bacelar Braga · Banco Inter`
-        : `Link seguro: ${CARD_PAYMENT_URL}`;
 
-    const message = [
-      `*PEDIDO PELO SITE · ${orderCode}*`,
-      `*Cliente:* ${customer.name} · ${customer.phone}`,
-      "",
-      "*ITENS DO PEDIDO*",
-      items,
-      `*Data:* ${formattedEventDate} às ${details.eventTime}`,
-      personalization ? `Personalização: ${personalization}` : "",
-      `*Serviço:* ${serviceLine}`,
-      "",
+    const serviceBlock =
+      delivery.service === "Entrega"
+        ? [
+            "*DATA E ENTREGA*",
+            `Data: ${formattedEventDate}`,
+            `Horário: ${details.eventTime}`,
+            `Endereço: ${formattedAddress}`,
+            `Taxa de entrega: ${formatMoney(deliveryFee)}`,
+          ].join("\n")
+        : [
+            "*DATA E RETIRADA*",
+            `Data: ${formattedEventDate}`,
+            `Horário: ${details.eventTime}`,
+            `Retirada: ${ORIGIN}`,
+          ].join("\n");
+
+    const paymentSummaryLines = [
+      "*PAGAMENTO*",
       `Produtos: ${formatMoney(regularSubtotal)}`,
       couponDiscount
         ? `Cupom ${appliedCoupon} (${couponPercent}%): -${formatMoney(
@@ -1397,33 +1481,61 @@ if (
       deliveryFee ? `Entrega: ${formatMoney(deliveryFee)}` : "",
       `*Valor total: ${formatMoney(total)}*`,
       regularOrderTotal
-        ? `*Entrada do pedido (60%):* ${formatMoney(regularOrderTotal * 0.6)}`
+        ? `Entrada (60%): *${formatMoney(regularOrderTotal * 0.6)}*`
         : "",
       regularOrderTotal
-        ? `*Restante do pedido (40%):* ${formatMoney(balance)}`
+        ? `Restante (40%): *${formatMoney(balance)}*`
         : "",
       regularOrderTotal
-        ? `Forma de pagamento do restante: ${balancePaymentMethod}${
-            balancePaymentMethod === "Dinheiro" ? " · valor exato, sem troco" : ""
+        ? `Pagamento do restante: ${balancePaymentMethod}${
+            balancePaymentMethod === "Dinheiro"
+              ? " — valor exato, sem troco"
+              : ""
           }`
         : "",
       planSubtotal
         ? planPaymentMode === "Mensal"
-          ? `*Pacote de mesversário:* 1ª mensalidade de ${formatMoney(
+          ? `Pacote de mesversário: 1ª mensalidade de ${formatMoney(
               firstPlanInstallment,
             )} + 10 mensalidades do mesmo valor`
-          : `*Pacote de mesversário:* pagamento integral de ${formatMoney(
+          : `Pacote de mesversário: pagamento integral de ${formatMoney(
               planSubtotal,
             )}`
         : "",
       planSubtotal && planPaymentMode === "Mensal"
         ? `Saldo futuro do pacote: ${formatMoney(futurePlanBalance)}`
         : "",
-      paymentLine,
-      "Peço a conferência das informações e da disponibilidade para confirmação.",
-    ]
-      .filter((line, index) => line !== "" || index === 2)
-      .join("\n");
+    ].filter(Boolean);
+
+    const paymentDataBlock =
+      paymentMethod === "Pix"
+        ? [
+            "*DADOS PARA PIX*",
+            `Chave: ${PIX_KEY}`,
+            "Titular: Déborah Bacelar Braga",
+            "Banco: Inter",
+          ].join("\n")
+        : ["*PAGAMENTO POR CARTÃO*", `Link seguro: ${CARD_PAYMENT_URL}`].join(
+            "\n",
+          );
+
+    const messageBlocks = [
+      [`*PEDIDO PELO SITE*`, `Código: *${orderCode}*`].join("\n"),
+      ["*CLIENTE*", customer.name, `WhatsApp: ${customer.phone}`].join("\n"),
+      ["*ITENS DO PEDIDO*", itemsBlock].join("\n\n"),
+      personalizationLines.length > 0
+        ? ["*PERSONALIZAÇÃO*", ...personalizationLines].join("\n")
+        : "",
+      serviceBlock,
+      paymentSummaryLines.join("\n"),
+      paymentDataBlock,
+      [
+        "*CONFIRMAÇÃO*",
+        "Peço a conferência das informações e da disponibilidade para confirmação do pedido.",
+      ].join("\n"),
+    ].filter(Boolean);
+
+    const message = messageBlocks.join("\n\n");
 
     setOrderSubmitting(true);
     try {
