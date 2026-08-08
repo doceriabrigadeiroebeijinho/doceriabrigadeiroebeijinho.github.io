@@ -4355,52 +4355,74 @@ footer a:hover {
   }
 }
 
-/* Galerias compactas dentro das categorias do cardápio */
-.catalog-photo-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0 0 28px;
-}
-
-.catalog-photo-grid figure {
+/* Carrosséis automáticos das categorias do cardápio */
+.catalog-auto-carousel {
   position: relative;
-  aspect-ratio: 4 / 5;
-  margin: 0;
+  width: 100%;
+  height: clamp(300px, 32vw, 390px);
+  margin: 0 0 28px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 30px;
   background: var(--paper-2);
+  box-shadow: 0 18px 46px rgba(75, 46, 37, 0.07);
 }
 
-.catalog-photo-grid img {
+.catalog-auto-slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 850ms ease-in-out;
+}
+
+.catalog-auto-slide.active {
+  z-index: 1;
+  opacity: 1;
+}
+
+.catalog-auto-slide img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.catalog-auto-slide-backdrop {
   object-fit: cover;
-  transition: transform 400ms ease;
+  filter: blur(26px) saturate(0.78);
+  opacity: 0.3;
+  transform: scale(1.12);
 }
 
-.catalog-photo-grid figure:hover img {
-  transform: scale(1.025);
+.catalog-auto-slide-photo {
+  z-index: 1;
+  object-fit: contain;
 }
 
-.catalog-photo-grid-sweets figure {
-  aspect-ratio: 1 / 1;
+.catalog-auto-carousel-sweets {
+  height: clamp(280px, 30vw, 360px);
 }
 
 @media (max-width: 760px) {
-  .catalog-photo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+  .catalog-auto-carousel {
+    height: 300px;
     margin-bottom: 22px;
+    border-radius: 22px;
   }
 
-  .catalog-photo-grid figure {
-    aspect-ratio: 1 / 1.08;
-    border-radius: 16px;
+  .catalog-auto-carousel-sweets {
+    height: 285px;
+  }
+}
+
+@media (max-width: 420px) {
+  .catalog-auto-carousel {
+    height: 280px;
   }
 
-  .catalog-photo-grid-sweets figure {
-    aspect-ratio: 1 / 1;
+  .catalog-auto-carousel-sweets {
+    height: 265px;
   }
 }
