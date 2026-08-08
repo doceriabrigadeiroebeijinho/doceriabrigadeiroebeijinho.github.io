@@ -1688,32 +1688,16 @@ if (
               </div>
             </div>
             <div
-              className="catalog-auto-carousel catalog-auto-carousel-cakes"
+              className="compact-rotator compact-rotator-cakes"
               aria-label="Fotos de bolos produzidos pela Doceria Brigadeiro & Beijinho"
-              aria-roledescription="carrossel automático"
+              aria-live="polite"
             >
-              {cakeCatalogGallery.map((photo, index) => (
-                <figure
-                  className={`catalog-auto-slide ${
-                    index === cakeSlide ? "active" : ""
-                  }`}
-                  key={photo.src}
-                  aria-hidden={index !== cakeSlide}
-                >
-                  <img
-                    className="catalog-auto-slide-backdrop"
-                    src={photo.src}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <img
-                    className="catalog-auto-slide-photo"
-                    src={photo.src}
-                    alt={index === cakeSlide ? photo.alt : ""}
-                    loading={index === 0 ? "eager" : "lazy"}
-                  />
-                </figure>
-              ))}
+              <img
+                key={cakeCatalogGallery[cakeSlide].src}
+                className="compact-rotator-photo"
+                src={cakeCatalogGallery[cakeSlide].src}
+                alt={cakeCatalogGallery[cakeSlide].alt}
+              />
             </div>
             <div className="cake-grid">
             {cakeTiers.map((tier) => {
@@ -1880,32 +1864,16 @@ if (
           <div className="monthly-section">
             <div className="monthly-hero">
               <div
-                className="monthly-carousel"
+                className="compact-rotator monthly-rotator"
                 aria-label="Inspirações de Bolos Mini para mesversário"
-                aria-roledescription="carrossel"
+                aria-live="polite"
               >
-                {monthlyCakeGallery.map((photo, index) => (
-                  <div
-                    className={`monthly-slide ${
-                      index === monthlySlide ? "active" : ""
-                    }`}
-                    key={photo.src}
-                    aria-hidden={index !== monthlySlide}
-                  >
-                    <img
-                      className="monthly-slide-backdrop"
-                      src={photo.src}
-                      alt=""
-                      aria-hidden="true"
-                    />
-                    <img
-                      className="monthly-slide-photo"
-                      src={photo.src}
-                      alt={index === monthlySlide ? photo.alt : ""}
-                    />
-                  </div>
-                ))}
-
+                <img
+                  key={monthlyCakeGallery[monthlySlide].src}
+                  className="compact-rotator-photo"
+                  src={monthlyCakeGallery[monthlySlide].src}
+                  alt={monthlyCakeGallery[monthlySlide].alt}
+                />
               </div>
               <div className="monthly-hero-copy">
                 <span className="section-kicker">Um bolo para cada mês</span>
@@ -2043,32 +2011,16 @@ if (
               ))}
             </div>
             <div
-              className="catalog-auto-carousel catalog-auto-carousel-sweets"
+              className="compact-rotator compact-rotator-sweets"
               aria-label="Fotos de doces e bombons da Doceria Brigadeiro & Beijinho"
-              aria-roledescription="carrossel automático"
+              aria-live="polite"
             >
-              {sweetsCatalogGallery.map((photo, index) => (
-                <figure
-                  className={`catalog-auto-slide ${
-                    index === sweetsSlide ? "active" : ""
-                  }`}
-                  key={photo.src}
-                  aria-hidden={index !== sweetsSlide}
-                >
-                  <img
-                    className="catalog-auto-slide-backdrop"
-                    src={photo.src}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <img
-                    className="catalog-auto-slide-photo"
-                    src={photo.src}
-                    alt={index === sweetsSlide ? photo.alt : ""}
-                    loading={index === 0 ? "eager" : "lazy"}
-                  />
-                </figure>
-              ))}
+              <img
+                key={sweetsCatalogGallery[sweetsSlide].src}
+                className="compact-rotator-photo"
+                src={sweetsCatalogGallery[sweetsSlide].src}
+                alt={sweetsCatalogGallery[sweetsSlide].alt}
+              />
             </div>
             <div className="sweet-group-title">
               <div>
