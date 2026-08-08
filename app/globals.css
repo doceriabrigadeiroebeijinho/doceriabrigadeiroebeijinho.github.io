@@ -4426,3 +4426,94 @@ footer a:hover {
     height: 265px;
   }
 }
+
+
+/* =========================================================
+   CARROSSÉIS SIMPLES E COMPACTOS
+   Apenas uma imagem existe visualmente por vez.
+   ========================================================= */
+
+.compact-rotator {
+  position: relative !important;
+  width: min(100%, 760px) !important;
+  height: 230px !important;
+  margin: 0 auto 22px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 24px !important;
+  background: var(--paper-2) !important;
+  box-shadow: 0 12px 30px rgba(75, 46, 37, 0.06) !important;
+}
+
+.compact-rotator-photo {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  animation: compactCarouselFade 650ms ease both;
+}
+
+.compact-rotator-sweets {
+  height: 220px !important;
+}
+
+.monthly-hero {
+  min-height: 0 !important;
+}
+
+.monthly-rotator {
+  width: 100% !important;
+  height: 330px !important;
+  margin: 0 !important;
+  align-self: stretch !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #eee2dc !important;
+}
+
+@keyframes compactCarouselFade {
+  from {
+    opacity: 0.15;
+    transform: scale(1.01);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 760px) {
+  .compact-rotator {
+    width: 100% !important;
+    height: 190px !important;
+    margin-bottom: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .compact-rotator-sweets {
+    height: 185px !important;
+  }
+
+  .monthly-rotator {
+    height: 240px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .compact-rotator {
+    height: 175px !important;
+  }
+
+  .compact-rotator-sweets {
+    height: 170px !important;
+  }
+
+  .monthly-rotator {
+    height: 220px !important;
+  }
+}
