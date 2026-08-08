@@ -2260,29 +2260,64 @@ if (
       </section>
 
       <section className="google-reviews-section" id="avaliacoes">
-        <div className="section-heading left">
-          <span className="section-kicker">Avaliações no Google</span>
-          <h2>Quem encomenda também conta a experiência</h2>
-          <p>
-            A Doceria Brigadeiro & Beijinho está com nota 5,0 no Google, com 38
-            avaliações. Você pode abrir o perfil para conferir as avaliações
-            completas e mais recentes.
-          </p>
-        </div>
-        <div className="google-review-summary">
+        <div className="google-reviews-heading">
           <div>
+            <span className="section-kicker">Avaliações no Google</span>
+            <h2>Quem encomenda também conta a experiência</h2>
+          </div>
+          <div className="google-rating-badge" aria-label="Nota 5,0 de 5 no Google">
             <strong>5,0</strong>
-            <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
-            <small>38 avaliações no Google</small>
+            <span className="google-stars" aria-hidden="true">★★★★★</span>
           </div>
-          <div className="google-review-actions">
-            <a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noreferrer">
-              Ver avaliações no Google
-            </a>
-            <a href={GOOGLE_REVIEW_FORM_URL} target="_blank" rel="noreferrer">
-              Deixar uma avaliação
-            </a>
-          </div>
+        </div>
+
+        <div className="google-review-cards">
+          <article className="google-review-card">
+            <div className="google-review-card-head">
+              <span className="review-initials" aria-label="Avaliação de cliente">R.</span>
+              <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
+            </div>
+            <p>
+              “O bolo estava simplesmente maravilhoso! Muito gostoso, saboroso e feito com muito
+              capricho. A massa estava fofinha, o recheio delicioso e tudo estava na medida certa.
+              Além de lindo, estava realmente uma delícia! Todo mundo adorou. Dá para perceber o
+              carinho e o cuidado em cada detalhe. Com certeza, recomendo e vou pedir novamente! 💕🎂”
+            </p>
+          </article>
+
+          <article className="google-review-card">
+            <div className="google-review-card-head">
+              <span className="review-initials" aria-label="Avaliação de cliente">K.C.L.</span>
+              <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
+            </div>
+            <p>
+              “Adoro tudo que a Débora faz!! Excelente profissional!! Faz tudo com muito carinho e
+              capricho!!”
+            </p>
+          </article>
+
+          <article className="google-review-card">
+            <div className="google-review-card-head">
+              <span className="review-initials" aria-label="Avaliação de cliente">M.J.</span>
+              <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
+            </div>
+            <p>
+              “Quero agradecer o capricho da Deborah em todos os detalhes do bolo, desde a decoração
+              do topo até o cuidado da embalagem, bem embalado e ainda veio duas velinhas. O sabor do
+              bolo então nem se fala, muito saboroso, vem bastante recheio na medida certa e uma
+              delícia, massa fofinha e leve. Eu amei todos os detalhes. Super indico, muito impecável
+              o trabalho da Débora!”
+            </p>
+          </article>
+        </div>
+
+        <div className="google-review-actions">
+          <a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noreferrer">
+            Ver mais avaliações no Google
+          </a>
+          <a href={GOOGLE_REVIEW_FORM_URL} target="_blank" rel="noreferrer">
+            Avaliar no Google
+          </a>
         </div>
       </section>
 
