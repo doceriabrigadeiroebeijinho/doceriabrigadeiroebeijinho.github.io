@@ -4735,3 +4735,19 @@ footer a:hover {
     transform: scale(1.17) !important;
   }
 }
+
+
+/* Remove a pequena linha/espaço abaixo da imagem principal */
+.hero-image {
+  display: block !important;
+  vertical-align: top !important;
+}
+
+
+/* Corrige a faixa branca à direita nas fotos dos Bentôs/Presentes */
+.gift-card-with-image > img {
+  display: block !important;
+  width: calc(100% + 52px) !important;
+  max-width: none !important;
+  margin: -26px -26px 22px !important;
+}
