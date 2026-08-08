@@ -14,6 +14,10 @@ const WHATSAPP_PRE_MESSAGE =
 const WHATSAPP_INFO_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
   WHATSAPP_PRE_MESSAGE,
 )}`;
+const GOOGLE_REVIEWS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  `Doceria Brigadeiro & Beijinho, ${ORIGIN}`,
+)}`;
+const GOOGLE_REVIEW_FORM_URL = "https://g.page/r/CXtaVH-2ywyGEAE/review";
 const COUPONS = {
   DOCE5: 5,
   DOCE10: 10,
@@ -24,12 +28,62 @@ type BalancePaymentMethod = "Pix" | "Cartão" | "Dinheiro";
 
 const sweetQuantityOptions = [25, 50, 75, 100, 125, 150, 175, 200];
 
-const cakeDecorationOptions = [
-  { id: "topo", label: "Topo de bolo simples", price: 0 },
-  { id: "flores", label: "Flores naturais", price: 10 },
-  { id: "papel-arroz", label: "Papel de arroz", price: 20 },
-  { id: "avaliar", label: "Outra decoração — sob avaliação", price: 0 },
+type CakeDecorationOption = {
+  id: string;
+  label: string;
+  prices: Record<string, number>;
+  requires48h?: boolean;
+};
+
+const cakeDecorationOptions: CakeDecorationOption[] = [
+  {
+    id: "topo",
+    label: "Topo de bolo — sem adicional",
+    prices: { mini: 0, p: 0, m: 0, g: 0, gg: 0 },
+  },
+  {
+    id: "flores",
+    label: "Flores naturais",
+    prices: { mini: 10, p: 12, m: 15, g: 20, gg: 25 },
+    requires48h: true,
+  },
+  {
+    id: "papel-topo",
+    label: "Papel de arroz no topo do bolo",
+    prices: { mini: 15, p: 15, m: 15, g: 15, gg: 15 },
+    requires48h: true,
+  },
+  {
+    id: "papel-lateral",
+    label: "Papel de arroz envolvendo a lateral do bolo",
+    prices: { mini: 15, p: 20, m: 30, g: 38, gg: 45 },
+    requires48h: true,
+  },
+  {
+    id: "frutas-topo",
+    label: "Frutas no topo do bolo",
+    prices: { mini: 10, p: 12, m: 18, g: 25, gg: 30 },
+    requires48h: true,
+  },
+  {
+    id: "avaliar",
+    label: "Outra decoração — sob avaliação",
+    prices: { mini: 0, p: 0, m: 0, g: 0, gg: 0 },
+    requires48h: true,
+  },
 ];
+
+const complexSweetGroupIds = new Set([
+  "doces-mais-especiais",
+  "doces-finos",
+  "bombons-especiais",
+  "bombons-finos",
+]);
+
+const cakeDecorationPrice = (optionId: string, size: string) => {
+  const option = cakeDecorationOptions.find((item) => item.id === optionId);
+  return option?.prices[size] ?? 0;
+};
 
 const wrapperOptions = [
   { label: "Branca — sem adicional", value: "Branca", fee: 0 },
@@ -68,6 +122,7 @@ type CartItem = {
   step: number;
   unitPrice: number;
   wrapperColor?: string;
+  requires48h?: boolean;
 };
 
 type CakeTier = {
@@ -614,7 +669,7 @@ export default function Home() {
         mass: string;
         model: string;
         filling: string;
-        decoration: string;
+        decorations: string[];
       }
     >
   >(() =>
@@ -626,7 +681,7 @@ export default function Home() {
           mass: "Branca",
           model: "Chantilly",
           filling: tier.fillings[0],
-          decoration: "topo",
+          decorations: ["topo"],
         },
       ]),
     ),
@@ -661,8 +716,6 @@ export default function Home() {
   const [planPaymentMode, setPlanPaymentMode] =
     useState<PlanPaymentMode>("Mensal");
   const [orderSubmitting, setOrderSubmitting] = useState(false);
-  const [inspirationFile, setInspirationFile] = useState<File | null>(null);
-  const [inspirationPreview, setInspirationPreview] = useState("");
   const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
   const [minimumOrderTime, setMinimumOrderTime] = useState(0);
   const [busyWindows, setBusyWindows] = useState<BusyWindow[]>([]);
@@ -688,10 +741,7 @@ export default function Home() {
 
   const [customer, setCustomer] = useState({
     name: "",
-    birth: "",
     phone: "",
-    dataConsent: false,
-    remember: true,
   });
   const [details, setDetails] = useState({
     eventDate: "",
@@ -715,27 +765,7 @@ export default function Home() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setDateOptions(createDateOptions());
-      setMinimumOrderTime(Date.now() + 24 * 60 * 60 * 1000);
-      try {
-        const saved = window.localStorage.getItem("doceria-client");
-        if (saved) {
-          const savedCustomer = JSON.parse(saved) as {
-            name?: string;
-            birth?: string;
-            phone?: string;
-            remember?: boolean;
-          };
-          setCustomer((current) => ({
-            ...current,
-            name: savedCustomer.name ?? "",
-            birth: savedCustomer.birth ?? "",
-            phone: savedCustomer.phone ?? "",
-            remember: savedCustomer.remember ?? true,
-          }));
-        }
-      } catch {
-        // O pedido continua funcionando mesmo sem armazenamento local.
-      }
+      setMinimumOrderTime(Date.now());
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -757,13 +787,6 @@ export default function Home() {
 
     return () => window.clearInterval(timer);
   }, [catalogTab, monthlyPaused]);
-
-  useEffect(
-    () => () => {
-      if (inspirationPreview) URL.revokeObjectURL(inspirationPreview);
-    },
-    [inspirationPreview],
-  );
 
   useEffect(() => {
     if (!details.eventDate) {
@@ -805,9 +828,7 @@ export default function Home() {
 
   const activeSweetGroup =
     sweetGroups.find((group) => group.id === sweetGroupId) ?? sweetGroups[0];
-  const hasCakeInCart = cart.some(
-    (item) => item.type === "cake" || item.type === "plan",
-  );
+  const requiredLeadHours = cart.some((item) => item.requires48h) ? 48 : 24;
   const availableTimeOptions = useMemo(() => {
     if (!details.eventDate) return [];
 
@@ -825,14 +846,23 @@ export default function Home() {
         return slotStart < busyEnd && slotEnd > busyStart;
       });
 
-      return slotStart >= minimumOrderTime && !overlapsAgenda;
+      const earliestAllowedTime =
+        minimumOrderTime + requiredLeadHours * 60 * 60 * 1000;
+      return slotStart >= earliestAllowedTime && !overlapsAgenda;
     });
-  }, [busyWindows, details.eventDate, minimumOrderTime]);
+  }, [
+    busyWindows,
+    details.eventDate,
+    minimumOrderTime,
+    requiredLeadHours,
+  ]);
 
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.qty * item.unitPrice, 0),
     [cart],
   );
+  const deliveryPreviewTotal =
+    subtotal + (shippingStatus === "success" ? deliveryFee : 0);
   const planSubtotal = useMemo(
     () =>
       cart
@@ -885,21 +915,39 @@ export default function Home() {
 
   const addCake = (tier: CakeTier) => {
     const choice = cakeChoices[tier.id];
-    const decoration =
-      choice.size === "corte"
-        ? { id: "sem-decoracao", label: "Sem decoração personalizada", price: 0 }
-        : cakeDecorationOptions.find(
-            (option) => option.id === choice.decoration,
-          ) ?? cakeDecorationOptions[0];
-    const unitPrice = tier.prices[choice.size] + decoration.price;
+    const selectedDecorations =
+      choice.size === "corte" ? [] : choice.decorations;
+    const decorationTotal = selectedDecorations.reduce(
+      (sum, optionId) => sum + cakeDecorationPrice(optionId, choice.size),
+      0,
+    );
+    const decorationLabels = selectedDecorations
+      .map(
+        (optionId) =>
+          cakeDecorationOptions.find((option) => option.id === optionId)?.label,
+      )
+      .filter(Boolean)
+      .join(" + ");
+    const requires48h = selectedDecorations.some((optionId) =>
+      Boolean(
+        cakeDecorationOptions.find((option) => option.id === optionId)
+          ?.requires48h,
+      ),
+    );
+    const unitPrice = tier.prices[choice.size] + decorationTotal;
     addItem({
       id: tier.id,
       name: tier.name,
-      variant: `${sizes[choice.size]} · massa ${choice.mass.toLowerCase()} · modelo ${choice.model.toLowerCase()} · ${choice.filling} · ${decoration.label}`,
+      variant: `${sizes[choice.size]} · massa ${choice.mass.toLowerCase()} · modelo ${choice.model.toLowerCase()} · ${choice.filling} · ${
+        choice.size === "corte"
+          ? "sem decoração personalizada"
+          : decorationLabels || "sem decoração adicional"
+      }`,
       type: "cake",
       qty: 1,
       step: 1,
       unitPrice,
+      requires48h,
     });
   };
 
@@ -915,6 +963,7 @@ export default function Home() {
       qty: 1,
       step: 1,
       unitPrice: plan.planPrice,
+      requires48h: true,
     };
     setSelectedMonthlyPlanId(plan.id);
     setCart((current) => [
@@ -946,6 +995,8 @@ export default function Home() {
       step: 25,
       unitPrice: group.hundredPrice / 100 + wrapper.fee / 25,
       wrapperColor: wrapper.value,
+      requires48h:
+        complexSweetGroupIds.has(group.id) || wrapper.value !== "Branca",
     });
   };
 
@@ -963,18 +1014,6 @@ export default function Home() {
 
   const removeItem = (key: string) => {
     setCart((current) => current.filter((item) => item.key !== key));
-  };
-
-  const selectInspiration = (file?: File) => {
-    if (!file) return;
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type) || file.size > 8 * 1024 * 1024) {
-      setToast("Envie uma imagem JPG, PNG ou WEBP de até 8 MB");
-      return;
-    }
-    if (inspirationPreview) URL.revokeObjectURL(inspirationPreview);
-    setInspirationFile(file);
-    setInspirationPreview(URL.createObjectURL(file));
   };
 
   const applyCoupon = () => {
@@ -1010,7 +1049,7 @@ export default function Home() {
 
   const updateCakeChoice = (
     tierId: string,
-    field: "size" | "mass" | "model" | "filling" | "decoration",
+    field: "size" | "mass" | "model" | "filling",
     value: string,
   ) => {
     setCakeChoices((current) => ({
@@ -1019,24 +1058,18 @@ export default function Home() {
     }));
   };
 
-  const saveCustomer = () => {
-    try {
-      if (customer.remember) {
-        window.localStorage.setItem(
-          "doceria-client",
-          JSON.stringify({
-            name: customer.name,
-            birth: customer.birth,
-            phone: customer.phone,
-            remember: true,
-          }),
-        );
-      } else {
-        window.localStorage.removeItem("doceria-client");
-      }
-    } catch {
-      // O envio pelo WhatsApp permanece disponível.
-    }
+  const toggleCakeDecoration = (tierId: string, optionId: string) => {
+    setCakeChoices((current) => {
+      const currentDecorations = current[tierId].decorations;
+      const decorations = currentDecorations.includes(optionId)
+        ? currentDecorations.filter((id) => id !== optionId)
+        : [...currentDecorations, optionId];
+
+      return {
+        ...current,
+        [tierId]: { ...current[tierId], decorations },
+      };
+    });
   };
 
   const copyPix = async () => {
@@ -1180,14 +1213,14 @@ export default function Home() {
     calculateShipping,
   ]);
 
-  const mapsUrl =
-    !formattedAddress
-      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-          ORIGIN,
-        )}`
-      : `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
-          ORIGIN,
-        )}&destination=${encodeURIComponent(formattedAddress)}`;
+  const originMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    ORIGIN,
+  )}`;
+  const mapsUrl = !formattedAddress
+    ? originMapsUrl
+    : `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
+        ORIGIN,
+      )}&destination=${encodeURIComponent(formattedAddress)}`;
 
   const sendWhatsApp = async () => {
     if (cart.length === 0) {
@@ -1203,11 +1236,6 @@ if (
   setToast("Preencha nome e WhatsApp para continuar");
   return;
 }
-    if (!customer.dataConsent) {
-      setCheckoutStep(2);
-      setToast("Autorize o uso dos dados para concluir o cadastro");
-      return;
-    }
     if (!details.eventDate || !details.eventTime) {
       setCheckoutStep(1);
       setToast("Informe a data e o horário da encomenda");
@@ -1218,21 +1246,12 @@ if (
     );
     const hoursUntilOrder =
       (selectedDateTime.getTime() - Date.now()) / (60 * 60 * 1000);
-    if (hoursUntilOrder < 24) {
+    if (hoursUntilOrder < requiredLeadHours) {
       setCheckoutStep(1);
-      setToast("Pedidos precisam ter no mínimo 24h de antecedência");
-      return;
-    }
-    const hasColoredWrappers = cart.some(
-      (item) =>
-        (item.type === "sweet" || item.type === "bonbon") &&
-        item.wrapperColor &&
-        item.wrapperColor !== "Branca",
-    );
-    if (hasColoredWrappers && hoursUntilOrder < 48) {
-      setCheckoutStep(0);
       setToast(
-        "Forminhas coloridas ou de acetato precisam de 48h de antecedência",
+        requiredLeadHours === 48
+          ? "Este pedido possui decoração ou itens que precisam de no mínimo 48h de antecedência"
+          : "Pedidos simples precisam de no mínimo 24h de antecedência",
       );
       return;
     }
@@ -1279,7 +1298,6 @@ if (
       return;
     }
 
-    saveCustomer();
     const orderCode = `BB-${Date.now().toString().slice(-6)}`;
     const items = cart
       .map(
@@ -1338,9 +1356,6 @@ if (
       items,
       `*Data:* ${formattedEventDate} às ${details.eventTime}`,
       personalization ? `Personalização: ${personalization}` : "",
-      hasCakeInCart && inspirationFile
-        ? "*Foto de inspiração:* anexada ao cadastro deste pedido"
-        : "",
       `*Serviço:* ${serviceLine}`,
       "",
       `Produtos: ${formatMoney(regularSubtotal)}`,
@@ -1386,28 +1401,6 @@ if (
 
     setOrderSubmitting(true);
     try {
-      let inspirationKey: string | null = null;
-
-      if (hasCakeInCart && inspirationFile) {
-        const formData = new FormData();
-        formData.append("file", inspirationFile);
-        formData.append("orderCode", orderCode);
-        const uploadResponse = await fetch("/api/inspiration", {
-          method: "POST",
-          body: formData,
-        });
-        const uploadResult = (await uploadResponse.json()) as {
-          key?: string;
-          error?: string;
-        };
-        if (!uploadResponse.ok || !uploadResult.key) {
-          throw new Error(
-            uploadResult.error || "Não foi possível salvar a foto de inspiração",
-          );
-        }
-        inspirationKey = uploadResult.key;
-      }
-
       const response = await fetch("/api/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1415,7 +1408,6 @@ if (
           orderCode,
           name: customer.name,
           phone: customer.phone,
-          birthDate: customer.birth || null,
           eventDate: details.eventDate,
           eventTime: details.eventTime,
           service: delivery.service,
@@ -1430,7 +1422,6 @@ if (
           })),
           totalCents: Math.round(total * 100),
           paymentMethod: `${paymentMethod} · restante: ${balancePaymentMethod}`,
-          inspirationKey,
           planPaymentMode: planSubtotal > 0 ? planPaymentMode : null,
           planTermsAccepted:
             planSubtotal > 0 ? monthlyTermsAccepted : false,
@@ -1486,11 +1477,12 @@ if (
           />
         </a>
         <nav className={mobileMenu ? "nav-open" : ""} aria-label="Navegação principal">
+          <a href="#como-pedir" onClick={() => setMobileMenu(false)}>Como pedir</a>
           <a href="#cardapio" onClick={() => setMobileMenu(false)}>Cardápio</a>
           <a href="#galeria" onClick={() => setMobileMenu(false)}>Galeria</a>
-          <a href="#como-pedir" onClick={() => setMobileMenu(false)}>Como pedir</a>
-          <a href="#quem-somos" onClick={() => setMobileMenu(false)}>Quem somos</a>
+          <a href="#avaliacoes" onClick={() => setMobileMenu(false)}>Avaliações</a>
           <a href="#entrega" onClick={() => setMobileMenu(false)}>Entrega</a>
+          <a href="#quem-somos" onClick={() => setMobileMenu(false)}>Quem somos</a>
         </nav>
         <div className="header-actions">
           <button
@@ -1550,6 +1542,30 @@ if (
         </div>
       </section>
 
+      <section className="steps-section" id="como-pedir">
+        <div className="section-heading left">
+          <span className="section-kicker">Do pedido à comemoração</span>
+          <h2>Seu pedido em quatro etapas simples</h2>
+        </div>
+        <div className="steps-grid">
+          {[
+            ["1", "Escolha", "Adicione bolo, doces, bombons ou presentes ao pedido."],
+            ["2", "Personalize", "Informe frase, idade, cores e detalhes da decoração."],
+            ["3", "Receba", "Escolha retirada ou informe o CEP para calcular a entrega."],
+            ["4", "Confirme", "Revise os dados e envie a solicitação para conferirmos a disponibilidade."],
+          ].map(([number, title, text]) => (
+            <article key={number}>
+              <span>{number}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+        <a className="steps-cta" href="#cardapio">
+          Clique aqui e faça seu pedido
+        </a>
+      </section>
+
       <section className="catalog-section" id="cardapio">
         <div className="section-heading">
           <span className="section-kicker">Escolha, personalize e simule</span>
@@ -1587,7 +1603,7 @@ if (
             onClick={() => setCatalogTab("gifts")}
             type="button"
           >
-            Presentes
+            Bentô Cake & Presentes
           </button>
         </div>
 
@@ -1600,9 +1616,9 @@ if (
               </div>
               <div className="cake-guide-copy">
                 <p>
-                  <strong>♥ Decoração e topper simples já estão inclusos.</strong>{" "}
-                  Frutas, papel de arroz, flores naturais e outros detalhes
-                  especiais podem ter adicional, informado antes da confirmação.
+                  <strong>♥ Topo de bolo simples não possui adicional.</strong>{" "}
+                  Flores naturais, frutas e aplicações de papel de arroz têm
+                  valores conforme o tamanho escolhido e podem ser combinadas.
                 </p>
                 <p>
                   Trabalhamos exclusivamente com chantilly. Todo bolo decorado
@@ -1613,13 +1629,15 @@ if (
             <div className="cake-grid">
             {cakeTiers.map((tier) => {
               const choice = cakeChoices[tier.id];
-              const decoration =
+              const decorationTotal =
                 choice.size === "corte"
-                  ? { price: 0 }
-                  : cakeDecorationOptions.find(
-                      (option) => option.id === choice.decoration,
-                    ) ?? cakeDecorationOptions[0];
-              const price = tier.prices[choice.size] + decoration.price;
+                  ? 0
+                  : choice.decorations.reduce(
+                      (sum, optionId) =>
+                        sum + cakeDecorationPrice(optionId, choice.size),
+                      0,
+                    );
+              const price = tier.prices[choice.size] + decorationTotal;
               return (
                 <article className="product-card cake-card" key={tier.id}>
                   <div className="product-card-head">
@@ -1679,30 +1697,42 @@ if (
                     </select>
                   </label>
                   {choice.size !== "corte" && (
-                    <label>
-                      Estilo da decoração
-                      <select
-                        value={choice.decoration}
-                        onChange={(event) =>
-                          updateCakeChoice(
-                            tier.id,
-                            "decoration",
-                            event.target.value,
-                          )
-                        }
-                      >
-                        {cakeDecorationOptions.map((option) => (
-                          <option value={option.id} key={option.id}>
-                            {option.label}
-                            {option.price > 0
-                              ? ` + ${formatMoney(option.price)}`
-                              : option.id === "topo"
-                                ? " · sem adicional"
-                                : ""}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <div className="decoration-field">
+                      <span>Estilo da decoração</span>
+                      <div className="decoration-options">
+                        {cakeDecorationOptions.map((option) => {
+                          const optionPrice = cakeDecorationPrice(
+                            option.id,
+                            choice.size,
+                          );
+                          return (
+                            <label className="decoration-option" key={option.id}>
+                              <input
+                                type="checkbox"
+                                checked={choice.decorations.includes(option.id)}
+                                onChange={() =>
+                                  toggleCakeDecoration(tier.id, option.id)
+                                }
+                              />
+                              <span>
+                                <strong>{option.label}</strong>
+                                <small>
+                                  {optionPrice > 0
+                                    ? `+ ${formatMoney(optionPrice)}`
+                                    : option.id === "avaliar"
+                                      ? "valor definido após avaliação"
+                                      : "sem adicional"}
+                                </small>
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <small className="decoration-help">
+                        Você pode escolher mais de uma opção. Decorações adicionais
+                        precisam de no mínimo 48h de antecedência.
+                      </small>
+                    </div>
                   )}
                   <div className="product-card-footer">
                     <strong>{formatMoney(price)}</strong>
@@ -1716,8 +1746,8 @@ if (
             </div>
             <p className="catalog-note cake-catalog-note">
               O tamanho Mini é uma ótima escolha para mesversários,
-              comemorações íntimas e presentes. Flores naturais, papel de arroz
-              e outros detalhes dependem do tema e da disponibilidade.
+              comemorações íntimas e presentes. Pedidos simples precisam de 24h
+              de antecedência; decorações adicionais e itens mais complexos, 48h.
             </p>
           </>
         )}
@@ -2192,58 +2222,40 @@ if (
         </div>
       </section>
 
-      <section className="steps-section" id="como-pedir">
+      <section className="google-reviews-section" id="avaliacoes">
         <div className="section-heading left">
-          <span className="section-kicker">Do pedido à comemoração</span>
-          <h2>Seu pedido em quatro etapas simples</h2>
+          <span className="section-kicker">Avaliações no Google</span>
+          <h2>Quem encomenda também conta a experiência</h2>
+          <p>
+            A Doceria Brigadeiro & Beijinho está com nota 5,0 no Google, com 38
+            avaliações. Você pode abrir o perfil para conferir as avaliações
+            completas e mais recentes.
+          </p>
         </div>
-        <div className="steps-grid">
-          {[
-            ["1", "Escolha", "Adicione bolo, doces, bombons ou presentes ao pedido."],
-            ["2", "Personalize", "Informe frase, idade, cores e detalhes da decoração."],
-            ["3", "Receba", "Escolha retirada ou informe o CEP para calcular a entrega."],
-            ["4", "Confirme", "Revise os dados e envie a solicitação para conferirmos a disponibilidade."],
-          ].map(([number, title, text]) => (
-            <article key={number}>
-              <span>{number}</span>
-              <h3>{title}</h3>
-              <p>{text}</p>
-            </article>
-          ))}
+        <div className="google-review-summary">
+          <div>
+            <strong>5,0</strong>
+            <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
+            <small>38 avaliações no Google</small>
+          </div>
+          <div className="google-review-actions">
+            <a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noreferrer">
+              Ver avaliações no Google
+            </a>
+            <a href={GOOGLE_REVIEW_FORM_URL} target="_blank" rel="noreferrer">
+              Deixar uma avaliação
+            </a>
+          </div>
         </div>
-        <button
-          className="steps-cta"
-          type="button"
-          onClick={() => {
-            setOrderOpen(true);
-            setCheckoutStep(0);
-          }}
-        >
-          Clique aqui e faça seu pedido
-        </button>
       </section>
 
       <section className="delivery-section" id="entrega">
         <div className="delivery-card location-card">
           <span className="section-kicker">Retirada no Solar do Barreiro</span>
-          <h2>Veja o endereço antes de escolher</h2>
-          <p>
-            Rua Antônio Eustáquio Pinheiro, 50 - Solar do Barreiro,
-            Belo Horizonte - MG, 30628-180.
-          </p>
-          <div className="location-actions">
-            <a href={mapsUrl} target="_blank" rel="noreferrer">
+          <div className="location-actions single-action">
+            <a href={originMapsUrl} target="_blank" rel="noreferrer">
               Abrir localização no mapa
             </a>
-            <button
-              type="button"
-              onClick={() => {
-                setOrderOpen(true);
-                setCheckoutStep(cart.length > 0 ? 2 : 0);
-              }}
-            >
-              Faça seu pedido aqui
-            </button>
           </div>
           <small>
             Retiradas e entregas devem seguir o horário confirmado no pedido.
@@ -2256,33 +2268,98 @@ if (
 
         <div className="payment-card delivery-flow-card">
           <span className="section-kicker">Entrega calculada no pedido</span>
-          <h2>Informe o CEP e veja a taxa</h2>
+          <h2>Informe o CEP e simule a entrega</h2>
           <p>
-            O endereço é preenchido automaticamente. Depois de adicionar número
-            e complemento, a taxa aparece no resumo e entra no valor total.
+            A simulação usa os itens já selecionados no cardápio e soma a taxa
+            de entrega ao valor atual do pedido.
           </p>
-          <div className="delivery-flow">
-            <span><b>1</b> Digite o CEP</span>
-            <span><b>2</b> Complete número e complemento</span>
-            <span><b>3</b> Confira o total com a entrega</span>
+          <div className="delivery-simulator">
+            <label>
+              CEP
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={9}
+                value={delivery.cep}
+                onChange={(event) => {
+                  const cep = cleanCep(event.target.value);
+                  const formatted =
+                    cep.length > 5 ? `${cep.slice(0, 5)}-${cep.slice(5)}` : cep;
+                  setDelivery((current) => ({
+                    ...current,
+                    service: "Entrega",
+                    cep: formatted,
+                    street: "",
+                    neighborhood: "",
+                    city: "",
+                    state: "",
+                  }));
+                  setCepStatus("idle");
+                  setShippingStatus("idle");
+                  setDeliveryFee(0);
+                  setShippingError("");
+                }}
+                onBlur={(event) => lookupCep(event.target.value)}
+                placeholder="00000-000"
+              />
+            </label>
+            <label>
+              Número
+              <input
+                type="text"
+                inputMode="numeric"
+                value={delivery.number}
+                onChange={(event) =>
+                  setDelivery((current) => ({
+                    ...current,
+                    service: "Entrega",
+                    number: event.target.value,
+                  }))
+                }
+                placeholder="Ex.: 120"
+              />
+            </label>
+            <button
+              type="button"
+              className="cep-button delivery-simulator-button"
+              onClick={() => lookupCep(delivery.cep)}
+              disabled={cepStatus === "loading"}
+            >
+              {cepStatus === "loading" ? "Buscando..." : "Buscar CEP"}
+            </button>
           </div>
-          <button
-            type="button"
-            className="preview-order-button"
-            onClick={() => {
-              setOrderOpen(true);
-              setCheckoutStep(cart.length > 0 ? 3 : 0);
-            }}
-          >
-            {cart.length > 0 ? "Calcular no meu pedido" : "Faça seu pedido aqui"}
-          </button>
-          <div className="payment-inline-note">
-            <strong>Pix ou cartão?</strong>
-            <span>
-              Você escolhe somente no fechamento, depois de revisar todos os
-              valores.
-            </span>
+          {delivery.street && (
+            <small className="delivery-preview-address">
+              {delivery.street} · {delivery.neighborhood} · {delivery.city}/{delivery.state}
+            </small>
+          )}
+          {shippingError && <p className="shipping-error">{shippingError}</p>}
+          {shippingStatus === "loading" && (
+            <div className="shipping-loading">Calculando a taxa de entrega…</div>
+          )}
+          <div className="delivery-preview-summary" aria-live="polite">
+            <div>
+              <span>Itens selecionados</span>
+              <strong>{formatMoney(subtotal)}</strong>
+            </div>
+            <div>
+              <span>Entrega</span>
+              <strong>
+                {shippingStatus === "success"
+                  ? formatMoney(deliveryFee)
+                  : "A calcular"}
+              </strong>
+            </div>
+            <div className="delivery-preview-total">
+              <span>Total estimado com entrega</span>
+              <strong>{formatMoney(deliveryPreviewTotal)}</strong>
+            </div>
           </div>
+          {cart.length === 0 && (
+            <small className="delivery-preview-note">
+              Adicione itens no cardápio para visualizar a soma completa.
+            </small>
+          )}
         </div>
       </section>
 
@@ -2449,7 +2526,7 @@ if (
               type="button"
               onClick={() =>
                 setAssistantAnswer(
-                  "O pedido é confirmado com 60% de entrada por Pix ou cartão via link. O restante fica para a entrega ou retirada.",
+                  "O pedido é confirmado com 60% de entrada por Pix ou cartão via link. O desconto de 3% é exclusivo para Pix. O restante fica para a entrega ou retirada.",
                 )
               }
             >
@@ -2642,56 +2719,12 @@ if (
                         placeholder="Tema, estilo, detalhes importantes e referência..."
                       />
                     </label>
-                    {hasCakeInCart && (
-                      <div className="inspiration-upload full-field">
-                        <div>
-                          <strong>Foto de inspiração</strong>
-                          <span>
-                            Opcional · envie uma referência em JPG, PNG ou WEBP
-                            de até 8 MB.
-                          </span>
-                        </div>
-                        <label>
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            onChange={(event) =>
-                              selectInspiration(event.target.files?.[0])
-                            }
-                          />
-                          <span>
-                            {inspirationFile
-                              ? "Trocar imagem"
-                              : "Selecionar uma imagem"}
-                          </span>
-                        </label>
-                        {inspirationPreview && (
-                          <div className="inspiration-preview">
-                            <img
-                              src={inspirationPreview}
-                              alt="Prévia da foto de inspiração selecionada"
-                            />
-                            <div>
-                              <strong>{inspirationFile?.name}</strong>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  URL.revokeObjectURL(inspirationPreview);
-                                  setInspirationFile(null);
-                                  setInspirationPreview("");
-                                }}
-                              >
-                                Remover
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
                     <p className="form-hint full-field order-deadline-hint">
-                      Pedidos com 24 a 48 horas de antecedência ficam sujeitos à
-                      aprovação. Para mais tranquilidade e opções de
-                      personalização, recomendamos no mínimo 48 horas.
+                      <strong>Antecedência mínima deste pedido: {requiredLeadHours}h.</strong>{" "}
+                      Pedidos simples precisam de pelo menos 24h. Decorações
+                      adicionais, forminhas coloridas ou de acetato, doces mais
+                      especiais, doces finos e bombons mais complexos precisam
+                      de pelo menos 48h.
                       <br />
                       <strong>Segunda a sábado:</strong> 08:00 às 18:00 ·{" "}
                       <strong>Domingo:</strong> 07:00 às 08:30 e 12:30 às 16:00.
@@ -2724,17 +2757,7 @@ if (
                         placeholder="Como podemos chamar você?"
                       />
                     </label>
-                    <label>
-                      Data de nascimento
-                      <input
-                        type="date"
-                        value={customer.birth}
-                        onChange={(event) =>
-                          setCustomer((current) => ({ ...current, birth: event.target.value }))
-                        }
-                      />
-                    </label>
-                    <label>
+                    <label className="full-field">
                       WhatsApp *
                       <input
                         type="tel"
@@ -2744,35 +2767,6 @@ if (
                         }
                         placeholder="(31) 99999-9999"
                       />
-                    </label>
-                    <label className="check-field full-field">
-                      <input
-                        type="checkbox"
-                        checked={customer.remember}
-                        onChange={(event) =>
-                          setCustomer((current) => ({ ...current, remember: event.target.checked }))
-                        }
-                      />
-                      <span>
-                        Salvar meus dados neste aparelho para facilitar o próximo pedido.
-                        Nenhum dado é exibido publicamente.
-                      </span>
-                    </label>
-                    <label className="check-field consent-field full-field">
-                      <input
-                        type="checkbox"
-                        checked={customer.dataConsent}
-                        onChange={(event) =>
-                          setCustomer((current) => ({
-                            ...current,
-                            dataConsent: event.target.checked,
-                          }))
-                        }
-                      />
-                      <span>
-                        Autorizo o uso destes dados para cadastro, atendimento e
-                        acompanhamento deste pedido. *
-                      </span>
                     </label>
                   </div>
                   <div className="service-selector">
@@ -3160,7 +3154,7 @@ if (
                     >
                       <span>Pagamento</span>
                       <strong>Cartão de crédito</strong>
-                      <small>Escolher cartão</small>
+                      <small>Sem desconto adicional de 3%</small>
                     </button>
                   </div>
                   {paymentMethod === "Pix" && (
@@ -3183,8 +3177,10 @@ if (
                       <span>Cartão de crédito</span>
                       <strong>Pagamento por link seguro</strong>
                       <small>
-                        O pagamento inicial é de {formatMoney(deposit)}. Os dados do cartão
-                        serão preenchidos somente na página segura de pagamento.
+                        O pagamento inicial é de {formatMoney(deposit)}. O desconto
+                        adicional de 3% é exclusivo para Pix e não é aplicado ao
+                        cartão de crédito. Os dados do cartão são preenchidos somente
+                        na página segura de pagamento.
                       </small>
                       <a
                         href={CARD_PAYMENT_URL}
@@ -3229,6 +3225,15 @@ if (
                       </div>
                     </div>
                   )}
+                  <div className="deposit-policy-notice">
+                    <strong>Importante sobre a entrada</strong>
+                    <p>
+                      O valor pago como entrada não é reembolsável em caso de
+                      cancelamento pelo cliente. O valor poderá ser utilizado em
+                      uma nova data por meio de reagendamento, conforme
+                      disponibilidade da agenda.
+                    </p>
+                  </div>
                   <p className="review-note">
                     O envio abaixo não confirma automaticamente a data. Aguarde a
                     conferência da disponibilidade e dos detalhes antes de efetuar o
@@ -3302,6 +3307,11 @@ if (
               Depois desse período, será necessário consultar novamente se ainda
               é possível realizar a produção para a data escolhida.
             </p>
+            <p>
+              A entrada paga não é reembolsável em caso de cancelamento pelo
+              cliente, mas poderá ser transferida para uma nova data por
+              reagendamento, conforme disponibilidade.
+            </p>
             <div>
               <button
                 type="button"
@@ -3327,6 +3337,7 @@ if (
       )}
 
       {toast && <div className="toast" role="status">{toast}</div>}
+
     </main>
   );
 }
