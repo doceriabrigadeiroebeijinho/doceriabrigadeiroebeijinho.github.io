@@ -4585,3 +4585,83 @@ footer a:hover {
     height: 150px !important;
   }
 }
+
+
+/* =========================================================
+   FAIXA ESTÁTICA COM 4 FOTOS LADO A LADO
+   Bolos + Doces & Bombons
+   ========================================================= */
+
+.static-photo-strip {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 0 18px !important;
+}
+
+.static-photo-strip figure {
+  margin: 0 !important;
+  height: 150px !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  background: var(--paper-2) !important;
+  border: 1px solid var(--line) !important;
+}
+
+.static-photo-strip img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+@media (max-width: 760px) {
+  .static-photo-strip {
+    gap: 5px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .static-photo-strip figure {
+    height: 105px !important;
+    border-radius: 12px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .static-photo-strip {
+    gap: 4px !important;
+  }
+
+  .static-photo-strip figure {
+    height: 92px !important;
+    border-radius: 10px !important;
+  }
+}
+
+
+/* =========================================================
+   MESVERSÁRIO — 4 FOTOS ESTÁTICAS LADO A LADO
+   ========================================================= */
+
+.monthly-static-layout {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  min-height: 0 !important;
+}
+
+.monthly-static-photo-strip {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.monthly-static-layout .monthly-hero-copy {
+  padding: 28px 32px 32px !important;
+}
+
+@media (max-width: 760px) {
+  .monthly-static-layout .monthly-hero-copy {
+    padding: 22px 18px 24px !important;
+  }
+}
