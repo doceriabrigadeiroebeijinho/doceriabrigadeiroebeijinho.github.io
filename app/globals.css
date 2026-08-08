@@ -4517,3 +4517,71 @@ footer a:hover {
     height: 220px !important;
   }
 }
+
+
+/* =========================================================
+   CARROSSÉIS EM FORMATO DE FAIXA
+   Mesmo conceito visual das fotos dos Bentôs/Presentes:
+   imagem mais baixa, preenchendo a largura e com recorte.
+   ========================================================= */
+
+.compact-rotator,
+.compact-rotator-sweets {
+  width: min(100%, 760px) !important;
+  height: 180px !important;
+  margin: 0 auto 18px !important;
+  border-radius: 20px !important;
+}
+
+.compact-rotator-photo {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 45% !important;
+}
+
+/* Bolos: preserva melhor o centro e topo da decoração */
+.compact-rotator-cakes .compact-rotator-photo {
+  object-position: center 42% !important;
+}
+
+/* Doces: enquadramento central */
+.compact-rotator-sweets .compact-rotator-photo {
+  object-position: center center !important;
+}
+
+/* Mesversário no mesmo padrão de faixa */
+.monthly-rotator {
+  width: 100% !important;
+  height: 180px !important;
+  margin: 0 !important;
+}
+
+.monthly-rotator .compact-rotator-photo {
+  object-fit: cover !important;
+  object-position: center 42% !important;
+}
+
+@media (max-width: 760px) {
+  .compact-rotator,
+  .compact-rotator-sweets {
+    height: 145px !important;
+    margin-bottom: 15px !important;
+    border-radius: 16px !important;
+  }
+
+  .monthly-rotator {
+    height: 165px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .compact-rotator,
+  .compact-rotator-sweets {
+    height: 135px !important;
+  }
+
+  .monthly-rotator {
+    height: 150px !important;
+  }
+}
