@@ -1131,32 +1131,40 @@ export default function Home() {
 
     setCepStatus("loading");
     setShippingError("");
+
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const response = await fetch(`/api/cep?cep=${encodeURIComponent(cep)}`, {
+        cache: "no-store",
+      });
+
       const address = (await response.json()) as {
-        erro?: boolean;
-        logradouro?: string;
-        bairro?: string;
-        localidade?: string;
-        uf?: string;
+        street?: string;
+        neighborhood?: string;
+        city?: string;
+        state?: string;
+        error?: string;
       };
 
-      if (!response.ok || address.erro) {
-        throw new Error("CEP não encontrado");
+      if (!response.ok) {
+        throw new Error(address.error || "Não foi possível consultar o CEP");
       }
 
       setDelivery((current) => ({
         ...current,
         cep,
-        street: address.logradouro ?? "",
-        neighborhood: address.bairro ?? "",
-        city: address.localidade ?? "",
-        state: address.uf ?? "",
+        street: address.street ?? "",
+        neighborhood: address.neighborhood ?? "",
+        city: address.city ?? "",
+        state: address.state ?? "",
       }));
       setCepStatus("success");
-    } catch {
+    } catch (error) {
       setCepStatus("error");
-      setShippingError("CEP não encontrado. Confira os números e tente novamente.");
+      setShippingError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível consultar o CEP agora. Tente novamente em instantes.",
+      );
     }
   };
 
