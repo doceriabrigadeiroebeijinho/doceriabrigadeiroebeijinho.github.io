@@ -27,6 +27,7 @@ type PlanPaymentMode = "Mensal" | "À vista";
 type BalancePaymentMethod = "Pix" | "Cartão" | "Dinheiro";
 
 const sweetQuantityOptions = [25, 50, 75, 100, 125, 150, 175, 200];
+const cupcakeQuantityOptions = Array.from({ length: 10 }, (_, index) => (index + 1) * 12);
 
 type CakeDecorationOption = {
   id: string;
@@ -508,6 +509,15 @@ const sweetPhoto = (id: string, type: SweetGroup["type"]) => {
 
 const gifts = [
   {
+    id: "cupcake",
+    name: "Cupcake",
+    description:
+      "Massa fofa e úmida com recheio cremoso e cobertura de chantilly. Perfeito para lembrancinhas e eventos.",
+    price: 6.9,
+    minQty: 12,
+    image: "/assets/cupcakes.webp",
+  },
+  {
     id: "bento",
     name: "Bentô individual",
     description:
@@ -759,6 +769,9 @@ export default function Home() {
     "idle" | "loading" | "connected" | "unavailable"
   >("idle");
   const [giftChoices, setGiftChoices] = useState({
+    cupcakeMass: "Branca",
+    cupcakeFilling: "Brigadeiro Tradicional",
+    cupcakeQty: 12,
     bentoMass: "Branca",
     bentoFilling: "Brigadeiro com Ninho",
     comboMass: "Branca",
@@ -1751,7 +1764,7 @@ if (
             onClick={() => setCatalogTab("gifts")}
             type="button"
           >
-            Bentô Cake & Presentes
+            Bentô, Cupcakes & Presentes
           </button>
         </div>
 
@@ -2205,6 +2218,58 @@ if (
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <h3>{gift.name}</h3>
                 <p>{gift.description}</p>
+                {gift.id === "cupcake" && (
+                  <div className="gift-options">
+                    <label>
+                      Massa
+                      <select
+                        value={giftChoices.cupcakeMass}
+                        onChange={(event) =>
+                          setGiftChoices((current) => ({
+                            ...current,
+                            cupcakeMass: event.target.value,
+                          }))
+                        }
+                      >
+                        <option>Branca</option>
+                        <option>Chocolate</option>
+                      </select>
+                    </label>
+                    <label>
+                      Recheio
+                      <select
+                        value={giftChoices.cupcakeFilling}
+                        onChange={(event) =>
+                          setGiftChoices((current) => ({
+                            ...current,
+                            cupcakeFilling: event.target.value,
+                          }))
+                        }
+                      >
+                        <option>Brigadeiro Tradicional</option>
+                        <option>Ninho</option>
+                      </select>
+                    </label>
+                    <label>
+                      Quantidade
+                      <select
+                        value={giftChoices.cupcakeQty}
+                        onChange={(event) =>
+                          setGiftChoices((current) => ({
+                            ...current,
+                            cupcakeQty: Number(event.target.value),
+                          }))
+                        }
+                      >
+                        {cupcakeQuantityOptions.map((quantity) => (
+                          <option value={quantity} key={quantity}>
+                            {quantity} unidades
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
                 {gift.id === "bento" && (
                   <div className="gift-options">
                     <label>
@@ -2294,7 +2359,11 @@ if (
                   </div>
                 )}
                 <div className="gift-card-footer">
-                  <strong>{formatMoney(gift.price)}</strong>
+                  <strong>
+                    {gift.id === "cupcake"
+                      ? `${formatMoney(gift.price)} cada`
+                      : formatMoney(gift.price)}
+                  </strong>
                   <button
                     type="button"
                     onClick={() =>
@@ -2302,14 +2371,19 @@ if (
                         id: gift.id,
                         name: gift.name,
                         variant:
-                          gift.id === "bento"
-                            ? `Massa ${giftChoices.bentoMass.toLowerCase()} · recheio ${giftChoices.bentoFilling} · frase personalizada`
-                            : gift.id === "bento-combo"
-                              ? `Massa ${giftChoices.comboMass.toLowerCase()} · recheio ${giftChoices.comboFilling} · Bentô + 6 docinhos: ${giftChoices.comboSweets}`
-                              : "presenteável",
+                          gift.id === "cupcake"
+                            ? `Massa ${giftChoices.cupcakeMass.toLowerCase()} · recheio ${giftChoices.cupcakeFilling} · cobertura de chantilly`
+                            : gift.id === "bento"
+                              ? `Massa ${giftChoices.bentoMass.toLowerCase()} · recheio ${giftChoices.bentoFilling} · frase personalizada`
+                              : gift.id === "bento-combo"
+                                ? `Massa ${giftChoices.comboMass.toLowerCase()} · recheio ${giftChoices.comboFilling} · Bentô + 6 docinhos: ${giftChoices.comboSweets}`
+                                : "presenteável",
                         type: "gift",
-                        qty: gift.minQty,
-                        step: gift.minQty,
+                        qty:
+                          gift.id === "cupcake"
+                            ? giftChoices.cupcakeQty
+                            : gift.minQty,
+                        step: gift.id === "cupcake" ? 12 : gift.minQty,
                         unitPrice: gift.price,
                       })
                     }
