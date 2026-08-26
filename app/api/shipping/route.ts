@@ -140,9 +140,27 @@ const geocode = async (address: string): Promise<Coordinates | null> => {
 };
 
 const destinationQueries = (address: ShippingAddress) => {
+  // Para calcular a entrega, priorizamos primeiro o logradouro + bairro + CEP.
+  // O número fica como tentativa secundária porque alguns geocodificadores podem
+  // associar números não mapeados a outro ponto distante com o mesmo nome de rua.
   const queries = [
     [
       address.street,
+      address.neighborhood,
+      address.city,
+      address.state,
+      address.cep,
+      "Brasil",
+    ],
+    [
+      address.street,
+      address.city,
+      address.state,
+      address.cep,
+      "Brasil",
+    ],
+    [
+      address.street,
       address.number,
       address.neighborhood,
       address.city,
@@ -155,14 +173,6 @@ const destinationQueries = (address: ShippingAddress) => {
       address.number,
       address.city,
       address.state,
-      "Brasil",
-    ],
-    [
-      address.street,
-      address.neighborhood,
-      address.city,
-      address.state,
-      address.cep,
       "Brasil",
     ],
     [
