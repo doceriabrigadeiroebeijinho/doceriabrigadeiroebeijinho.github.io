@@ -2211,10 +2211,10 @@ if (
           <div className="gift-grid">
             {gifts.map((gift, index) => (
               <article
-                className="gift-card gift-card-with-image"
+                className={`gift-card ${gift.id === "cupcake" ? "" : "gift-card-with-image"}`}
                 key={gift.id}
               >
-                <img src={gift.image} alt={gift.name} />
+                {gift.id !== "cupcake" && <img src={gift.image} alt={gift.name} />}
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <h3>{gift.name}</h3>
                 <p>{gift.description}</p>
