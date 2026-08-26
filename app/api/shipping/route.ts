@@ -1,7 +1,9 @@
 const DELIVERY_RATE_PER_KM = 1;
 
-const ORIGIN_ADDRESS =
-  "Rua Antônio Eustáquio Pinheiro, 50, Solar do Barreiro, Belo Horizonte, MG, 30628-180, Brasil";
+const ORIGIN_COORDINATES = {
+  lat: -20.0109557,
+  lon: -44.0094064,
+} as const;
 
 const NOMINATIM_MIN_INTERVAL_MS = 1100;
 const REQUEST_TIMEOUT_MS = 10000;
@@ -29,7 +31,6 @@ const geocodeCache = new Map<string, Coordinates | null>();
 
 let lastNominatimRequestAt = 0;
 let nominatimQueue: Promise<void> = Promise.resolve();
-let originPromise: Promise<Coordinates | null> | null = null;
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -136,14 +137,6 @@ const geocode = async (address: string): Promise<Coordinates | null> => {
   } catch {
     return null;
   }
-};
-
-const getOrigin = () => {
-  if (!originPromise) {
-    originPromise = geocode(ORIGIN_ADDRESS);
-  }
-
-  return originPromise;
 };
 
 const destinationQueries = (address: ShippingAddress) => {
@@ -282,20 +275,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const [origin, destination] = await Promise.all([
-      getOrigin(),
-      findDestination(address),
-    ]);
-
-    if (!origin) {
-      return Response.json(
-        {
-          error:
-            "Não foi possível localizar o endereço de origem da entrega neste momento.",
-        },
-        { status: 503 },
-      );
-    }
+    const origin: Coordinates = ORIGIN_COORDINATES;
+    const destination = await findDestination(address);
 
     if (!destination) {
       return Response.json(
