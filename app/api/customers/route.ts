@@ -20,6 +20,13 @@ type OrderRequestBody = {
   paymentMethod?: string;
   planPaymentMode?: string | null;
   planTermsAccepted?: boolean;
+  personalization?: {
+    phrase?: string;
+    age?: string;
+    decoration?: string;
+    colors?: string;
+    wrappers?: string;
+  };
   summary?: {
     productsCents?: number;
     couponCode?: string;
@@ -52,10 +59,10 @@ export async function POST(request: Request) {
       paymentMethod,
       planPaymentMode,
       planTermsAccepted,
+      personalization,
       summary,
     } = body;
 
-    // Nome e WhatsApp são obrigatórios
     if (!name?.trim() || !phone?.trim()) {
       return NextResponse.json(
         {
@@ -85,7 +92,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Corrige a URL do Google Apps Script
     if (scriptUrl.includes("/edit")) {
       scriptUrl = `${scriptUrl.split("/edit")[0]}/exec`;
     } else if (!scriptUrl.endsWith("/exec")) {
@@ -99,10 +105,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         action: "new-order",
-
-        // O Apps Script recebe esse valor como payload.token
         token: process.env.GOOGLE_APPS_SCRIPT_SECRET,
-
         createdAt: new Date().toISOString(),
         orderCode: generatedOrderCode,
         name: name.trim(),
@@ -117,7 +120,13 @@ export async function POST(request: Request) {
         paymentMethod: paymentMethod || "",
         planPaymentMode: planPaymentMode || null,
         planTermsAccepted: Boolean(planTermsAccepted),
-
+        personalization: {
+          phrase: personalization?.phrase || "",
+          age: personalization?.age || "",
+          decoration: personalization?.decoration || "",
+          colors: personalization?.colors || "",
+          wrappers: personalization?.wrappers || "",
+        },
         summary: {
           productsCents: summary?.productsCents || 0,
           couponCode: summary?.couponCode || "",
@@ -128,8 +137,7 @@ export async function POST(request: Request) {
           depositCents: summary?.depositCents || 0,
           balanceCents: summary?.balanceCents || 0,
           planCents: summary?.planCents || 0,
-          balancePaymentMethod:
-            summary?.balancePaymentMethod || "",
+          balancePaymentMethod: summary?.balancePaymentMethod || "",
         },
       }),
       redirect: "follow",
