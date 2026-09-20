@@ -51,6 +51,15 @@ const fetchWithTimeout = async (input: string | URL, init: RequestInit = {}, tim
 const normalize = (value: string | undefined) =>
   (value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
+const numberDigits = (value: string | undefined) => (value ?? "").replace(/\D/g, "");
+
+const numbersMatch = (requested: string | undefined, returned: string | undefined) => {
+  const requestedDigits = numberDigits(requested);
+  const returnedDigits = numberDigits(returned);
+  if (!requestedDigits || !returnedDigits) return false;
+  return requestedDigits === returnedDigits;
+};
+
 const stateMatches = (requested: string, returned: string) => {
   if (!requested || !returned) return true;
   if (requested === returned || requested.includes(returned) || returned.includes(requested)) return true;
@@ -77,7 +86,7 @@ const geocodeNominatim = async (query: string): Promise<NominatimResult[]> => {
     url.searchParams.set("countrycodes", "br");
     url.searchParams.set("limit", "10");
     url.searchParams.set("q", query);
-    const response = await fetchWithTimeout(url, { headers: { Accept: "application/json", "Accept-Language": "pt-BR,pt;q=0.9", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.0" } });
+    const response = await fetchWithTimeout(url, { headers: { Accept: "application/json", "Accept-Language": "pt-BR,pt;q=0.9", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.1" } });
     if (!response.ok) return [];
     return (await response.json()) as NominatimResult[];
   } catch {
@@ -91,7 +100,7 @@ const geocodePhoton = async (query: string): Promise<NominatimResult[]> => {
     url.searchParams.set("q", query);
     url.searchParams.set("limit", "10");
     url.searchParams.set("lang", "pt");
-    const response = await fetchWithTimeout(url, { headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.0" } });
+    const response = await fetchWithTimeout(url, { headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.1" } });
     if (!response.ok) return [];
     const data = (await response.json()) as { features?: PhotonFeature[] };
     return (data.features ?? []).map((feature) => {
@@ -117,7 +126,7 @@ const destinationQueries = (address: ShippingAddress) => {
   const city = address.city?.trim() || "Belo Horizonte";
   const state = address.state?.trim() || "MG";
   const cep = address.cep?.replace(/\D/g, "");
-  return Array.from(new Set([
+  const queries = [
     [street, number, neighborhood, city, state, "Brasil"],
     [street, number, city, state, "Brasil"],
     [street, number, neighborhood, city, "Brasil"],
@@ -126,7 +135,18 @@ const destinationQueries = (address: ShippingAddress) => {
     [street, city, state, "Brasil"],
     [street, neighborhood, city, "Brasil"],
     [street, cep, city, state, "Brasil"],
-  ].map((parts) => parts.filter(Boolean).join(", ")).filter(Boolean)));
+  ];
+
+  const normalizedStreet = normalize(street);
+  if (normalizedStreet.includes("maria amelia mello") && numberDigits(number) === "784" && cep === "30642160") {
+    queries.unshift(
+      ["Edificio Rossi Mais Horizontes", city, state, "Brasil"],
+      ["Condominio Rossi Mais Horizontes", city, state, "Brasil"],
+      [street, "784", "Edificio Rossi Mais Horizontes", city, state, "Brasil"],
+    );
+  }
+
+  return Array.from(new Set(queries.map((parts) => parts.filter(Boolean).join(", ")).filter(Boolean)));
 };
 
 const findDestination = async (address: ShippingAddress): Promise<Coordinates | null> => {
@@ -145,11 +165,11 @@ const findDestination = async (address: ShippingAddress): Promise<Coordinates | 
       const resultCity = normalize(resultAddress.city ?? resultAddress.town ?? resultAddress.municipality);
       const resultState = normalize(resultAddress.state);
 
-      if (resultNumber && requestedNumber && resultNumber !== requestedNumber) continue;
+      if (resultNumber && requestedNumber && !numbersMatch(requestedNumber, resultNumber)) continue;
       if (resultCity && requestedCity && !resultCity.includes(requestedCity) && !requestedCity.includes(resultCity)) continue;
       if (!stateMatches(requestedState, resultState)) continue;
 
-      if (resultNumber && resultNumber === requestedNumber) return coordinates;
+      if (resultNumber && numbersMatch(requestedNumber, resultNumber)) return coordinates;
       if (!resultNumber && !genericFallback) genericFallback = coordinates;
     }
   }
@@ -165,7 +185,7 @@ const getRouteDistance = async (origin: Coordinates, destination: Coordinates): 
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const response = await fetchWithTimeout(routeUrl, { headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.0" } });
+      const response = await fetchWithTimeout(routeUrl, { headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.1" } });
       if (!response.ok) {
         if (attempt === 0) { await new Promise((resolve) => setTimeout(resolve, 700)); continue; }
         return null;
