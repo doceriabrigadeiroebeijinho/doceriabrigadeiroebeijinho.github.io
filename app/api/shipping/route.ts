@@ -1,7 +1,5 @@
 const DELIVERY_RATE_PER_KM = 1;
 
-// Origem fixa da doceria: CEP 30628-180.
-// O percurso sempre é calculado da origem até o cliente e de volta à origem.
 const ORIGIN_COORDINATES = {
   lat: -20.0109557,
   lon: -44.0094064,
@@ -23,12 +21,15 @@ type ShippingAddress = {
 type NominatimResult = {
   lat?: string;
   lon?: string;
+  display_name?: string;
   address?: {
     house_number?: string;
+    city?: string;
+    town?: string;
+    municipality?: string;
+    state?: string;
   };
 };
-
-const onlyDigits = (value: string) => value.replace(/\D/g, "");
 
 const fetchWithTimeout = async (
   input: string | URL,
@@ -67,73 +68,34 @@ const validCoordinates = (lat: unknown, lon: unknown): Coordinates | null => {
   return { lat: parsedLat, lon: parsedLon };
 };
 
-const geocode = async (query: string): Promise<Coordinates | null> => {
+const normalize = (value: string | undefined) =>
+  (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const geocode = async (query: string): Promise<NominatimResult[]> => {
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "jsonv2");
     url.searchParams.set("addressdetails", "1");
     url.searchParams.set("countrycodes", "br");
-    url.searchParams.set("limit", "5");
+    url.searchParams.set("limit", "10");
     url.searchParams.set("q", query);
 
     const response = await fetchWithTimeout(url, {
       headers: {
         Accept: "application/json",
         "Accept-Language": "pt-BR,pt;q=0.9",
-        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.4",
+        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.5",
       },
     });
 
-    if (!response.ok) return null;
-
-    const results = (await response.json()) as NominatimResult[];
-    const validResults = results
-      .map((item) => ({
-        coordinates: validCoordinates(item.lat, item.lon),
-        hasHouseNumber: Boolean(item.address?.house_number),
-      }))
-      .filter(
-        (item): item is { coordinates: Coordinates; hasHouseNumber: boolean } =>
-          item.coordinates !== null,
-      );
-
-    const preferred =
-      validResults.find((item) => item.hasHouseNumber) ?? validResults[0];
-
-    return preferred?.coordinates ?? null;
+    if (!response.ok) return [];
+    return (await response.json()) as NominatimResult[];
   } catch {
-    return null;
-  }
-};
-
-const getCepCoordinates = async (cep: string): Promise<Coordinates | null> => {
-  const normalizedCep = onlyDigits(cep);
-  if (!/^\d{8}$/.test(normalizedCep)) return null;
-
-  try {
-    const response = await fetchWithTimeout(
-      `https://brasilapi.com.br/api/cep/v2/${normalizedCep}`,
-      {},
-      7000,
-    );
-
-    if (!response.ok) return null;
-
-    const data = (await response.json()) as {
-      location?: {
-        coordinates?: {
-          latitude?: number | string;
-          longitude?: number | string;
-        };
-      };
-    };
-
-    return validCoordinates(
-      data.location?.coordinates?.latitude,
-      data.location?.coordinates?.longitude,
-    );
-  } catch {
-    return null;
+    return [];
   }
 };
 
@@ -141,39 +103,64 @@ const destinationQueries = (address: ShippingAddress) => {
   const street = address.street?.trim();
   const number = address.number?.trim();
   const neighborhood = address.neighborhood?.trim();
-  const cleanNeighborhood = neighborhood?.replace(/\s*\([^)]*\)/g, "").trim();
   const city = address.city?.trim();
   const state = address.state?.trim();
-  const cep = onlyDigits(address.cep ?? "");
+  const cep = address.cep?.trim();
 
-  const queries = [
-    [street, number, neighborhood, city, state, "Brasil"],
-    [street, number, cleanNeighborhood, city, state, "Brasil"],
-    [street, number, city, state, "Brasil"],
-    [street, number, city, "Brasil"],
-    [street, number, neighborhood, city, "Brasil"],
-    [street, number, cep, "Brasil"],
-    [cep, city, state, "Brasil"],
-  ];
+  const fullAddress = [street, number, neighborhood, city, state, "Brasil"]
+    .filter(Boolean)
+    .join(", ");
+  const streetAndCity = [street, number, city, state, "Brasil"]
+    .filter(Boolean)
+    .join(", ");
+  const fullAddressWithCep = [street, number, neighborhood, city, state, cep, "Brasil"]
+    .filter(Boolean)
+    .join(", ");
 
-  return Array.from(
-    new Set(
-      queries
-        .map((parts) => parts.filter(Boolean).join(", "))
-        .filter((query) => query.length > 0),
-    ),
-  );
+  return Array.from(new Set([fullAddress, fullAddressWithCep, streetAndCity].filter(Boolean)));
 };
 
-const findDestination = async (address: ShippingAddress) => {
+const findDestination = async (address: ShippingAddress): Promise<Coordinates | null> => {
+  const requestedNumber = normalize(address.number);
+  const requestedCity = normalize(address.city);
+  const requestedState = normalize(address.state);
+
   for (const query of destinationQueries(address)) {
-    const destination = await geocode(query);
-    if (destination) return destination;
+    const results = await geocode(query);
+
+    const candidates = results
+      .map((result) => {
+        const coordinates = validCoordinates(result.lat, result.lon);
+        const houseNumber = normalize(result.address?.house_number);
+        const resultCity = normalize(
+          result.address?.city ??
+            result.address?.town ??
+            result.address?.municipality,
+        );
+        const resultState = normalize(result.address?.state);
+
+        if (!coordinates) return null;
+        if (houseNumber && requestedNumber && houseNumber !== requestedNumber) return null;
+        if (resultState && requestedState && !resultState.includes(requestedState)) return null;
+        if (resultCity && requestedCity && !resultCity.includes(requestedCity)) return null;
+
+        return {
+          coordinates,
+          exactNumber: Boolean(houseNumber && houseNumber === requestedNumber),
+        };
+      })
+      .filter(
+        (candidate): candidate is { coordinates: Coordinates; exactNumber: boolean } =>
+          candidate !== null,
+      );
+
+    const preferred = candidates.find((candidate) => candidate.exactNumber);
+    if (preferred) return preferred.coordinates;
   }
 
-  // Último recurso: algumas consultas de CEP retornam coordenadas do setor postal.
-  // É preferível calcular uma taxa aproximada a bloquear todos os CEPs válidos.
-  return getCepCoordinates(address.cep ?? "");
+  // Não utiliza mais coordenadas genéricas do CEP.
+  // Sem a localização do imóvel, o sistema não deve gerar uma cobrança possivelmente incorreta.
+  return null;
 };
 
 const getRouteDistance = async (
@@ -192,7 +179,7 @@ const getRouteDistance = async (
       const response = await fetchWithTimeout(routeUrl, {
         headers: {
           Accept: "application/json",
-          "User-Agent": "Doceria-Brigadeiro-Beijinho/1.4",
+          "User-Agent": "Doceria-Brigadeiro-Beijinho/1.5",
         },
       });
 
@@ -261,7 +248,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           error:
-            "Não foi possível localizar este endereço para calcular a entrega. Confira o número informado.",
+            "Não foi possível confirmar a localização exata deste endereço. Confira rua, número, bairro e CEP.",
         },
         { status: 422 },
       );
