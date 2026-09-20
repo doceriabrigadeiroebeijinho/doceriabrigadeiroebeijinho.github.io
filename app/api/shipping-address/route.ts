@@ -12,6 +12,11 @@ type Coordinates = {
   lon: number;
 };
 
+type GeocodeResult = {
+  coordinates: Coordinates;
+  displayName: string;
+};
+
 const fetchWithTimeout = async (
   input: string | URL,
   init: RequestInit = {},
@@ -31,19 +36,27 @@ const fetchWithTimeout = async (
   }
 };
 
-const geocode = async (address: string) => {
+const normalizeAddress = (address: string) =>
+  address
+    .replace(/\bBrasil\b/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s*,\s*,/g, ",")
+    .trim()
+    .replace(/^,|,$/g, "");
+
+const geocodeQuery = async (query: string): Promise<GeocodeResult | null> => {
   const url = new URL("https://nominatim.openstreetmap.org/search");
   url.searchParams.set("format", "jsonv2");
   url.searchParams.set("countrycodes", "br");
-  url.searchParams.set("limit", "1");
+  url.searchParams.set("limit", "5");
   url.searchParams.set("addressdetails", "1");
-  url.searchParams.set("q", `${address}, Brasil`);
+  url.searchParams.set("q", `${query}, Brasil`);
 
   const response = await fetchWithTimeout(url, {
     headers: {
       Accept: "application/json",
       "Accept-Language": "pt-BR,pt;q=0.9",
-      "User-Agent": "Doceria-Brigadeiro-Beijinho/1.2",
+      "User-Agent": "Doceria-Brigadeiro-Beijinho/1.3",
     },
   });
 
@@ -53,19 +66,50 @@ const geocode = async (address: string) => {
     lat?: string;
     lon?: string;
     display_name?: string;
+    type?: string;
+    importance?: number;
   }>;
-  const first = results[0];
 
-  if (!first?.lat || !first?.lon) return null;
+  const valid = results
+    .map((item) => {
+      const lat = Number(item.lat);
+      const lon = Number(item.lon);
+      if (!item.lat || !item.lon || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+        return null;
+      }
+      return {
+        coordinates: { lat, lon },
+        displayName: item.display_name ?? query,
+        type: item.type ?? "",
+        importance: item.importance ?? 0,
+      };
+    })
+    .filter((item): item is GeocodeResult & { type: string; importance: number } => item !== null);
 
-  const lat = Number(first.lat);
-  const lon = Number(first.lon);
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (!valid.length) return null;
 
-  return {
-    coordinates: { lat, lon } satisfies Coordinates,
-    displayName: first.display_name ?? address,
-  };
+  const preferred = valid.find((item) =>
+    ["house", "building", "residential", "apartments"].includes(item.type),
+  );
+
+  return preferred ?? valid[0];
+};
+
+const geocode = async (address: string): Promise<GeocodeResult | null> => {
+  const normalized = normalizeAddress(address);
+  const withoutCep = normalized.replace(/\b\d{5}-?\d{3}\b/g, "").replace(/\s+/g, " ").trim();
+  const queries = [
+    normalized,
+    withoutCep,
+    `${withoutCep}, Belo Horizonte, MG`,
+  ].filter((query, index, all) => query.length > 0 && all.indexOf(query) === index);
+
+  for (const query of queries) {
+    const result = await geocodeQuery(query);
+    if (result) return result;
+  }
+
+  return null;
 };
 
 const getRouteDistance = async (
@@ -82,7 +126,7 @@ const getRouteDistance = async (
   const response = await fetchWithTimeout(routeUrl, {
     headers: {
       Accept: "application/json",
-      "User-Agent": "Doceria-Brigadeiro-Beijinho/1.2",
+      "User-Agent": "Doceria-Brigadeiro-Beijinho/1.3",
     },
   });
 
@@ -131,13 +175,7 @@ export async function POST(request: Request) {
 
     const oneWayKm = oneWayMeters / 1000;
     const roundTripKm = oneWayKm * 2;
-
-    // O valor é R$ 1,00 por km percorrido (ida + volta).
-    // Mantemos a distância real e arredondamos apenas o valor final para centavos.
-    const fee = Math.max(
-      0,
-      Number((roundTripKm * DELIVERY_RATE_PER_KM).toFixed(2)),
-    );
+    const fee = Math.max(0, Number((roundTripKm * DELIVERY_RATE_PER_KM).toFixed(2)));
 
     return Response.json(
       {
