@@ -46,6 +46,24 @@ const fetchWithTimeout = async (input: string | URL, init: RequestInit = {}, tim
 const normalize = (value: string | undefined) =>
   (value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
+const stateMatches = (requested: string, returned: string) => {
+  if (!requested || !returned) return true;
+  if (requested === returned || requested.includes(returned) || returned.includes(requested)) return true;
+  const aliases: Record<string, string[]> = {
+    mg: ["minas gerais"],
+    sp: ["sao paulo"],
+    rj: ["rio de janeiro"],
+    es: ["espirito santo"],
+    pr: ["parana"],
+    sc: ["santa catarina"],
+    rs: ["rio grande do sul"],
+    ba: ["bahia"],
+    go: ["goias"],
+    df: ["distrito federal"],
+  };
+  return (aliases[requested] ?? []).includes(returned) || (aliases[returned] ?? []).includes(requested);
+};
+
 const validCoordinates = (lat: unknown, lon: unknown): Coordinates | null => {
   const parsedLat = Number(lat);
   const parsedLon = Number(lon);
@@ -65,7 +83,7 @@ const geocode = async (query: string): Promise<NominatimResult[]> => {
       headers: {
         Accept: "application/json",
         "Accept-Language": "pt-BR,pt;q=0.9",
-        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.6",
+        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.7",
       },
     });
     if (!response.ok) return [];
@@ -109,7 +127,7 @@ const findDestination = async (address: ShippingAddress): Promise<Coordinates | 
 
       if (resultNumber && requestedNumber && resultNumber !== requestedNumber) return null;
       if (resultCity && requestedCity && !resultCity.includes(requestedCity) && !requestedCity.includes(resultCity)) return null;
-      if (resultState && requestedState && !resultState.includes(requestedState) && !requestedState.includes(resultState)) return null;
+      if (!stateMatches(requestedState, resultState)) return null;
 
       return {
         coordinates,
@@ -118,8 +136,6 @@ const findDestination = async (address: ShippingAddress): Promise<Coordinates | 
       };
     }).filter((candidate): candidate is { coordinates: Coordinates; exactNumber: boolean; hasNumber: boolean } => candidate !== null);
 
-    // Prioriza o numero exato. Se o mapa nao devolver o numero, aceita o resultado
-    // somente quando nao houver um numero explicitamente conflitante.
     const preferred = candidates.find((candidate) => candidate.exactNumber) ?? candidates.find((candidate) => !candidate.hasNumber);
     if (preferred) return preferred.coordinates;
   }
@@ -136,7 +152,7 @@ const getRouteDistance = async (origin: Coordinates, destination: Coordinates): 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const response = await fetchWithTimeout(routeUrl, {
-        headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/1.6" },
+        headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/1.7" },
       });
       if (!response.ok) {
         if (attempt === 0) { await new Promise((resolve) => setTimeout(resolve, 700)); continue; }
