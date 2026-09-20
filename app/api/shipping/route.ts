@@ -35,11 +35,7 @@ type NominatimResult = {
 
 type PhotonFeature = {
   geometry?: { coordinates?: [number, number] };
-  properties?: {
-    housenumber?: string;
-    city?: string;
-    state?: string;
-  };
+  properties?: { housenumber?: string; city?: string; state?: string };
 };
 
 const fetchWithTimeout = async (input: string | URL, init: RequestInit = {}, timeoutMs = REQUEST_TIMEOUT_MS) => {
@@ -59,16 +55,9 @@ const stateMatches = (requested: string, returned: string) => {
   if (!requested || !returned) return true;
   if (requested === returned || requested.includes(returned) || returned.includes(requested)) return true;
   const aliases: Record<string, string[]> = {
-    mg: ["minas gerais"],
-    sp: ["sao paulo"],
-    rj: ["rio de janeiro"],
-    es: ["espirito santo"],
-    pr: ["parana"],
-    sc: ["santa catarina"],
-    rs: ["rio grande do sul"],
-    ba: ["bahia"],
-    go: ["goias"],
-    df: ["distrito federal"],
+    mg: ["minas gerais"], sp: ["sao paulo"], rj: ["rio de janeiro"], es: ["espirito santo"],
+    pr: ["parana"], sc: ["santa catarina"], rs: ["rio grande do sul"], ba: ["bahia"],
+    go: ["goias"], df: ["distrito federal"],
   };
   return (aliases[requested] ?? []).includes(returned) || (aliases[returned] ?? []).includes(requested);
 };
@@ -88,13 +77,7 @@ const geocodeNominatim = async (query: string): Promise<NominatimResult[]> => {
     url.searchParams.set("countrycodes", "br");
     url.searchParams.set("limit", "10");
     url.searchParams.set("q", query);
-    const response = await fetchWithTimeout(url, {
-      headers: {
-        Accept: "application/json",
-        "Accept-Language": "pt-BR,pt;q=0.9",
-        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.9",
-      },
-    });
+    const response = await fetchWithTimeout(url, { headers: { Accept: "application/json", "Accept-Language": "pt-BR,pt;q=0.9", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.0" } });
     if (!response.ok) return [];
     return (await response.json()) as NominatimResult[];
   } catch {
@@ -108,27 +91,14 @@ const geocodePhoton = async (query: string): Promise<NominatimResult[]> => {
     url.searchParams.set("q", query);
     url.searchParams.set("limit", "10");
     url.searchParams.set("lang", "pt");
-    const response = await fetchWithTimeout(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.9",
-      },
-    });
+    const response = await fetchWithTimeout(url, { headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.0" } });
     if (!response.ok) return [];
     const data = (await response.json()) as { features?: PhotonFeature[] };
     return (data.features ?? []).map((feature) => {
       const coordinates = feature.geometry?.coordinates;
-      const properties = feature.properties ?? {};
       if (!coordinates || coordinates.length < 2) return {};
-      return {
-        lat: String(coordinates[1]),
-        lon: String(coordinates[0]),
-        address: {
-          house_number: properties.housenumber,
-          city: properties.city,
-          state: properties.state,
-        },
-      };
+      const properties = feature.properties ?? {};
+      return { lat: String(coordinates[1]), lon: String(coordinates[0]), address: { house_number: properties.housenumber, city: properties.city, state: properties.state } };
     });
   } catch {
     return [];
@@ -136,9 +106,8 @@ const geocodePhoton = async (query: string): Promise<NominatimResult[]> => {
 };
 
 const geocode = async (query: string): Promise<NominatimResult[]> => {
-  const nominatimResults = await geocodeNominatim(query);
-  if (nominatimResults.length > 0) return nominatimResults;
-  return geocodePhoton(query);
+  const [nominatimResults, photonResults] = await Promise.all([geocodeNominatim(query), geocodePhoton(query)]);
+  return [...nominatimResults, ...photonResults];
 };
 
 const destinationQueries = (address: ShippingAddress) => {
@@ -148,7 +117,6 @@ const destinationQueries = (address: ShippingAddress) => {
   const city = address.city?.trim() || "Belo Horizonte";
   const state = address.state?.trim() || "MG";
   const cep = address.cep?.replace(/\D/g, "");
-
   return Array.from(new Set([
     [street, number, neighborhood, city, state, "Brasil"],
     [street, number, city, state, "Brasil"],
@@ -165,34 +133,28 @@ const findDestination = async (address: ShippingAddress): Promise<Coordinates | 
   const requestedNumber = normalize(address.number);
   const requestedCity = normalize(address.city || "Belo Horizonte");
   const requestedState = normalize(address.state || "Minas Gerais");
+  let genericFallback: Coordinates | null = null;
 
   for (const query of destinationQueries(address)) {
     const results = await geocode(query);
-    const candidates = results.map((result) => {
+    for (const result of results) {
       const coordinates = validCoordinates(result.lat, result.lon);
-      if (!coordinates) return null;
-
+      if (!coordinates) continue;
       const resultAddress = result.address ?? {};
       const resultNumber = normalize(resultAddress.house_number);
       const resultCity = normalize(resultAddress.city ?? resultAddress.town ?? resultAddress.municipality);
       const resultState = normalize(resultAddress.state);
 
-      if (resultNumber && requestedNumber && resultNumber !== requestedNumber) return null;
-      if (resultCity && requestedCity && !resultCity.includes(requestedCity) && !requestedCity.includes(resultCity)) return null;
-      if (!stateMatches(requestedState, resultState)) return null;
+      if (resultNumber && requestedNumber && resultNumber !== requestedNumber) continue;
+      if (resultCity && requestedCity && !resultCity.includes(requestedCity) && !requestedCity.includes(resultCity)) continue;
+      if (!stateMatches(requestedState, resultState)) continue;
 
-      return {
-        coordinates,
-        exactNumber: Boolean(resultNumber && resultNumber === requestedNumber),
-        hasNumber: Boolean(resultNumber),
-      };
-    }).filter((candidate): candidate is { coordinates: Coordinates; exactNumber: boolean; hasNumber: boolean } => candidate !== null);
-
-    const preferred = candidates.find((candidate) => candidate.exactNumber) ?? candidates.find((candidate) => !candidate.hasNumber);
-    if (preferred) return preferred.coordinates;
+      if (resultNumber && resultNumber === requestedNumber) return coordinates;
+      if (!resultNumber && !genericFallback) genericFallback = coordinates;
+    }
   }
 
-  return null;
+  return genericFallback;
 };
 
 const getRouteDistance = async (origin: Coordinates, destination: Coordinates): Promise<number | null> => {
@@ -203,9 +165,7 @@ const getRouteDistance = async (origin: Coordinates, destination: Coordinates): 
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const response = await fetchWithTimeout(routeUrl, {
-        headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/1.9" },
-      });
+      const response = await fetchWithTimeout(routeUrl, { headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/2.0" } });
       if (!response.ok) {
         if (attempt === 0) { await new Promise((resolve) => setTimeout(resolve, 700)); continue; }
         return null;
@@ -228,19 +188,14 @@ export async function POST(request: Request) {
     }
 
     const destination = await findDestination(address);
-    if (!destination) {
-      return Response.json({ error: "Não foi possível localizar este endereço. Confira rua, número, bairro e CEP." }, { status: 422 });
-    }
+    if (!destination) return Response.json({ error: "Não foi possível localizar este endereço. Confira rua, número, bairro e CEP." }, { status: 422 });
 
     const oneWayMeters = await getRouteDistance(ORIGIN_COORDINATES, destination);
-    if (typeof oneWayMeters !== "number") {
-      return Response.json({ error: "O endereço foi localizado, mas não foi possível calcular a rota neste momento. Tente novamente." }, { status: 503 });
-    }
+    if (typeof oneWayMeters !== "number") return Response.json({ error: "O endereço foi localizado, mas não foi possível calcular a rota neste momento. Tente novamente." }, { status: 503 });
 
     const oneWayKm = oneWayMeters / 1000;
     const roundTripKm = oneWayKm * 2;
     const fee = Number((roundTripKm * DELIVERY_RATE_PER_KM).toFixed(2));
-
     return Response.json({ fee, oneWayKm: Number(oneWayKm.toFixed(2)), roundTripKm: Number(roundTripKm.toFixed(2)) }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return Response.json({ error: "Não foi possível calcular a entrega neste momento. Tente novamente em instantes." }, { status: 500 });
