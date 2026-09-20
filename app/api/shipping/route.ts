@@ -33,6 +33,15 @@ type NominatimResult = {
   };
 };
 
+type PhotonFeature = {
+  geometry?: { coordinates?: [number, number] };
+  properties?: {
+    housenumber?: string;
+    city?: string;
+    state?: string;
+  };
+};
+
 const fetchWithTimeout = async (input: string | URL, init: RequestInit = {}, timeoutMs = REQUEST_TIMEOUT_MS) => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -71,7 +80,7 @@ const validCoordinates = (lat: unknown, lon: unknown): Coordinates | null => {
   return { lat: parsedLat, lon: parsedLon };
 };
 
-const geocode = async (query: string): Promise<NominatimResult[]> => {
+const geocodeNominatim = async (query: string): Promise<NominatimResult[]> => {
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "jsonv2");
@@ -83,7 +92,7 @@ const geocode = async (query: string): Promise<NominatimResult[]> => {
       headers: {
         Accept: "application/json",
         "Accept-Language": "pt-BR,pt;q=0.9",
-        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.8",
+        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.9",
       },
     });
     if (!response.ok) return [];
@@ -91,6 +100,45 @@ const geocode = async (query: string): Promise<NominatimResult[]> => {
   } catch {
     return [];
   }
+};
+
+const geocodePhoton = async (query: string): Promise<NominatimResult[]> => {
+  try {
+    const url = new URL("https://photon.komoot.io/api/");
+    url.searchParams.set("q", query);
+    url.searchParams.set("limit", "10");
+    url.searchParams.set("lang", "pt");
+    const response = await fetchWithTimeout(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.9",
+      },
+    });
+    if (!response.ok) return [];
+    const data = (await response.json()) as { features?: PhotonFeature[] };
+    return (data.features ?? []).map((feature) => {
+      const coordinates = feature.geometry?.coordinates;
+      const properties = feature.properties ?? {};
+      if (!coordinates || coordinates.length < 2) return {};
+      return {
+        lat: String(coordinates[1]),
+        lon: String(coordinates[0]),
+        address: {
+          house_number: properties.housenumber,
+          city: properties.city,
+          state: properties.state,
+        },
+      };
+    });
+  } catch {
+    return [];
+  }
+};
+
+const geocode = async (query: string): Promise<NominatimResult[]> => {
+  const nominatimResults = await geocodeNominatim(query);
+  if (nominatimResults.length > 0) return nominatimResults;
+  return geocodePhoton(query);
 };
 
 const destinationQueries = (address: ShippingAddress) => {
@@ -156,7 +204,7 @@ const getRouteDistance = async (origin: Coordinates, destination: Coordinates): 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const response = await fetchWithTimeout(routeUrl, {
-        headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/1.8" },
+        headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/1.9" },
       });
       if (!response.ok) {
         if (attempt === 0) { await new Promise((resolve) => setTimeout(resolve, 700)); continue; }
