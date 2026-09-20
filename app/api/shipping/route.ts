@@ -83,7 +83,7 @@ const geocode = async (query: string): Promise<NominatimResult[]> => {
       headers: {
         Accept: "application/json",
         "Accept-Language": "pt-BR,pt;q=0.9",
-        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.7",
+        "User-Agent": "Doceria-Brigadeiro-Beijinho/1.8",
       },
     });
     if (!response.ok) return [];
@@ -106,6 +106,10 @@ const destinationQueries = (address: ShippingAddress) => {
     [street, number, city, state, "Brasil"],
     [street, number, neighborhood, city, "Brasil"],
     [street, number, cep, city, state, "Brasil"],
+    [street, neighborhood, city, state, "Brasil"],
+    [street, city, state, "Brasil"],
+    [street, neighborhood, city, "Brasil"],
+    [street, cep, city, state, "Brasil"],
   ].map((parts) => parts.filter(Boolean).join(", ")).filter(Boolean)));
 };
 
@@ -152,7 +156,7 @@ const getRouteDistance = async (origin: Coordinates, destination: Coordinates): 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       const response = await fetchWithTimeout(routeUrl, {
-        headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/1.7" },
+        headers: { Accept: "application/json", "User-Agent": "Doceria-Brigadeiro-Beijinho/1.8" },
       });
       if (!response.ok) {
         if (attempt === 0) { await new Promise((resolve) => setTimeout(resolve, 700)); continue; }
