@@ -131,7 +131,13 @@ export async function POST(request: Request) {
 
     const oneWayKm = oneWayMeters / 1000;
     const roundTripKm = oneWayKm * 2;
-    const fee = Math.max(0, Math.ceil(roundTripKm * DELIVERY_RATE_PER_KM));
+
+    // O valor é R$ 1,00 por km percorrido (ida + volta).
+    // Mantemos a distância real e arredondamos apenas o valor final para centavos.
+    const fee = Math.max(
+      0,
+      Number((roundTripKm * DELIVERY_RATE_PER_KM).toFixed(2)),
+    );
 
     return Response.json(
       {
