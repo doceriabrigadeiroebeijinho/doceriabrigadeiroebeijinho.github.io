@@ -1944,8 +1944,8 @@ if (
                             })}
                           </div>
                           <small className="decoration-picker-help">
-                            Decorações adicionais precisam de no mínimo 48h de
-                            antecedência.
+                            Todos os pedidos precisam de no mínimo 72 horas de
+                            antecedência. Para sábado ou domingo, são necessários 5 dias.
                           </small>
                         </div>
                       </details>
@@ -2214,7 +2214,7 @@ if (
               Pedido mínimo de 25 unidades por sabor. Você pode combinar até
               quatro sabores em cada cento. Forminhas coloridas custam R$ 1,00
               a cada 25 unidades e acetato custa R$ 2,00 a cada 25 unidades.
-              Cores sujeitas à disponibilidade e a pedidos com 48h de antecedência.
+              Cores sujeitas à disponibilidade e a pedidos com antecedência mínima de 72 horas.
             </p>
           </>
         )}
@@ -3244,7 +3244,8 @@ if (
                           </li>
                           <li>
                             Datas, sabores e temas são confirmados mês a mês,
-                            preferencialmente com 48 horas de antecedência.
+                            com no mínimo 72 horas de antecedência. Para sábado ou domingo,
+                            são necessários 5 dias.
                           </li>
                           <li>
                             Decoração e topper simples estão incluídos. Detalhes
@@ -3548,10 +3549,12 @@ if (
             <span>Antes de enviar</span>
             <h2>O pagamento confirma o seu pedido</h2>
             <p>
+              A antecedência mínima para fazer a encomenda é de 72 horas em dias úteis
+              e de 5 dias para pedidos com data no sábado ou domingo.
+            </p>
+            <p>
               Após o envio, o pedido precisa ser conferido e o pagamento realizado
-              dentro do prazo informado para a confirmação. A antecedência mínima
-              para fazer a encomenda é de 72 horas em dias úteis e de 5 dias para
-              pedidos com data no sábado ou domingo.
+              em até 48 horas para que a reserva seja confirmada.
             </p>
             <p>
               Sem o pagamento dentro do prazo, o pedido não será confirmado.
