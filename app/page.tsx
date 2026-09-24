@@ -21,6 +21,7 @@ const GOOGLE_REVIEW_FORM_URL = "https://g.page/r/CXtaVH-2ywyGEAE/review";
 const COUPONS = {
   DOCE5: 5,
   DOCE10: 10,
+  PIMENTA5: 5,
 } as const;
 type CouponCode = keyof typeof COUPONS;
 type PlanPaymentMode = "Mensal" | "À vista";
