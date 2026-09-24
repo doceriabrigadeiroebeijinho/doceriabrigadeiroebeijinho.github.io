@@ -2,6 +2,7 @@ const SETTINGS = {
 timeZone: "America/Sao_Paulo",
 spreadsheetId: "",
 calendarId: "primary",
+sharedCalendarName: "Família",
 comandaFolderName: "Comandas - Doceria Brigadeiro & Beijinho",
 pixKey: "31973416110",
 pixHolder: "Déborah Bacelar Braga",
@@ -54,16 +55,15 @@ busy: [],
 }
 const start = new Date(`${date}T00:00:00-03:00`);
 const end = new Date(`${date}T23:59:59-03:00`);
-const calendar = CalendarApp.getCalendarById(SETTINGS.calendarId);
-if (!calendar) {
-throw new Error("Calendário não encontrado");
-}
-const events = calendar
-.getEvents(start, end)
-.map((item) => ({
+const calendars = getAvailabilityCalendars_();
+const events = calendars
+.flatMap((calendar) =>
+calendar.getEvents(start, end).map((item) => ({
 start: item.getStartTime().toISOString(),
 end: item.getEndTime().toISOString(),
-}));
+})),
+)
+.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 return json_({
 busy: events,
 });
@@ -461,10 +461,7 @@ const start = new Date(
 `${payload.eventDate}T${payload.eventTime}:00-03:00`,
 );
 const end = new Date(start.getTime() + 30 * 60 * 1000);
-const calendar = CalendarApp.getCalendarById(SETTINGS.calendarId);
-if (!calendar) {
-throw new Error("Calendário não encontrado");
-}
+const calendar = getOrderCalendar_();
 calendar.createEvent(
 `[PEDIDO] ${payload.orderCode || ""} · ${payload.name || ""}`,
 start,
@@ -482,6 +479,43 @@ itemsText,
 },
 );
 }
+function getSharedCalendar_() {
+const name = String(SETTINGS.sharedCalendarName || "").trim();
+if (!name) {
+return null;
+}
+const calendars = CalendarApp.getCalendarsByName(name);
+return calendars.length ? calendars[0] : null;
+}
+
+function getOrderCalendar_() {
+const shared = getSharedCalendar_();
+if (shared) {
+return shared;
+}
+const primary = CalendarApp.getCalendarById(SETTINGS.calendarId);
+if (!primary) {
+throw new Error("Calendário principal não encontrado");
+}
+return primary;
+}
+
+function getAvailabilityCalendars_() {
+const calendars = [];
+const primary = CalendarApp.getCalendarById(SETTINGS.calendarId);
+if (primary) {
+calendars.push(primary);
+}
+const shared = getSharedCalendar_();
+if (shared && !calendars.some((calendar) => calendar.getId() === shared.getId())) {
+calendars.push(shared);
+}
+if (!calendars.length) {
+throw new Error("Nenhum calendário disponível");
+}
+return calendars;
+}
+
 function upsertCustomer_(sheet, payload, orderTotal) {
 const rows = sheet.getDataRange().getValues();
 const phone = String(payload.phone || "").trim();
