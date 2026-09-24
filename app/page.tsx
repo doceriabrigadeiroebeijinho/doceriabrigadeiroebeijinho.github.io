@@ -868,7 +868,17 @@ export default function Home() {
 
   const activeSweetGroup =
     sweetGroups.find((group) => group.id === sweetGroupId) ?? sweetGroups[0];
-  const requiredLeadHours = cart.some((item) => item.requires48h) ? 48 : 24;
+
+  const requiredLeadHours = useMemo(() => {
+    if (!details.eventDate) return 72;
+    const selectedDate = new Date(`${details.eventDate}T12:00:00`);
+    const dayOfWeek = selectedDate.getDay();
+    return dayOfWeek === 0 || dayOfWeek === 6 ? 120 : 72;
+  }, [details.eventDate]);
+
+  const requiredLeadLabel =
+    requiredLeadHours === 120 ? "5 dias de antecedência" : "72 horas de antecedência";
+
   const availableTimeOptions = useMemo(() => {
     if (!details.eventDate) return [];
 
@@ -1297,9 +1307,9 @@ if (
     if (hoursUntilOrder < requiredLeadHours) {
       setCheckoutStep(1);
       setToast(
-        requiredLeadHours === 48
-          ? "Este pedido possui decoração ou itens que precisam de no mínimo 48h de antecedência"
-          : "Pedidos simples precisam de no mínimo 24h de antecedência",
+        requiredLeadHours === 120
+          ? "Pedidos para sábado ou domingo precisam de no mínimo 5 dias de antecedência."
+          : "Todos os pedidos precisam de no mínimo 72 horas de antecedência.",
       );
       return;
     }
@@ -1953,8 +1963,9 @@ if (
             </div>
             <p className="catalog-note cake-catalog-note">
               O tamanho Mini é uma ótima escolha para mesversários,
-              comemorações íntimas e presentes. Pedidos simples precisam de 24h
-              de antecedência; decorações adicionais e itens mais complexos, 48h.
+              comemorações íntimas e presentes. Todos os pedidos precisam de
+              72 horas de antecedência. Para pedidos com data no sábado ou domingo,
+              a antecedência mínima é de 5 dias.
             </p>
           </>
         )}
@@ -2959,11 +2970,10 @@ if (
                       />
                     </label>
                     <p className="form-hint full-field order-deadline-hint">
-                      <strong>Antecedência mínima deste pedido: {requiredLeadHours}h.</strong>{" "}
-                      Pedidos simples precisam de pelo menos 24h. Decorações
-                      adicionais, forminhas coloridas ou de acetato, doces mais
-                      especiais, doces finos e bombons mais complexos precisam
-                      de pelo menos 48h.
+                      <strong>Antecedência mínima deste pedido: {requiredLeadLabel}.</strong>{" "}
+                      Todos os pedidos precisam de pelo menos 72 horas de antecedência.
+                      Para pedidos com data no sábado ou domingo, a antecedência mínima
+                      é de 5 dias.
                       <br />
                       <strong>Segunda a sábado:</strong> 08:00 às 18:00 ·{" "}
                       <strong>Domingo:</strong> 07:00 às 08:30 e 12:30 às 16:00.
@@ -3538,8 +3548,10 @@ if (
             <span>Antes de enviar</span>
             <h2>O pagamento confirma o seu pedido</h2>
             <p>
-              Pedidos de urgência precisam do pagamento em até 2 horas. Para os
-              demais pedidos, o prazo é de até 48 horas.
+              Após o envio, o pedido precisa ser conferido e o pagamento realizado
+              dentro do prazo informado para a confirmação. A antecedência mínima
+              para fazer a encomenda é de 72 horas em dias úteis e de 5 dias para
+              pedidos com data no sábado ou domingo.
             </p>
             <p>
               Sem o pagamento dentro do prazo, o pedido não será confirmado.
