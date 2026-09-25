@@ -458,6 +458,49 @@ async function geocode(address: string): Promise<Candidate | null> {
   return ranked[0]?.candidate ?? null;
 }
 
+async function routeWithGoogle(
+  address: string,
+  apiKey: string,
+): Promise<number | null> {
+  try {
+    const response = await fetchT(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask": "routes.distanceMeters",
+        },
+        body: JSON.stringify({
+          origin: { address: ORIGIN },
+          destination: { address },
+          travelMode: "DRIVE",
+          routingPreference: "TRAFFIC_UNAWARE",
+          computeAlternativeRoutes: false,
+          languageCode: "pt-BR",
+          units: "METRIC",
+        }),
+      },
+    );
+
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as {
+      routes?: Array<{ distanceMeters?: number }>;
+    };
+
+    const meters = data.routes?.[0]?.distanceMeters;
+
+    return typeof meters === "number" && Number.isFinite(meters)
+      ? meters
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
@@ -591,10 +634,29 @@ export async function POST(request: Request) {
       );
     }
 
-    // O cálculo do frete não depende mais de um roteador público.
-    // Usamos a distância geográfica ida + volta, que é estável e evita
-    // taxas incorretas causadas por rotas públicas defeituosas.
-    const oneWayKm = straightLineKm;
+    const googleApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
+    let meters: number | null = null;
+
+    if (googleApiKey) {
+      // Quando a chave do Google estiver configurada, a distância do frete
+      // vem diretamente da Google Routes API usando o endereço completo.
+      meters = await routeWithGoogle(address, googleApiKey);
+
+      if (meters === null) {
+        return Response.json(
+          {
+            error:
+              "O Google Maps não conseguiu calcular a rota deste endereço agora. Confira o endereço e tente novamente.",
+          },
+          { status: 503 },
+        );
+      }
+    } else {
+      // Fallback temporário enquanto a chave ainda não foi configurada.
+      meters = Math.round(straightLineKm * 1000);
+    }
+
+    const oneWayKm = meters / 1000;
     const roundTripKm = oneWayKm * 2;
     const calculatedFee = roundTripKm * RATE_PER_KM;
     const fee = Math.ceil(calculatedFee / ROUNDING_STEP) * ROUNDING_STEP;
@@ -608,8 +670,8 @@ export async function POST(request: Request) {
         locatedAddress: destination.displayName,
         maxRadiusKm: MAX_RADIUS_KM,
         roundingStep: ROUNDING_STEP,
-        locationSource: destination.type === "postcode" ? "CEP" : "endereco",
-        distanceMode: "linha geográfica",
+        locationSource: googleApiKey ? "Google Routes" : "CEP",
+        distanceMode: googleApiKey ? "rota Google" : "fallback CEP",
       },
       { headers: { "Cache-Control": "no-store" } },
     );
