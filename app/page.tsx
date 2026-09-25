@@ -814,6 +814,8 @@ export default function Home() {
     state: "",
     number: "",
     complement: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
 
   useEffect(() => {
@@ -1159,6 +1161,8 @@ export default function Home() {
         city?: string;
         state?: string;
         cep?: string;
+        latitude?: number;
+        longitude?: number;
         error?: string;
       };
 
@@ -1174,6 +1178,14 @@ export default function Home() {
         neighborhood: result.neighborhood || "",
         city: result.city || "",
         state: result.state || "",
+        latitude:
+          typeof result.latitude === "number" && Number.isFinite(result.latitude)
+            ? result.latitude
+            : null,
+        longitude:
+          typeof result.longitude === "number" && Number.isFinite(result.longitude)
+            ? result.longitude
+            : null,
       }));
       setCepLookupStatus("success");
     } catch (error) {
@@ -1220,7 +1232,17 @@ export default function Home() {
       const response = await fetch("/api/shipping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: formattedAddress }),
+        body: JSON.stringify({
+          address: formattedAddress,
+          cep: cleanCep(delivery.cep),
+          street: delivery.street,
+          number: delivery.number,
+          neighborhood: delivery.neighborhood,
+          city: delivery.city,
+          state: delivery.state,
+          latitude: delivery.latitude,
+          longitude: delivery.longitude,
+        }),
       });
       const result = (await response.json()) as {
         fee?: number;
@@ -2559,6 +2581,8 @@ if (
                           neighborhood: "",
                           city: "",
                           state: "",
+                          latitude: null,
+                          longitude: null,
                         }
                       : {}),
                   }));
