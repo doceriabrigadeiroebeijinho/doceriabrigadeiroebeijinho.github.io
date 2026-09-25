@@ -759,6 +759,7 @@ export default function Home() {
   >("idle");
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [shippingLocatedAddress, setShippingLocatedAddress] = useState("");
+  const [shippingRoundTripKm, setShippingRoundTripKm] = useState(0);
   const [monthlyTermsAccepted, setMonthlyTermsAccepted] = useState(false);
   const [planPaymentMode, setPlanPaymentMode] =
     useState<PlanPaymentMode>("Mensal");
@@ -1163,6 +1164,7 @@ export default function Home() {
 
       setDeliveryFee(result.fee);
       setShippingLocatedAddress(result.locatedAddress || "");
+      setShippingRoundTripKm(result.roundTripKm || 0);
       setShippingStatus("success");
     } catch (error) {
       setDeliveryFee(0);
@@ -2687,7 +2689,7 @@ if (
               type="button"
               onClick={() =>
                 setAssistantAnswer(
-                  "Na finalização, escolha entrega, informe o endereço completo e calcule a taxa. O valor aparecerá no resumo do pedido.",
+                  "Na finalização, escolha entrega, informe o endereço completo e calcule a taxa. Atendemos em um raio de até 50 km e a taxa é arredondada para o próximo múltiplo de R$ 10,00.",
                 )
               }
             >
@@ -3000,6 +3002,8 @@ if (
                             }));
                             setShippingStatus("idle");
                             setDeliveryFee(0);
+                            setShippingLocatedAddress("");
+                            setShippingRoundTripKm(0);
                             setShippingError("");
                           }}
                           placeholder="Rua, número, bairro, cidade e estado"
@@ -3053,9 +3057,17 @@ if (
                             </div>
                           )}
                           <div className="freight-price">
+                            <span>Distância da rota (ida + volta)</span>
+                            <strong>{shippingRoundTripKm.toFixed(2).replace(".", ",")} km</strong>
+                          </div>
+                          <div className="freight-price">
                             <span>Taxa de entrega</span>
                             <strong>{formatMoney(deliveryFee)}</strong>
                           </div>
+                          <p className="freight-rounding-note">
+                            O valor é calculado a R$ 1,00 por km e arredondado para
+                            o próximo múltiplo de R$ 10,00.
+                          </p>
                           <div className="freight-price freight-total">
                             <span>Total com entrega</span>
                             <strong>{formatMoney(total)}</strong>
