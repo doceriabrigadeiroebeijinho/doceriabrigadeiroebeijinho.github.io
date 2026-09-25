@@ -54,38 +54,6 @@ const distanceKm = (a: C, b: C) => {
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 };
 
-const isMinasGerais = (candidate: Candidate) => {
-  const a = candidate.address ?? {};
-  const state = norm(a.state);
-  const stateCode = norm(a.state_code);
-  const iso = norm(a["ISO3166-2-lvl4"]);
-
-  // O raio de 50 km em torno da doceria fica na área de atendimento.
-  if (!state && !stateCode && !iso) return true;
-
-  return (
-    state.includes("minas gerais") ||
-    stateCode === "br mg" ||
-    stateCode === "mg" ||
-    iso === "br mg" ||
-    iso.endsWith(" mg")
-  );
-};
-
-const buildViewbox = () => {
-  const latDelta = MAX_RADIUS_KM / 111.32;
-  const lonDelta =
-    MAX_RADIUS_KM /
-    (111.32 * Math.cos((ORIGIN.lat * Math.PI) / 180));
-
-  const left = ORIGIN.lon - lonDelta;
-  const right = ORIGIN.lon + lonDelta;
-  const top = ORIGIN.lat + latDelta;
-  const bottom = ORIGIN.lat - latDelta;
-
-  return `${left},${top},${right},${bottom}`;
-};
-
 async function search(query: string): Promise<Candidate[]> {
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
