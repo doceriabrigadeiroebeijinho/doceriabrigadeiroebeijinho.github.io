@@ -3326,7 +3326,7 @@ if (
                             <strong>{formatMoney(deliveryFee)}</strong>
                           </div>
                           <p className="freight-rounding-note">
-                            O valor é calculado a R$ 1,00 por km de distância geográfica,
+                            O valor é calculado a R$ 1,00 por km de rota de carro,
                             ida + volta, e arredondado para cima até o próximo valor par.
                           </p>
                           <div className="freight-price freight-total">
