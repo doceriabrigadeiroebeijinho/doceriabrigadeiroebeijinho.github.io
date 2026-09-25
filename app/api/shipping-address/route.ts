@@ -54,7 +54,84 @@ const distanceKm = (a: C, b: C) => {
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 };
 
-async function search(query: string): Promise<Candidate[]> {
+async function searchPhoton(query: string): Promise<Candidate[]> {
+  try {
+    const url = new URL("https://photon.komoot.io/api/");
+    url.searchParams.set("q", query);
+    url.searchParams.set("limit", "10");
+    url.searchParams.set("lat", String(ORIGIN.lat));
+    url.searchParams.set("lon", String(ORIGIN.lon));
+    url.searchParams.set("zoom", "10");
+    url.searchParams.set("lang", "pt");
+
+    const response = await fetchT(url, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Language": "pt-BR",
+        "User-Agent": "DoceriaFrete/9.0",
+      },
+    });
+
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as {
+      features?: Array<{
+        geometry?: { coordinates?: [number, number] };
+        properties?: Record<string, string | undefined>;
+      }>;
+    };
+
+    return (data.features ?? []).flatMap((feature) => {
+      const coordinates = feature.geometry?.coordinates;
+      if (
+        !Array.isArray(coordinates) ||
+        coordinates.length < 2 ||
+        !Number.isFinite(Number(coordinates[0])) ||
+        !Number.isFinite(Number(coordinates[1]))
+      ) {
+        return [];
+      }
+
+      const properties = feature.properties ?? {};
+      const address: Record<string, string | undefined> = {
+        house_number: properties.housenumber,
+        city: properties.city,
+        state: properties.state,
+        postcode: properties.postcode,
+        country: properties.country,
+        country_code: properties.countrycode,
+        street: properties.street,
+        district: properties.district,
+      };
+
+      const displayName = [
+        properties.street && properties.housenumber
+          ? `${properties.street}, ${properties.housenumber}`
+          : properties.street,
+        properties.district,
+        properties.city,
+        properties.state,
+        properties.postcode,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      return [
+        {
+          lat: Number(coordinates[1]),
+          lon: Number(coordinates[0]),
+          displayName: displayName || query,
+          type: properties.osm_value,
+          address,
+        },
+      ];
+    });
+  } catch {
+    return [];
+  }
+}
+
+async function searchNominatim(query: string): Promise<Candidate[]> {
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "jsonv2");
@@ -67,7 +144,7 @@ async function search(query: string): Promise<Candidate[]> {
       headers: {
         Accept: "application/json",
         "Accept-Language": "pt-BR",
-        "User-Agent": "DoceriaFrete/8.0",
+        "User-Agent": "DoceriaFrete/9.0",
       },
     });
 
@@ -119,14 +196,13 @@ async function geocode(address: string): Promise<Candidate | null> {
     "",
   );
 
-  const cepMatch = withoutCep.match(/\b\d{5}-?\d{3}\b/);
+  // Primeiro tenta o Photon, usando a posição da doceria como referência.
+  // Depois tenta o Nominatim como fallback.
   const queries = [
     `${withoutCep}, Belo Horizonte, Minas Gerais, Brasil`,
     `${withoutCep}, Belo Horizonte, MG, Brasil`,
     `${withoutNumber}, Belo Horizonte, Minas Gerais, Brasil`,
-    cepMatch
-      ? `CEP ${cepMatch[0]}, Belo Horizonte, Minas Gerais, Brasil`
-      : "",
+    cleaned,
   ]
     .map((query) => query.replace(/\s+/g, " ").trim())
     .filter(Boolean);
@@ -134,13 +210,16 @@ async function geocode(address: string): Promise<Candidate | null> {
   const all: Candidate[] = [];
 
   for (const query of [...new Set(queries)]) {
-    all.push(...(await search(query)));
+    all.push(...(await searchPhoton(query)));
+  }
+
+  for (const query of [...new Set(queries)]) {
+    if (all.length >= 20) break;
+    all.push(...(await searchNominatim(query)));
   }
 
   const eligible = all.filter((candidate) => {
     const distance = distanceKm(ORIGIN, candidate);
-    // Como o raio máximo é de 50 km a partir de Belo Horizonte,
-    // o próprio raio já impede resultados fora da área de atendimento.
     return distance <= MAX_RADIUS_KM;
   });
 
@@ -152,12 +231,14 @@ async function geocode(address: string): Promise<Candidate | null> {
       const house = digits(a.house_number);
       const text = norm(candidate.displayName);
       const city = norm(a.city ?? a.town ?? a.municipality);
+      const state = norm(a.state ?? a.state_code);
+      const country = norm(a.country ?? a.country_code);
 
       let score = 0;
       const distance = distanceKm(ORIGIN, candidate);
 
-      if (number && house === number) score += 180;
-      else if (number && house) score -= 140;
+      if (number && house === number) score += 220;
+      else if (number && house) score -= 160;
       else if (number) score -= 30;
 
       if (
@@ -168,11 +249,13 @@ async function geocode(address: string): Promise<Candidate | null> {
         score += 25;
       }
 
-      if (number && text.includes(` ${number} `)) score += 30;
-      if (city === "belo horizonte") score += 10;
+      if (number && text.includes(` ${number} `)) score += 35;
+      if (city === "belo horizonte") score += 20;
+      if (state.includes("minas gerais") || state === "mg") score += 10;
+      if (country === "brasil" || country === "br") score += 5;
 
-      // Entre resultados equivalentes, prefira o mais próximo da doceria.
-      score -= distance * 0.4;
+      // Em empate, prefira o candidato mais próximo da doceria.
+      score -= distance * 0.5;
 
       return { candidate, score, distance };
     })
