@@ -60,9 +60,7 @@ const isMinasGerais = (candidate: Candidate) => {
   const stateCode = norm(a.state_code);
   const iso = norm(a["ISO3166-2-lvl4"]);
 
-  // O raio de 50 km em torno da doceria fica integralmente em Minas Gerais.
-  // Alguns resultados do mapa não trazem o campo de estado; nesses casos,
-  // a própria restrição geográfica já garante que o ponto está dentro da área.
+  // O raio de 50 km em torno da doceria fica na área de atendimento.
   if (!state && !stateCode && !iso) return true;
 
   return (
@@ -95,15 +93,13 @@ async function search(query: string): Promise<Candidate[]> {
     url.searchParams.set("addressdetails", "1");
     url.searchParams.set("countrycodes", "br");
     url.searchParams.set("limit", "10");
-    url.searchParams.set("viewbox", buildViewbox());
-    url.searchParams.set("bounded", "1");
     url.searchParams.set("q", query);
 
     const response = await fetchT(url, {
       headers: {
         Accept: "application/json",
         "Accept-Language": "pt-BR",
-        "User-Agent": "DoceriaFrete/7.0",
+        "User-Agent": "DoceriaFrete/8.0",
       },
     });
 
@@ -155,11 +151,14 @@ async function geocode(address: string): Promise<Candidate | null> {
     "",
   );
 
+  const cepMatch = withoutCep.match(/\b\d{5}-?\d{3}\b/);
   const queries = [
-    `${withoutCep}, Minas Gerais, Brasil`,
-    `${withoutCep}, MG, Brasil`,
-    `${withoutCep}, Brasil`,
-    `${withoutNumber}, Minas Gerais, Brasil`,
+    `${withoutCep}, Belo Horizonte, Minas Gerais, Brasil`,
+    `${withoutCep}, Belo Horizonte, MG, Brasil`,
+    `${withoutNumber}, Belo Horizonte, Minas Gerais, Brasil`,
+    cepMatch
+      ? `CEP ${cepMatch[0]}, Belo Horizonte, Minas Gerais, Brasil`
+      : "",
   ]
     .map((query) => query.replace(/\s+/g, " ").trim())
     .filter(Boolean);
@@ -172,7 +171,9 @@ async function geocode(address: string): Promise<Candidate | null> {
 
   const eligible = all.filter((candidate) => {
     const distance = distanceKm(ORIGIN, candidate);
-    return isMinasGerais(candidate) && distance <= MAX_RADIUS_KM;
+    // Como o raio máximo é de 50 km a partir de Belo Horizonte,
+    // o próprio raio já impede resultados fora da área de atendimento.
+    return distance <= MAX_RADIUS_KM;
   });
 
   if (!eligible.length) return null;
