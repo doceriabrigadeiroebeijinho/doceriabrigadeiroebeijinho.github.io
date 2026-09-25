@@ -458,75 +458,166 @@ async function geocode(address: string): Promise<Candidate | null> {
   return ranked[0]?.candidate ?? null;
 }
 
-async function route(destination: C): Promise<number | null> {
-  // Valhalla usa dados do OpenStreetMap e uma heurística de rota diferente
-  // do OSRM público. Tentamos primeiro esse roteador para reduzir desvios
-  // estranhos em ruas locais do Barreiro.
+export async function POST(request: Request) {
   try {
-    const response = await fetchT("https://valhalla1.openstreetmap.de/route", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Client-Id": "doceriabrigadeiroebeijinho.vercel.app",
-      },
-      body: JSON.stringify({
-        locations: [
-          { lat: ORIGIN.lat, lon: ORIGIN.lon },
-          { lat: destination.lat, lon: destination.lon },
-        ],
-        costing: "auto",
-        directions_options: { units: "kilometers" },
-      }),
-    });
-
-    if (response.ok) {
-      const data = (await response.json()) as {
-        trip?: {
-          summary?: {
-            length?: number;
-          };
-        };
-      };
-
-      const lengthKm = data.trip?.summary?.length;
-      if (typeof lengthKm === "number" && Number.isFinite(lengthKm)) {
-        return lengthKm * 1000;
-      }
-    }
-  } catch {
-    // Tenta o roteador de reserva abaixo.
-  }
-
-  // Fallback para OSRM.
-  const url = new URL(
-    `https://router.project-osrm.org/route/v1/driving/${ORIGIN.lon},${ORIGIN.lat};${destination.lon},${destination.lat}`,
-  );
-
-  url.searchParams.set("overview", "false");
-  url.searchParams.set("alternatives", "false");
-
-  try {
-    const response = await fetchT(url, {
-      headers: { Accept: "application/json" },
-    });
-
-    if (!response.ok) return null;
-
-    const data = (await response.json()) as {
-      code?: string;
-      routes?: Array<{ distance?: number }>;
+    const body = (await request.json()) as {
+      address?: string;
+      cep?: string;
+      street?: string;
+      number?: string;
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      latitude?: number | null;
+      longitude?: number | null;
     };
 
-    const distance = data.routes?.[0]?.distance;
+    const address = body.address?.trim();
+    const cep = digits(body.cep);
+    const hasCepCoordinates =
+      typeof body.latitude === "number" &&
+      Number.isFinite(body.latitude) &&
+      typeof body.longitude === "number" &&
+      Number.isFinite(body.longitude);
 
-    return data.code === "Ok" &&
-      typeof distance === "number" &&
-      Number.isFinite(distance)
-      ? distance
+    if (
+      (!address || address.length < 8) &&
+      (!body.street?.trim() || !body.number?.trim() || !body.city?.trim())
+    ) {
+      return Response.json(
+        { error: "Informe o CEP e o número para calcular a entrega." },
+        { status: 400 },
+      );
+    }
+
+    let destination: Candidate | null = null;
+
+    const fallbackAddress = [
+      body.street,
+      body.number,
+      body.neighborhood,
+      body.city && body.state
+        ? `${body.city} - ${body.state}`
+        : body.city || body.state,
+      cep ? `CEP ${cep}` : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const cepDestination: Candidate | null = hasCepCoordinates
+      ? {
+          lat: body.latitude as number,
+          lon: body.longitude as number,
+          displayName: fallbackAddress || address || "Endereço informado",
+          type: "postcode",
+          address: {
+            road: body.street,
+            street: body.street,
+            house_number: body.number,
+            neighbourhood: body.neighborhood,
+            city: body.city,
+            state: body.state,
+            postcode: body.cep,
+            country: "Brasil",
+            country_code: "br",
+          },
+        }
       : null;
+
+    if (address) {
+      destination = await geocode(address);
+    }
+
+    if (!destination && cep && body.city?.trim()) {
+      const postalCandidates = await searchNominatimStructured({
+        postalcode: cep,
+        city: body.city,
+        state: body.state || "Minas Gerais",
+      });
+
+      const requestedStreet = norm(body.street);
+      const requestedCity = norm(body.city);
+
+      destination =
+        postalCandidates
+          .filter((candidate) => {
+            const candidateCity = norm(
+              candidate.address?.city ??
+                candidate.address?.town ??
+                candidate.address?.municipality,
+            );
+            return !candidateCity || candidateCity === requestedCity;
+          })
+          .sort((a, b) => {
+            const streetA = norm(a.address?.road ?? a.address?.street);
+            const streetB = norm(b.address?.road ?? b.address?.street);
+            const scoreA =
+              (streetA && requestedStreet && streetA === requestedStreet ? 100 : 0) -
+              distanceKm(ORIGIN, a);
+            const scoreB =
+              (streetB && requestedStreet && streetB === requestedStreet ? 100 : 0) -
+              distanceKm(ORIGIN, b);
+            return scoreB - scoreA;
+          })[0] ?? null;
+    }
+
+    // A posição aproximada do CEP é a referência estável para o cálculo.
+    // Só usamos um geocodificador de endereço quando ele está próximo do CEP.
+    if (cepDestination) {
+      if (!destination || distanceKm(cepDestination, destination) > 3) {
+        destination = cepDestination;
+      }
+    }
+
+    if (!destination) {
+      return Response.json(
+        {
+          error:
+            "Não foi possível localizar o endereço pelo CEP. Confira o CEP e o número informados e tente novamente.",
+        },
+        { status: 422 },
+      );
+    }
+
+    const straightLineKm = distanceKm(ORIGIN, destination);
+
+    if (straightLineKm > MAX_RADIUS_KM) {
+      return Response.json(
+        {
+          error:
+            "No momento, atendemos entregas em um raio de até 50 km da doceria.",
+        },
+        { status: 422 },
+      );
+    }
+
+    // O cálculo do frete não depende mais de um roteador público.
+    // Usamos a distância geográfica ida + volta, que é estável e evita
+    // taxas incorretas causadas por rotas públicas defeituosas.
+    const oneWayKm = straightLineKm;
+    const roundTripKm = oneWayKm * 2;
+    const calculatedFee = roundTripKm * RATE_PER_KM;
+    const fee = Math.ceil(calculatedFee / ROUNDING_STEP) * ROUNDING_STEP;
+
+    return Response.json(
+      {
+        fee: Number(fee.toFixed(2)),
+        oneWayKm: Number(oneWayKm.toFixed(2)),
+        roundTripKm: Number(roundTripKm.toFixed(2)),
+        straightLineKm: Number(straightLineKm.toFixed(2)),
+        locatedAddress: destination.displayName,
+        maxRadiusKm: MAX_RADIUS_KM,
+        roundingStep: ROUNDING_STEP,
+        locationSource: destination.type === "postcode" ? "CEP" : "endereco",
+        distanceMode: "linha geográfica",
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch {
-    return null;
+    return Response.json(
+      { error: "Não foi possível calcular a entrega neste momento." },
+      { status: 500 },
+    );
   }
 }
 
