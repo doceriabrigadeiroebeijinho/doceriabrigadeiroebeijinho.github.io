@@ -1138,7 +1138,7 @@ export default function Home() {
     .join(", ");
 
   const calculateShipping = useCallback(async () => {
-    if (delivery.service !== "Entrega" || !delivery.street.trim()) return;
+    if (delivery.service !== "Entrega" || !formattedAddress.trim()) return;
 
     setShippingStatus("loading");
     setShippingError("");
@@ -1146,18 +1146,20 @@ export default function Home() {
       const response = await fetch("/api/shipping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address: delivery.street,
-          complement: delivery.complement,
-          city: delivery.city,
-          state: delivery.state,
-          cep: delivery.cep,
-        }),
+        body: JSON.stringify({ address: formattedAddress }),
       });
-      const result = (await response.json()) as { fee?: number; error?: string };
+      const result = (await response.json()) as {
+        fee?: number;
+        oneWayKm?: number;
+        roundTripKm?: number;
+        locatedAddress?: string;
+        error?: string;
+      };
+
       if (!response.ok || typeof result.fee !== "number") {
         throw new Error(result.error || "Não foi possível calcular a entrega");
       }
+
       setDeliveryFee(result.fee);
       setShippingStatus("success");
     } catch (error) {
@@ -1169,7 +1171,7 @@ export default function Home() {
           : "Não conseguimos calcular a entrega neste momento. Confira o endereço e tente novamente.",
       );
     }
-  }, [delivery]);
+  }, [formattedAddress, delivery.service]);
 
   useEffect(() => {
     if (delivery.service !== "Entrega") {
@@ -1241,7 +1243,7 @@ if (
     }
     if (
       delivery.service === "Entrega" &&
-      (!delivery.street || !delivery.number.trim())
+      !delivery.street.trim()
     ) {
       setCheckoutStep(2);
       setToast("Preencha o endereço completo da entrega");
