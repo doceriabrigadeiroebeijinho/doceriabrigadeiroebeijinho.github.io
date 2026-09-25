@@ -2689,7 +2689,7 @@ if (
               type="button"
               onClick={() =>
                 setAssistantAnswer(
-                  "Na finalização, escolha entrega, informe o endereço completo e calcule a taxa. Atendemos em um raio de até 50 km e a taxa é arredondada para o próximo múltiplo de R$ 10,00.",
+                  "Na finalização, escolha entrega, informe o endereço completo e calcule a taxa. Atendemos em um raio de até 50 km e a taxa é arredondada para cima até o próximo valor par.",
                 )
               }
             >
@@ -3066,7 +3066,7 @@ if (
                           </div>
                           <p className="freight-rounding-note">
                             O valor é calculado a R$ 1,00 por km e arredondado para
-                            o próximo múltiplo de R$ 10,00.
+                            cima até o próximo valor par.
                           </p>
                           <div className="freight-price freight-total">
                             <span>Total com entrega</span>
