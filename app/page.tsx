@@ -747,9 +747,6 @@ export default function Home() {
   const [paymentMethod, setPaymentMethod] = useState<"Pix" | "Cartão" | "">("");
   const [balancePaymentMethod, setBalancePaymentMethod] =
     useState<BalancePaymentMethod>("Pix");
-  const [cepStatus, setCepStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
   const [shippingError, setShippingError] = useState("");
   const [paymentNoticeOpen, setPaymentNoticeOpen] = useState(false);
   const [pendingWhatsAppUrl, setPendingWhatsAppUrl] = useState("");
@@ -1134,72 +1131,12 @@ export default function Home() {
 
   const cleanCep = (value: string) => value.replace(/\D/g, "").slice(0, 8);
 
-  const formattedAddress = [
-    delivery.street,
-    delivery.number,
-    delivery.complement,
-    delivery.neighborhood,
-    `${delivery.city}${delivery.state ? `/${delivery.state}` : ""}`,
-    delivery.cep,
-  ]
+  const formattedAddress = [delivery.street, delivery.complement]
     .filter(Boolean)
     .join(", ");
 
-  const lookupCep = async (rawCep: string) => {
-    const cep = cleanCep(rawCep);
-    if (cep.length !== 8) {
-      setCepStatus("error");
-      setShippingError("Digite um CEP com 8 números.");
-      return;
-    }
-
-    setCepStatus("loading");
-    setShippingError("");
-
-    try {
-      const response = await fetch(`/api/cep?cep=${encodeURIComponent(cep)}`, {
-        cache: "no-store",
-      });
-
-      const address = (await response.json()) as {
-        street?: string;
-        neighborhood?: string;
-        city?: string;
-        state?: string;
-        error?: string;
-      };
-
-      if (!response.ok) {
-        throw new Error(address.error || "Não foi possível consultar o CEP");
-      }
-
-      setDelivery((current) => ({
-        ...current,
-        cep,
-        street: address.street ?? "",
-        neighborhood: address.neighborhood ?? "",
-        city: address.city ?? "",
-        state: address.state ?? "",
-      }));
-      setCepStatus("success");
-    } catch (error) {
-      setCepStatus("error");
-      setShippingError(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível consultar o CEP agora. Tente novamente em instantes.",
-      );
-    }
-  };
-
   const calculateShipping = useCallback(async () => {
-    if (
-      delivery.service !== "Entrega" ||
-      !delivery.street ||
-      !delivery.number.trim()
-    ) {
-      return;
-    }
+    if (delivery.service !== "Entrega" || !delivery.street.trim()) return;
 
     setShippingStatus("loading");
     setShippingError("");
@@ -1208,28 +1145,26 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          street: delivery.street,
-          number: delivery.number,
-          neighborhood: delivery.neighborhood,
+          address: delivery.street,
+          complement: delivery.complement,
           city: delivery.city,
           state: delivery.state,
           cep: delivery.cep,
         }),
       });
-      const result = (await response.json()) as {
-        fee?: number;
-        error?: string;
-      };
+      const result = (await response.json()) as { fee?: number; error?: string };
       if (!response.ok || typeof result.fee !== "number") {
         throw new Error(result.error || "Não foi possível calcular a entrega");
       }
       setDeliveryFee(result.fee);
       setShippingStatus("success");
-    } catch {
+    } catch (error) {
       setDeliveryFee(0);
       setShippingStatus("error");
       setShippingError(
-        "Não conseguimos calcular a entrega neste momento. Confira o endereço e tente novamente.",
+        error instanceof Error
+          ? error.message
+          : "Não conseguimos calcular a entrega neste momento. Confira o endereço e tente novamente.",
       );
     }
   }, [delivery]);
@@ -1242,34 +1177,7 @@ export default function Home() {
       }, 0);
       return () => window.clearTimeout(resetTimer);
     }
-    if (
-      cepStatus !== "success" ||
-      !delivery.street ||
-      !delivery.number.trim()
-    ) {
-      const resetTimer = window.setTimeout(() => {
-        setDeliveryFee(0);
-        setShippingStatus("idle");
-      }, 0);
-      return () => window.clearTimeout(resetTimer);
-    }
-
-    const timer = window.setTimeout(() => {
-      setShippingStatus("loading");
-      void calculateShipping();
-    }, 700);
-    return () => window.clearTimeout(timer);
-  }, [
-    delivery.service,
-    delivery.street,
-    delivery.number,
-    delivery.neighborhood,
-    delivery.city,
-    delivery.state,
-    delivery.cep,
-    cepStatus,
-    calculateShipping,
-  ]);
+  }, [delivery.service]);
 
   const originMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     ORIGIN,
@@ -1334,7 +1242,7 @@ if (
       (!delivery.street || !delivery.number.trim())
     ) {
       setCheckoutStep(2);
-      setToast("Preencha o CEP e o número da entrega");
+      setToast("Preencha o endereço completo da entrega");
       return;
     }
     if (
@@ -1721,7 +1629,7 @@ if (
           {[
             ["1", "Escolha", "Adicione bolo, doces, bombons ou presentes ao pedido."],
             ["2", "Personalize", "Informe frase, idade, cores e detalhes da decoração."],
-            ["3", "Receba", "Escolha retirada ou informe o CEP para calcular a entrega."],
+            ["3", "Receba", "Escolha retirada ou informe o endereço completo para calcular a entrega."],
             ["4", "Confirme", "Revise os dados e envie a solicitação para conferirmos a disponibilidade."],
           ].map(([number, title, text]) => (
             <article key={number}>
@@ -2518,74 +2426,67 @@ if (
 
         <div className="payment-card delivery-flow-card">
           <span className="section-kicker">Entrega calculada no pedido</span>
-          <h2>Informe o CEP e simule a entrega</h2>
+          <h2>Digite seu endereço e simule a entrega</h2>
           <p>
-            A simulação usa os itens já selecionados no cardápio e soma a taxa
-            de entrega ao valor atual do pedido.
+            Informe o endereço completo do local de entrega. A taxa é calculada
+            pela distância da rota entre a doceria e o endereço informado.
           </p>
           <div className="delivery-simulator">
-            <label>
-              CEP
+            <label className="full-field">
+              Endereço completo
               <input
                 type="text"
-                inputMode="numeric"
-                maxLength={9}
-                value={delivery.cep}
+                value={delivery.street}
                 onChange={(event) => {
-                  const cep = cleanCep(event.target.value);
-                  const formatted =
-                    cep.length > 5 ? `${cep.slice(0, 5)}-${cep.slice(5)}` : cep;
                   setDelivery((current) => ({
                     ...current,
                     service: "Entrega",
-                    cep: formatted,
-                    street: "",
-                    neighborhood: "",
-                    city: "",
-                    state: "",
+                    street: event.target.value,
                   }));
-                  setCepStatus("idle");
                   setShippingStatus("idle");
                   setDeliveryFee(0);
                   setShippingError("");
                 }}
-                onBlur={(event) => lookupCep(event.target.value)}
-                placeholder="00000-000"
+                placeholder="Ex.: Rua Joaquim de Figueiredo, 725, Tirol, Belo Horizonte - MG"
               />
             </label>
-            <label>
-              Número
+            <label className="full-field">
+              Complemento <span className="optional-label">(opcional)</span>
               <input
                 type="text"
-                inputMode="numeric"
-                value={delivery.number}
-                onChange={(event) =>
+                value={delivery.complement}
+                onChange={(event) => {
                   setDelivery((current) => ({
                     ...current,
                     service: "Entrega",
-                    number: event.target.value,
-                  }))
-                }
-                placeholder="Ex.: 120"
+                    complement: event.target.value,
+                  }));
+                  setShippingStatus("idle");
+                  setDeliveryFee(0);
+                  setShippingError("");
+                }}
+                placeholder="Apto., bloco, casa..."
               />
             </label>
             <button
               type="button"
               className="cep-button delivery-simulator-button"
-              onClick={() => lookupCep(delivery.cep)}
-              disabled={cepStatus === "loading"}
+              onClick={() => void calculateShipping()}
+              disabled={shippingStatus === "loading" || !delivery.street.trim()}
             >
-              {cepStatus === "loading" ? "Buscando..." : "Buscar CEP"}
+              {shippingStatus === "loading" ? "Calculando..." : "Calcular entrega"}
             </button>
           </div>
-          {delivery.street && (
-            <small className="delivery-preview-address">
-              {delivery.street} · {delivery.neighborhood} · {delivery.city}/{delivery.state}
-            </small>
-          )}
           {shippingError && <p className="shipping-error">{shippingError}</p>}
           {shippingStatus === "loading" && (
-            <div className="shipping-loading">Calculando a taxa de entrega…</div>
+            <div className="shipping-loading" aria-live="polite">
+              Calculando a taxa de entrega…
+            </div>
+          )}
+          {shippingStatus === "success" && (
+            <small className="delivery-preview-address">
+              Endereço: {formattedAddress}
+            </small>
           )}
           <div className="delivery-preview-summary" aria-live="polite">
             <div>
@@ -3043,7 +2944,7 @@ if (
                       }
                     >
                       <strong>Entrega</strong>
-                      <span>Informe o CEP e veja a taxa antes de finalizar</span>
+                      <span>Informe o endereço completo e veja a taxa antes de finalizar</span>
                     </button>
                   </div>
                   <p className="service-schedule-note">
@@ -3067,86 +2968,50 @@ if (
                   )}
                   {delivery.service === "Entrega" && (
                     <div className="form-grid delivery-checkout">
-                      <label>
-                        CEP *
+                      <label className="full-field">
+                        Endereço completo *
                         <input
                           type="text"
-                          inputMode="numeric"
-                          maxLength={9}
-                          value={delivery.cep}
+                          value={delivery.street}
                           onChange={(event) => {
-                            const cep = cleanCep(event.target.value);
-                            const formatted =
-                              cep.length > 5
-                                ? `${cep.slice(0, 5)}-${cep.slice(5)}`
-                                : cep;
                             setDelivery((current) => ({
                               ...current,
-                              cep: formatted,
-                              street: "",
-                              neighborhood: "",
-                              city: "",
-                              state: "",
+                              street: event.target.value,
                             }));
-                            setCepStatus("idle");
                             setShippingStatus("idle");
                             setDeliveryFee(0);
                             setShippingError("");
                           }}
-                          onBlur={(event) => lookupCep(event.target.value)}
-                          placeholder="00000-000"
+                          placeholder="Rua, número, bairro, cidade e estado"
+                        />
+                      </label>
+                      <label className="full-field">
+                        Complemento <span className="optional-label">(opcional)</span>
+                        <input
+                          type="text"
+                          value={delivery.complement}
+                          onChange={(event) => {
+                            setDelivery((current) => ({
+                              ...current,
+                              complement: event.target.value,
+                            }));
+                            setShippingStatus("idle");
+                            setDeliveryFee(0);
+                            setShippingError("");
+                          }}
+                          placeholder="Apto., bloco, casa..."
                         />
                       </label>
                       <button
                         type="button"
                         className="cep-button"
-                        onClick={() => lookupCep(delivery.cep)}
-                        disabled={cepStatus === "loading"}
+                        onClick={() => void calculateShipping()}
+                        disabled={shippingStatus === "loading" || !delivery.street.trim()}
                       >
-                        {cepStatus === "loading" ? "Buscando..." : "Buscar CEP"}
+                        {shippingStatus === "loading"
+                          ? "Calculando..."
+                          : "Calcular entrega"}
                       </button>
-                      <label className="full-field">
-                        Endereço
-                        <input
-                          type="text"
-                          value={
-                            delivery.street
-                              ? `${delivery.street} · ${delivery.neighborhood} · ${delivery.city}/${delivery.state}`
-                              : ""
-                          }
-                          readOnly
-                          placeholder="Preenchido automaticamente pelo CEP"
-                        />
-                      </label>
-                      <label>
-                        Número *
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={delivery.number}
-                          onChange={(event) => {
-                            setDelivery((current) => ({
-                              ...current,
-                              number: event.target.value,
-                            }));
-                          }}
-                          placeholder="Ex.: 120"
-                        />
-                      </label>
-                      <label>
-                        Complemento
-                        <input
-                          type="text"
-                          value={delivery.complement}
-                          onChange={(event) =>
-                            setDelivery((current) => ({
-                              ...current,
-                              complement: event.target.value,
-                            }))
-                          }
-                          placeholder="Apto., bloco, casa..."
-                        />
-                      </label>
                       {shippingError && (
                         <p className="shipping-error full-field">{shippingError}</p>
                       )}
@@ -3155,10 +3020,7 @@ if (
                           Calculando a taxa de entrega…
                         </div>
                       )}
-                      {cepStatus === "success" &&
-                        delivery.street &&
-                        delivery.number.trim() &&
-                        shippingStatus === "success" && (
+                      {shippingStatus === "success" && (
                         <div className="checkout-freight-result full-field" aria-live="polite">
                           <div>
                             <span>Endereço da entrega</span>
@@ -3175,16 +3037,15 @@ if (
                           <a href={mapsUrl} target="_blank" rel="noreferrer">
                             Conferir endereço no mapa
                           </a>
-                          <button type="button" onClick={calculateShipping}>
+                          <button type="button" onClick={() => void calculateShipping()}>
                             Recalcular entrega
                           </button>
                         </div>
                       )}
                       <p className="delivery-contact-note full-field">
                         Mantenha o telefone informado no cadastro disponível. Se
-                        houver dificuldade para localizar a rua, o número ou o
-                        complemento, o entregador poderá entrar em contato por
-                        ligação ou WhatsApp.
+                        houver dificuldade para localizar o endereço ou complemento,
+                        o entregador poderá entrar em contato por ligação ou WhatsApp.
                       </p>
                     </div>
                   )}
