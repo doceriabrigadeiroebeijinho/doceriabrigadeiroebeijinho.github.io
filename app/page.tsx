@@ -758,6 +758,7 @@ export default function Home() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [deliveryFee, setDeliveryFee] = useState(0);
+  const [shippingLocatedAddress, setShippingLocatedAddress] = useState("");
   const [monthlyTermsAccepted, setMonthlyTermsAccepted] = useState(false);
   const [planPaymentMode, setPlanPaymentMode] =
     useState<PlanPaymentMode>("Mensal");
@@ -1161,6 +1162,7 @@ export default function Home() {
       }
 
       setDeliveryFee(result.fee);
+      setShippingLocatedAddress(result.locatedAddress || "");
       setShippingStatus("success");
     } catch (error) {
       setDeliveryFee(0);
@@ -3041,9 +3043,15 @@ if (
                       {shippingStatus === "success" && (
                         <div className="checkout-freight-result full-field" aria-live="polite">
                           <div>
-                            <span>Endereço da entrega</span>
+                            <span>Endereço informado</span>
                             <small>{formattedAddress}</small>
                           </div>
+                          {shippingLocatedAddress && (
+                            <div>
+                              <span>Endereço localizado pelo mapa</span>
+                              <small>{shippingLocatedAddress}</small>
+                            </div>
+                          )}
                           <div className="freight-price">
                             <span>Taxa de entrega</span>
                             <strong>{formatMoney(deliveryFee)}</strong>
