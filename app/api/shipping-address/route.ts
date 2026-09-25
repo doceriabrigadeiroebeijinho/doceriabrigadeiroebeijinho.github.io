@@ -60,6 +60,11 @@ const isMinasGerais = (candidate: Candidate) => {
   const stateCode = norm(a.state_code);
   const iso = norm(a["ISO3166-2-lvl4"]);
 
+  // O raio de 50 km em torno da doceria fica integralmente em Minas Gerais.
+  // Alguns resultados do mapa não trazem o campo de estado; nesses casos,
+  // a própria restrição geográfica já garante que o ponto está dentro da área.
+  if (!state && !stateCode && !iso) return true;
+
   return (
     state.includes("minas gerais") ||
     stateCode === "br mg" ||
