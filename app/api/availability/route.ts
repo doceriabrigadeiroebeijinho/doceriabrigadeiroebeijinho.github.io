@@ -36,11 +36,28 @@ export async function GET(request: Request) {
 
     const payload = (await response.json()) as { busy?: BusyWindow[] };
     const busy = (payload.busy ?? []).filter(
-      (window): window is { start: string; end: string } =>
-        typeof window.start === "string" &&
-        typeof window.end === "string" &&
-        Number.isFinite(new Date(window.start).getTime()) &&
-        Number.isFinite(new Date(window.end).getTime()),
+      (window): window is { start: string; end: string } => {
+        if (
+          typeof window.start !== "string" ||
+          typeof window.end !== "string"
+        ) {
+          return false;
+        }
+
+        const startMs = new Date(window.start).getTime();
+        const endMs = new Date(window.end).getTime();
+
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) {
+          return false;
+        }
+
+        // O Google Calendar também pode devolver eventos de dia inteiro
+        // como uma janela de 00:00 até 00:00 do dia seguinte. Esses eventos
+        // não devem bloquear todos os horários de atendimento: o site só
+        // considera compromissos com horário definido.
+        const durationHours = (endMs - startMs) / (60 * 60 * 1000);
+        return durationHours < 23;
+      },
     );
 
     return Response.json(
