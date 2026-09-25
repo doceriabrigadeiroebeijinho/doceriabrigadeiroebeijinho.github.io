@@ -1,5 +1,5 @@
 const RATE_PER_KM = 1;
-const ROUNDING_STEP = 10;
+const ROUNDING_STEP = 2;
 const MAX_RADIUS_KM = 50;
 const ORIGIN = { lat: -20.0109557, lon: -44.0094064 } as const;
 const TIMEOUT = 12000;
@@ -296,7 +296,8 @@ export async function POST(request: Request) {
     const roundTripKm = oneWayKm * 2;
 
     // Cobra R$ 1,00 por km no percurso de ida + volta, sempre
-    // arredondando a taxa para o próximo múltiplo de R$ 10,00.
+    // arredondando para cima até o próximo valor par.
+    // Exemplos: R$ 28,20 -> R$ 30,00 e R$ 31,20 -> R$ 32,00.
     const calculatedFee = roundTripKm * RATE_PER_KM;
     const fee = Math.ceil(calculatedFee / ROUNDING_STEP) * ROUNDING_STEP;
 
