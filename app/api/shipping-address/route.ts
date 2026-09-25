@@ -560,9 +560,45 @@ export async function POST(request: Request) {
       destination = await geocode(address);
     }
 
+    // Reforço pela combinação CEP + cidade + estado. Para CEPs de logradouro,
+    // essa busca costuma ser uma referência mais estável do que uma consulta
+    // livre que pode escolher outra rua com o mesmo número.
+    if (!destination && cep && body.city?.trim()) {
+      const postalCandidates = await searchNominatimStructured({
+        postalcode: cep,
+        city: body.city,
+        state: body.state || "Minas Gerais",
+      });
+
+      const requestedStreet = norm(body.street);
+      const requestedCity = norm(body.city);
+
+      destination =
+        postalCandidates
+          .filter((candidate) => {
+            const candidateCity = norm(
+              candidate.address?.city ??
+                candidate.address?.town ??
+                candidate.address?.municipality,
+            );
+            return !candidateCity || candidateCity === requestedCity;
+          })
+          .sort((a, b) => {
+            const streetA = norm(a.address?.road ?? a.address?.street);
+            const streetB = norm(b.address?.road ?? b.address?.street);
+            const scoreA =
+              (streetA && requestedStreet && streetA === requestedStreet ? 100 : 0) -
+              distanceKm(ORIGIN, a);
+            const scoreB =
+              (streetB && requestedStreet && streetB === requestedStreet ? 100 : 0) -
+              distanceKm(ORIGIN, b);
+            return scoreB - scoreA;
+          })[0] ?? null;
+    }
+
     // O CEP fornece uma localização da área postal. Se o geocodificador
     // retornar um ponto muito distante dela, consideramos que encontrou
-    // outro lugar e usamos o ponto do CEP para evitar taxas absurdas.
+    // outro lugar e usamos o ponto do próprio CEP para evitar taxas absurdas.
     if (cepDestination) {
       if (!destination) {
         destination = cepDestination;
