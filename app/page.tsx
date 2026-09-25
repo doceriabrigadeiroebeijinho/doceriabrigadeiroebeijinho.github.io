@@ -748,6 +748,9 @@ export default function Home() {
   const [balancePaymentMethod, setBalancePaymentMethod] =
     useState<BalancePaymentMethod>("Pix");
   const [shippingError, setShippingError] = useState("");
+  const [cepLookupStatus, setCepLookupStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [paymentNoticeOpen, setPaymentNoticeOpen] = useState(false);
   const [pendingWhatsAppUrl, setPendingWhatsAppUrl] = useState("");
   const [pendingWhatsAppMessage, setPendingWhatsAppMessage] = useState("");
@@ -1135,12 +1138,81 @@ export default function Home() {
 
   const cleanCep = (value: string) => value.replace(/\D/g, "").slice(0, 8);
 
-  const formattedAddress = [delivery.street, delivery.complement]
+  const lookupCep = async (value: string) => {
+    const cep = cleanCep(value);
+    if (cep.length !== 8) return;
+
+    setCepLookupStatus("loading");
+    setShippingStatus("idle");
+    setDeliveryFee(0);
+    setShippingLocatedAddress("");
+    setShippingRoundTripKm(0);
+    setShippingError("");
+
+    try {
+      const response = await fetch(`/api/cep?cep=${cep}`, {
+        cache: "no-store",
+      });
+      const result = (await response.json()) as {
+        street?: string;
+        neighborhood?: string;
+        city?: string;
+        state?: string;
+        cep?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !result.street || !result.city || !result.state) {
+        throw new Error(result.error || "Não foi possível localizar este CEP.");
+      }
+
+      setDelivery((current) => ({
+        ...current,
+        service: "Entrega",
+        cep: result.cep || cep,
+        street: result.street || "",
+        neighborhood: result.neighborhood || "",
+        city: result.city || "",
+        state: result.state || "",
+      }));
+      setCepLookupStatus("success");
+    } catch (error) {
+      setCepLookupStatus("error");
+      setShippingError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível localizar este CEP.",
+      );
+    }
+  };
+
+  const formattedAddress = [
+    delivery.street && delivery.number
+      ? `${delivery.street}, ${delivery.number}`
+      : delivery.street,
+    delivery.neighborhood,
+    delivery.city && delivery.state
+      ? `${delivery.city} - ${delivery.state}`
+      : delivery.city || delivery.state,
+    delivery.cep ? `CEP ${delivery.cep}` : "",
+    delivery.complement,
+  ]
     .filter(Boolean)
     .join(", ");
 
   const calculateShipping = useCallback(async () => {
-    if (delivery.service !== "Entrega" || !formattedAddress.trim()) return;
+    if (
+      delivery.service !== "Entrega" ||
+      !delivery.cep ||
+      cleanCep(delivery.cep).length !== 8 ||
+      !delivery.street.trim() ||
+      !delivery.number.trim() ||
+      !delivery.city.trim() ||
+      !delivery.state.trim()
+    ) {
+      setShippingError("Informe o CEP e o número para calcular a entrega.");
+      return;
+    }
 
     setShippingStatus("loading");
     setShippingError("");
@@ -1175,7 +1247,15 @@ export default function Home() {
           : "Não conseguimos calcular a entrega neste momento. Confira o endereço e tente novamente.",
       );
     }
-  }, [formattedAddress, delivery.service]);
+  }, [
+    formattedAddress,
+    delivery.service,
+    delivery.cep,
+    delivery.street,
+    delivery.number,
+    delivery.city,
+    delivery.state,
+  ]);
 
   useEffect(() => {
     if (delivery.service !== "Entrega") {
@@ -1247,10 +1327,16 @@ if (
     }
     if (
       delivery.service === "Entrega" &&
-      !delivery.street.trim()
+      (
+        cleanCep(delivery.cep).length !== 8 ||
+        !delivery.street.trim() ||
+        !delivery.number.trim() ||
+        !delivery.city.trim() ||
+        !delivery.state.trim()
+      )
     ) {
       setCheckoutStep(2);
-      setToast("Preencha o endereço completo da entrega");
+      setToast("Informe o CEP e o número para preencher o endereço da entrega");
       return;
     }
     if (
@@ -2450,51 +2536,126 @@ if (
           <span className="section-kicker">Entrega calculada no pedido</span>
           <h2>Digite seu endereço e simule a entrega</h2>
           <p>
-            Informe o endereço completo do local de entrega. A taxa é calculada
-            pela distância da rota entre a doceria e o endereço informado.
+            Digite o CEP e o número. O endereço será preenchido automaticamente e
+            a taxa será calculada pela distância da rota.
           </p>
           <div className="delivery-simulator">
             <label className="full-field">
-              Endereço completo
+              CEP
               <input
                 type="text"
-                value={delivery.street}
+                inputMode="numeric"
+                autoComplete="postal-code"
+                value={delivery.cep}
                 onChange={(event) => {
+                  const cep = cleanCep(event.target.value);
                   setDelivery((current) => ({
                     ...current,
                     service: "Entrega",
-                    street: event.target.value,
+                    cep,
+                    ...(cep.length < 8
+                      ? {
+                          street: "",
+                          neighborhood: "",
+                          city: "",
+                          state: "",
+                        }
+                      : {}),
                   }));
+                  setCepLookupStatus(cep.length === 8 ? "loading" : "idle");
                   setShippingStatus("idle");
                   setDeliveryFee(0);
+                  setShippingLocatedAddress("");
+                  setShippingRoundTripKm(0);
                   setShippingError("");
+
+                  if (cep.length === 8) {
+                    void lookupCep(cep);
+                  }
                 }}
-                placeholder="Ex.: Rua Joaquim de Figueiredo, 725, Tirol, Belo Horizonte - MG"
+                onBlur={() => {
+                  if (cleanCep(delivery.cep).length === 8) {
+                    void lookupCep(delivery.cep);
+                  }
+                }}
+                placeholder="Digite o CEP"
+                maxLength={9}
               />
             </label>
-            <label className="full-field">
-              Complemento <span className="optional-label">(opcional)</span>
-              <input
-                type="text"
-                value={delivery.complement}
-                onChange={(event) => {
-                  setDelivery((current) => ({
-                    ...current,
-                    service: "Entrega",
-                    complement: event.target.value,
-                  }));
-                  setShippingStatus("idle");
-                  setDeliveryFee(0);
-                  setShippingError("");
-                }}
-                placeholder="Apto., bloco, casa..."
-              />
-            </label>
+            {cepLookupStatus === "loading" && (
+              <small className="delivery-preview-address">Buscando endereço pelo CEP…</small>
+            )}
+            {cepLookupStatus === "error" && (
+              <small className="shipping-error">Confira o CEP informado e tente novamente.</small>
+            )}
+            {delivery.street && (
+              <>
+                <label className="full-field">
+                  Rua
+                  <input type="text" value={delivery.street} readOnly />
+                </label>
+                <label>
+                  Número
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="address-line2"
+                    value={delivery.number}
+                    onChange={(event) => {
+                      setDelivery((current) => ({
+                        ...current,
+                        number: event.target.value.replace(/\D/g, "").slice(0, 8),
+                      }));
+                      setShippingStatus("idle");
+                      setDeliveryFee(0);
+                      setShippingError("");
+                    }}
+                    placeholder="Número"
+                  />
+                </label>
+                <label className="full-field">
+                  Bairro
+                  <input type="text" value={delivery.neighborhood} readOnly />
+                </label>
+                <label>
+                  Cidade
+                  <input type="text" value={delivery.city} readOnly />
+                </label>
+                <label>
+                  UF
+                  <input type="text" value={delivery.state} readOnly />
+                </label>
+                <label className="full-field">
+                  Complemento <span className="optional-label">(opcional)</span>
+                  <input
+                    type="text"
+                    value={delivery.complement}
+                    onChange={(event) => {
+                      setDelivery((current) => ({
+                        ...current,
+                        service: "Entrega",
+                        complement: event.target.value,
+                      }));
+                      setShippingStatus("idle");
+                      setDeliveryFee(0);
+                      setShippingError("");
+                    }}
+                    placeholder="Apto., bloco, casa..."
+                  />
+                </label>
+              </>
+            )}
             <button
               type="button"
               className="cep-button delivery-simulator-button"
               onClick={() => void calculateShipping()}
-              disabled={shippingStatus === "loading" || !delivery.street.trim()}
+              disabled={
+                shippingStatus === "loading" ||
+                cepLookupStatus === "loading" ||
+                cleanCep(delivery.cep).length !== 8 ||
+                !delivery.street.trim() ||
+                !delivery.number.trim()
+              }
             >
               {shippingStatus === "loading" ? "Calculando..." : "Calcular entrega"}
             </button>
@@ -2966,7 +3127,7 @@ if (
                       }
                     >
                       <strong>Entrega</strong>
-                      <span>Informe o endereço completo e veja a taxa antes de finalizar</span>
+                      <span>Digite o CEP, informe o número e veja a taxa antes de finalizar</span>
                     </button>
                   </div>
                   <p className="service-schedule-note">
@@ -2991,46 +3152,122 @@ if (
                   {delivery.service === "Entrega" && (
                     <div className="form-grid delivery-checkout">
                       <label className="full-field">
-                        Endereço completo *
+                        CEP *
                         <input
                           type="text"
-                          value={delivery.street}
+                          inputMode="numeric"
+                          autoComplete="postal-code"
+                          value={delivery.cep}
                           onChange={(event) => {
+                            const cep = cleanCep(event.target.value);
                             setDelivery((current) => ({
                               ...current,
-                              street: event.target.value,
+                              cep,
+                              ...(cep.length < 8
+                                ? {
+                                    street: "",
+                                    neighborhood: "",
+                                    city: "",
+                                    state: "",
+                                  }
+                                : {}),
                             }));
+                            setCepLookupStatus(cep.length === 8 ? "loading" : "idle");
                             setShippingStatus("idle");
                             setDeliveryFee(0);
                             setShippingLocatedAddress("");
                             setShippingRoundTripKm(0);
                             setShippingError("");
+
+                            if (cep.length === 8) {
+                              void lookupCep(cep);
+                            }
                           }}
-                          placeholder="Rua, número, bairro, cidade e estado"
+                          onBlur={() => {
+                            if (cleanCep(delivery.cep).length === 8) {
+                              void lookupCep(delivery.cep);
+                            }
+                          }}
+                          placeholder="Digite o CEP"
+                          maxLength={9}
                         />
                       </label>
-                      <label className="full-field">
-                        Complemento <span className="optional-label">(opcional)</span>
-                        <input
-                          type="text"
-                          value={delivery.complement}
-                          onChange={(event) => {
-                            setDelivery((current) => ({
-                              ...current,
-                              complement: event.target.value,
-                            }));
-                            setShippingStatus("idle");
-                            setDeliveryFee(0);
-                            setShippingError("");
-                          }}
-                          placeholder="Apto., bloco, casa..."
-                        />
-                      </label>
+                      {cepLookupStatus === "loading" && (
+                        <div className="shipping-loading full-field" aria-live="polite">
+                          Buscando endereço pelo CEP…
+                        </div>
+                      )}
+                      {cepLookupStatus === "error" && (
+                        <p className="shipping-error full-field">
+                          Confira o CEP informado e tente novamente.
+                        </p>
+                      )}
+                      {delivery.street && (
+                        <>
+                          <label className="full-field">
+                            Rua
+                            <input type="text" value={delivery.street} readOnly />
+                          </label>
+                          <label>
+                            Número *
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={delivery.number}
+                              onChange={(event) => {
+                                setDelivery((current) => ({
+                                  ...current,
+                                  number: event.target.value.replace(/\D/g, "").slice(0, 8),
+                                }));
+                                setShippingStatus("idle");
+                                setDeliveryFee(0);
+                                setShippingError("");
+                              }}
+                              placeholder="Número"
+                            />
+                          </label>
+                          <label className="full-field">
+                            Bairro
+                            <input type="text" value={delivery.neighborhood} readOnly />
+                          </label>
+                          <label>
+                            Cidade
+                            <input type="text" value={delivery.city} readOnly />
+                          </label>
+                          <label>
+                            UF
+                            <input type="text" value={delivery.state} readOnly />
+                          </label>
+                          <label className="full-field">
+                            Complemento <span className="optional-label">(opcional)</span>
+                            <input
+                              type="text"
+                              value={delivery.complement}
+                              onChange={(event) => {
+                                setDelivery((current) => ({
+                                  ...current,
+                                  complement: event.target.value,
+                                }));
+                                setShippingStatus("idle");
+                                setDeliveryFee(0);
+                                setShippingError("");
+                              }}
+                              placeholder="Apto., bloco, casa..."
+                            />
+                          </label>
+                        </>
+                      )}
                       <button
                         type="button"
                         className="cep-button"
                         onClick={() => void calculateShipping()}
-                        disabled={shippingStatus === "loading" || !delivery.street.trim()}
+                        disabled={
+                          shippingStatus === "loading" ||
+                          cepLookupStatus === "loading" ||
+                          cleanCep(delivery.cep).length !== 8 ||
+                          !delivery.street.trim() ||
+                          !delivery.number.trim()
+                        }
                       >
                         {shippingStatus === "loading"
                           ? "Calculando..."
