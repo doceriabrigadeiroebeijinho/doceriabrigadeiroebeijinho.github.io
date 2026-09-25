@@ -750,6 +750,8 @@ export default function Home() {
   const [shippingError, setShippingError] = useState("");
   const [paymentNoticeOpen, setPaymentNoticeOpen] = useState(false);
   const [pendingWhatsAppUrl, setPendingWhatsAppUrl] = useState("");
+  const [pendingWhatsAppMessage, setPendingWhatsAppMessage] = useState("");
+  const [orderMessageCopied, setOrderMessageCopied] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<CouponCode | "">("");
   const [shippingStatus, setShippingStatus] = useState<
@@ -1528,10 +1530,24 @@ if (
       return;
     }
     setOrderSubmitting(false);
+    setPendingWhatsAppMessage(message);
     setPendingWhatsAppUrl(
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,
     );
+    setOrderMessageCopied(false);
     setPaymentNoticeOpen(true);
+  };
+
+  const copyWhatsAppMessage = async () => {
+    if (!pendingWhatsAppMessage) return;
+
+    try {
+      await navigator.clipboard.writeText(pendingWhatsAppMessage);
+      setOrderMessageCopied(true);
+      setToast("Mensagem do pedido copiada.");
+    } catch {
+      setToast("Não foi possível copiar a mensagem. Abra o WhatsApp pelo botão ao lado.");
+    }
   };
 
   const cakeSuggestion = () => {
@@ -2667,7 +2683,7 @@ if (
               type="button"
               onClick={() =>
                 setAssistantAnswer(
-                  "Na finalização, escolha entrega e informe o CEP. O endereço será preenchido e o valor aparecerá no resumo do pedido.",
+                  "Na finalização, escolha entrega, informe o endereço completo e calcule a taxa. O valor aparecerá no resumo do pedido.",
                 )
               }
             >
@@ -3408,7 +3424,12 @@ if (
         >
           <div className="payment-notice-modal">
             <span>Antes de enviar</span>
-            <h2>O pagamento confirma o seu pedido</h2>
+            <h2>Seu pedido está pronto para o WhatsApp</h2>
+            <p>
+              O pedido já foi salvo no cadastro. Ao abrir o WhatsApp, a mensagem
+              completa será preenchida automaticamente para você apenas conferir
+              e enviar.
+            </p>
             <p>
               A antecedência mínima para fazer a encomenda é de 72 horas em dias úteis
               e de 5 dias para pedidos com data no sábado ou domingo.
@@ -3436,6 +3457,12 @@ if (
               </button>
               <button
                 type="button"
+                onClick={() => void copyWhatsAppMessage()}
+              >
+                {orderMessageCopied ? "Mensagem copiada!" : "Copiar pedido"}
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   const url = pendingWhatsAppUrl;
                   setPaymentNoticeOpen(false);
@@ -3444,7 +3471,7 @@ if (
                   }
                 }}
               >
-                Li e quero enviar
+                Abrir WhatsApp
               </button>
             </div>
           </div>
