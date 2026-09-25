@@ -459,6 +459,46 @@ async function geocode(address: string): Promise<Candidate | null> {
 }
 
 async function route(destination: C): Promise<number | null> {
+  // Valhalla usa dados do OpenStreetMap e uma heurística de rota diferente
+  // do OSRM público. Tentamos primeiro esse roteador para reduzir desvios
+  // estranhos em ruas locais do Barreiro.
+  try {
+    const response = await fetchT("https://valhalla1.openstreetmap.de/route", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Client-Id": "doceriabrigadeiroebeijinho.vercel.app",
+      },
+      body: JSON.stringify({
+        locations: [
+          { lat: ORIGIN.lat, lon: ORIGIN.lon },
+          { lat: destination.lat, lon: destination.lon },
+        ],
+        costing: "auto",
+        directions_options: { units: "kilometers" },
+      }),
+    });
+
+    if (response.ok) {
+      const data = (await response.json()) as {
+        trip?: {
+          summary?: {
+            length?: number;
+          };
+        };
+      };
+
+      const lengthKm = data.trip?.summary?.length;
+      if (typeof lengthKm === "number" && Number.isFinite(lengthKm)) {
+        return lengthKm * 1000;
+      }
+    }
+  } catch {
+    // Tenta o roteador de reserva abaixo.
+  }
+
+  // Fallback para OSRM.
   const url = new URL(
     `https://router.project-osrm.org/route/v1/driving/${ORIGIN.lon},${ORIGIN.lat};${destination.lon},${destination.lat}`,
   );
