@@ -524,44 +524,55 @@ export async function POST(request: Request) {
 
     let destination: Candidate | null = null;
 
+    const fallbackAddress = [
+      body.street,
+      body.number,
+      body.neighborhood,
+      body.city && body.state
+        ? `${body.city} - ${body.state}`
+        : body.city || body.state,
+      cep ? `CEP ${cep}` : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const cepDestination: Candidate | null = hasCepCoordinates
+      ? {
+          lat: body.latitude as number,
+          lon: body.longitude as number,
+          displayName: fallbackAddress || address || "Endereço informado",
+          type: "postcode",
+          address: {
+            road: body.street,
+            street: body.street,
+            house_number: body.number,
+            neighbourhood: body.neighborhood,
+            city: body.city,
+            state: body.state,
+            postcode: body.cep,
+            country: "Brasil",
+            country_code: "br",
+          },
+        }
+      : null;
+
     if (address) {
       destination = await geocode(address);
     }
 
-    // O CEP v2 fornece latitude/longitude aproximadas. Usamos essa posição
-    // como fallback quando o mapa não consegue localizar o número exato.
-    // Isso evita bloquear um pedido válido só porque um geocodificador externo
-    // não possui o imóvel cadastrado.
-    if (!destination && hasCepCoordinates) {
-      const fallbackAddress = [
-        body.street,
-        body.number,
-        body.neighborhood,
-        body.city && body.state
-          ? `${body.city} - ${body.state}`
-          : body.city || body.state,
-        cep ? `CEP ${cep}` : "",
-      ]
-        .filter(Boolean)
-        .join(", ");
+    // O CEP fornece uma localização da área postal. Se o geocodificador
+    // retornar um ponto muito distante dela, consideramos que encontrou
+    // outro lugar e usamos o ponto do CEP para evitar taxas absurdas.
+    if (cepDestination) {
+      if (!destination) {
+        destination = cepDestination;
+      } else {
+        const distanceFromCep = distanceKm(cepDestination, destination);
 
-      destination = {
-        lat: body.latitude as number,
-        lon: body.longitude as number,
-        displayName: fallbackAddress || address || "Endereço informado",
-        type: "postcode",
-        address: {
-          road: body.street,
-          street: body.street,
-          house_number: body.number,
-          neighbourhood: body.neighborhood,
-          city: body.city,
-          state: body.state,
-          postcode: body.cep,
-          country: "Brasil",
-          country_code: "br",
-        },
-      };
+        if (distanceFromCep > 3) {
+          destination = cepDestination;
+        }
+      }
     }
 
     if (!destination) {
@@ -616,6 +627,7 @@ export async function POST(request: Request) {
         locatedAddress: destination.displayName,
         maxRadiusKm: MAX_RADIUS_KM,
         roundingStep: ROUNDING_STEP,
+        locationSource: destination.type === "postcode" ? "CEP" : "endereco",
       },
       { headers: { "Cache-Control": "no-store" } },
     );
