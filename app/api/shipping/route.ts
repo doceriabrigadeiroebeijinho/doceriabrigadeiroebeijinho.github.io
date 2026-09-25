@@ -228,6 +228,39 @@ async function find(a: A): Promise<C | null> {
   return ranked[0]?.c || null;
 }
 
+async function cepCoords(cep?: string): Promise<C | null> {
+  const clean = dig(cep);
+  if (clean.length !== 8) return null;
+
+  try {
+    const u = new URL(`https://brasilapi.com.br/api/cep/v2/${clean}`);
+    const r = await fetchT(u, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "DoceriaFrete/5.1",
+      },
+    });
+
+    if (!r.ok) return null;
+
+    const data = (await r.json()) as {
+      location?: {
+        coordinates?: {
+          latitude?: string | number;
+          longitude?: string | number;
+        };
+      };
+    };
+
+    return coords(
+      data.location?.coordinates?.latitude,
+      data.location?.coordinates?.longitude,
+    );
+  } catch {
+    return null;
+  }
+}
+
 async function route(a: C, b: C): Promise<number | null> {
   const u = new URL(
     `https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}`,
@@ -271,7 +304,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const destination = await find(a);
+    // Primeiro tenta localizar o endereço completo. Se o provedor de
+    // geocodificação não retornar a rua/número, usa as coordenadas do CEP
+    // como fallback para não bloquear a simulação do frete.
+    const destination = (await find(a)) ?? (await cepCoords(a.cep));
 
     if (!destination) {
       return Response.json(
