@@ -3318,7 +3318,7 @@ if (
                             </div>
                           )}
                           <div className="freight-price">
-                            <span>Distância da rota (ida + volta)</span>
+                            <span>Distância utilizada no cálculo (ida + volta)</span>
                             <strong>{shippingRoundTripKm.toFixed(2).replace(".", ",")} km</strong>
                           </div>
                           <div className="freight-price">
@@ -3326,8 +3326,8 @@ if (
                             <strong>{formatMoney(deliveryFee)}</strong>
                           </div>
                           <p className="freight-rounding-note">
-                            O valor é calculado a R$ 1,00 por km e arredondado para
-                            cima até o próximo valor par.
+                            O valor é calculado a R$ 1,00 por km de distância geográfica,
+                            ida + volta, e arredondado para cima até o próximo valor par.
                           </p>
                           <div className="freight-price freight-total">
                             <span>Total com entrega</span>
