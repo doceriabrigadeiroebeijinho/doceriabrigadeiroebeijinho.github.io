@@ -131,6 +131,64 @@ async function searchPhoton(query: string): Promise<Candidate[]> {
   }
 }
 
+async function searchNominatimStructured(params: {
+  street?: string;
+  housenumber?: string;
+  neighbourhood?: string;
+  city?: string;
+  state?: string;
+  postalcode?: string;
+}): Promise<Candidate[]> {
+  try {
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("addressdetails", "1");
+    url.searchParams.set("countrycodes", "br");
+    url.searchParams.set("limit", "10");
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value?.trim()) url.searchParams.set(key, value.trim());
+    }
+
+    const response = await fetchT(url, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Language": "pt-BR",
+        "User-Agent": "DoceriaFrete/9.0",
+      },
+    });
+
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as Array<{
+      lat?: string;
+      lon?: string;
+      display_name?: string;
+      type?: string;
+      address?: Record<string, string | undefined>;
+    }>;
+
+    return data.flatMap((item) => {
+      const lat = Number(item.lat);
+      const lon = Number(item.lon);
+
+      return Number.isFinite(lat) && Number.isFinite(lon)
+        ? [
+            {
+              lat,
+              lon,
+              displayName: item.display_name ?? "",
+              type: item.type,
+              address: item.address,
+            },
+          ]
+        : [];
+    });
+  } catch {
+    return [];
+  }
+}
+
 async function searchNominatim(query: string): Promise<Candidate[]> {
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
@@ -196,6 +254,22 @@ async function geocode(address: string): Promise<Candidate | null> {
     "",
   );
 
+  const parts = withoutCep
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const stateAndCity = parts.find((part) => /belo horizonte|\bmg\b|minas gerais/i.test(part)) ?? "";
+  const city = /belo horizonte/i.test(stateAndCity)
+    ? "Belo Horizonte"
+    : "Belo Horizonte";
+  const state = /minas gerais/i.test(stateAndCity) ? "Minas Gerais" : "Minas Gerais";
+  const streetPart = parts.find((part) => !/belo horizonte|\bmg\b|minas gerais/i.test(part) && !/^\d{1,6}$/.test(part)) ?? withoutNumber;
+  const street = streetPart.replace(
+    /(?:,\s*)?(?:n[ºo]?\.?\s*)?\d{1,6}(?=\s*$)/i,
+    "",
+  ).trim();
+
   // Primeiro tenta o Photon, usando a posição da doceria como referência.
   // Depois tenta o Nominatim como fallback.
   const queries = [
@@ -209,12 +283,24 @@ async function geocode(address: string): Promise<Candidate | null> {
 
   const all: Candidate[] = [];
 
+  if (street || number) {
+    all.push(
+      ...(await searchNominatimStructured({
+        street,
+        housenumber: number,
+        city,
+        state,
+        postalcode: cleaned.match(/\b\d{5}-?\d{3}\b/)?.[0],
+      })),
+    );
+  }
+
   for (const query of [...new Set(queries)]) {
     all.push(...(await searchPhoton(query)));
   }
 
   for (const query of [...new Set(queries)]) {
-    if (all.length >= 20) break;
+    if (all.length >= 30) break;
     all.push(...(await searchNominatim(query)));
   }
 
