@@ -492,23 +492,83 @@ async function route(destination: C): Promise<number | null> {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { address?: string };
-    const address = body.address?.trim();
+    const body = (await request.json()) as {
+      address?: string;
+      cep?: string;
+      street?: string;
+      number?: string;
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      latitude?: number | null;
+      longitude?: number | null;
+    };
 
-    if (!address || address.length < 8) {
+    const address = body.address?.trim();
+    const cep = digits(body.cep);
+    const hasCepCoordinates =
+      typeof body.latitude === "number" &&
+      Number.isFinite(body.latitude) &&
+      typeof body.longitude === "number" &&
+      Number.isFinite(body.longitude);
+
+    if (
+      (!address || address.length < 8) &&
+      (!body.street?.trim() || !body.number?.trim() || !body.city?.trim())
+    ) {
       return Response.json(
-        { error: "Informe o endereço completo para calcular a entrega." },
+        { error: "Informe o CEP e o número para calcular a entrega." },
         { status: 400 },
       );
     }
 
-    const destination = await geocode(address);
+    let destination: Candidate | null = null;
+
+    if (address) {
+      destination = await geocode(address);
+    }
+
+    // O CEP v2 fornece latitude/longitude aproximadas. Usamos essa posição
+    // como fallback quando o mapa não consegue localizar o número exato.
+    // Isso evita bloquear um pedido válido só porque um geocodificador externo
+    // não possui o imóvel cadastrado.
+    if (!destination && hasCepCoordinates) {
+      const fallbackAddress = [
+        body.street,
+        body.number,
+        body.neighborhood,
+        body.city && body.state
+          ? `${body.city} - ${body.state}`
+          : body.city || body.state,
+        cep ? `CEP ${cep}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      destination = {
+        lat: body.latitude as number,
+        lon: body.longitude as number,
+        displayName: fallbackAddress || address || "Endereço informado",
+        type: "postcode",
+        address: {
+          road: body.street,
+          street: body.street,
+          house_number: body.number,
+          neighbourhood: body.neighborhood,
+          city: body.city,
+          state: body.state,
+          postcode: body.cep,
+          country: "Brasil",
+          country_code: "br",
+        },
+      };
+    }
 
     if (!destination) {
       return Response.json(
         {
           error:
-            "Não foi possível confirmar este endereço em Minas Gerais dentro do raio de 50 km da doceria. Confira rua, número, bairro, cidade e estado.",
+            "Não foi possível localizar o endereço pelo mapa. Confira o CEP e o número informados e tente novamente.",
         },
         { status: 422 },
       );
