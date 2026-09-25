@@ -243,42 +243,114 @@ async function geocode(address: string): Promise<Candidate | null> {
     .replace(/\s+/g, " ")
     .trim();
 
+  const cep = cleaned.match(/\b\d{5}-?\d{3}\b/)?.[0] ?? "";
+
   const withoutCep = cleaned
     .replace(/\b\d{5}-?\d{3}\b/g, "")
     .replace(/\s+/g, " ")
+    .replace(/\s*,\s*,+/g, ",")
+    .trim()
+    .replace(/^,|,$/g, "")
     .trim();
 
   const number = numberFromAddress(withoutCep);
-  const withoutNumber = withoutCep.replace(
-    /(?:,\s*)?(?:n[ºo]?\.?\s*)?\d{1,6}(?=\s*(?:,|$))/i,
-    "",
-  );
 
   const parts = withoutCep
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
 
-  const stateAndCity = parts.find((part) => /belo horizonte|\bmg\b|minas gerais/i.test(part)) ?? "";
-  const city = /belo horizonte/i.test(stateAndCity)
-    ? "Belo Horizonte"
-    : "Belo Horizonte";
-  const state = /minas gerais/i.test(stateAndCity) ? "Minas Gerais" : "Minas Gerais";
-  const streetPart = parts.find((part) => !/belo horizonte|\bmg\b|minas gerais/i.test(part) && !/^\d{1,6}$/.test(part)) ?? withoutNumber;
-  const street = streetPart.replace(
-    /(?:,\s*)?(?:n[ºo]?\.?\s*)?\d{1,6}(?=\s*$)/i,
-    "",
-  ).trim();
+  // A cidade deve vir do endereço informado. Nunca mais forçamos
+  // "Belo Horizonte" quando o cliente informou outra cidade, como Contagem.
+  let city = "";
+  let state = "";
+  let cityPartIndex = -1;
 
-  // Primeiro tenta o Photon, usando a posição da doceria como referência.
-  // Depois tenta o Nominatim como fallback.
+  for (let i = parts.length - 1; i >= 0; i -= 1) {
+    const part = parts[i];
+
+    if (/^MG$/i.test(part) || /^Minas Gerais$/i.test(part)) {
+      state = "Minas Gerais";
+      if (i > 0) {
+        city = parts[i - 1];
+        cityPartIndex = i - 1;
+      }
+      break;
+    }
+
+    const combined = part.match(
+      /^(.*?)(?:\\s*-\\s*|\\s+)((?:MG)|(?:Minas Gerais))$/i,
+    );
+
+    if (combined) {
+      city = combined[1].trim();
+      state = /Minas Gerais/i.test(combined[2])
+        ? "Minas Gerais"
+        : "Minas Gerais";
+      cityPartIndex = i;
+      break;
+    }
+  }
+
+  // Aceita "Belo Horizonte - MG" e "Contagem - MG", mas também
+  // funciona quando a pessoa informa apenas a cidade sem a UF.
+  if (!city) {
+    for (let i = parts.length - 1; i >= 1; i -= 1) {
+      if (
+        /belo horizonte|contagem|betim|ibirite|ribeirao das neves|nova lima|sabará|sabara|santa luzia|vespasiano|caete|brumadinho|juatuba|sarzedo|mario campos|esmeraldas|confins|lagoa santa|raposos|itabirito/i.test(
+          parts[i],
+        )
+      ) {
+        city = parts[i];
+        cityPartIndex = i;
+        break;
+      }
+    }
+  }
+
+  // O negócio está em MG; quando o usuário não informa a UF, assumimos MG,
+  // mas preservamos a cidade que ele digitou.
+  if (!state) state = "Minas Gerais";
+
+  const streetPart =
+    parts[0] && !/^\d{1,6}$/.test(parts[0])
+      ? parts[0]
+      : parts[1] && !/^\d{1,6}$/.test(parts[1])
+        ? parts[1]
+        : withoutCep;
+
+  const street = streetPart
+    .replace(/(?:,\\s*)?(?:n[ºo]?\\.?\\s*)?\d{1,6}(?=\\s*$)/i, "")
+    .trim();
+
+  let neighbourhood = "";
+  if (cityPartIndex > 1) {
+    const possibleNeighbourhood = parts[cityPartIndex - 1];
+    if (
+      possibleNeighbourhood &&
+      !/^\d{1,6}$/.test(possibleNeighbourhood) &&
+      norm(possibleNeighbourhood) !== norm(street)
+    ) {
+      neighbourhood = possibleNeighbourhood;
+    }
+  }
+
+  const locationSuffix = [city, state, "Brasil"].filter(Boolean).join(", ");
+  const baseWithoutNumber = withoutCep
+    .replace(
+      /(?:,\\s*)?(?:n[ºo]?\\.?\\s*)?\d{1,6}(?=\\s*(?:,|$))/i,
+      "",
+    )
+    .replace(/\\s+,/g, ",")
+    .trim();
+
   const queries = [
-    `${withoutCep}, Belo Horizonte, Minas Gerais, Brasil`,
-    `${withoutCep}, Belo Horizonte, MG, Brasil`,
-    `${withoutNumber}, Belo Horizonte, Minas Gerais, Brasil`,
+    [withoutCep, locationSuffix].filter(Boolean).join(", "),
+    [baseWithoutNumber, locationSuffix].filter(Boolean).join(", "),
+    [street, city, state, "Brasil"].filter(Boolean).join(", "),
     cleaned,
   ]
-    .map((query) => query.replace(/\s+/g, " ").trim())
+    .map((query) => query.replace(/\\s+/g, " ").trim())
     .filter(Boolean);
 
   const all: Candidate[] = [];
@@ -288,9 +360,10 @@ async function geocode(address: string): Promise<Candidate | null> {
       ...(await searchNominatimStructured({
         street,
         housenumber: number,
+        neighbourhood,
         city,
         state,
-        postalcode: cleaned.match(/\b\d{5}-?\d{3}\b/)?.[0],
+        postalcode: cep,
       })),
     );
   }
@@ -306,26 +379,62 @@ async function geocode(address: string): Promise<Candidate | null> {
 
   const eligible = all.filter((candidate) => {
     const distance = distanceKm(ORIGIN, candidate);
-    return distance <= MAX_RADIUS_KM;
+    if (distance > MAX_RADIUS_KM) return false;
+
+    const candidateCity = norm(
+      candidate.address?.city ??
+        candidate.address?.town ??
+        candidate.address?.municipality,
+    );
+
+    // Quando o cliente informou uma cidade, não aceitamos um candidato
+    // localizado em outra cidade. Isso evita, por exemplo, transformar
+    // "Contagem" em "Belo Horizonte".
+    if (city && candidateCity && candidateCity !== norm(city)) {
+      return false;
+    }
+
+    return true;
   });
 
   if (!eligible.length) return null;
+
+  const requestedCity = norm(city);
+  const requestedStreet = norm(street);
+  const requestedNeighbourhood = norm(neighbourhood);
 
   const ranked = eligible
     .map((candidate) => {
       const a = candidate.address ?? {};
       const house = digits(a.house_number);
       const text = norm(candidate.displayName);
-      const city = norm(a.city ?? a.town ?? a.municipality);
-      const state = norm(a.state ?? a.state_code);
+      const candidateCity = norm(
+        a.city ?? a.town ?? a.municipality,
+      );
+      const candidateStreet = norm(a.road ?? a.street);
+      const candidateNeighbourhood = norm(
+        a.neighbourhood ?? a.suburb ?? a.district,
+      );
+      const stateValue = norm(a.state ?? a.state_code);
       const country = norm(a.country ?? a.country_code);
 
       let score = 0;
       const distance = distanceKm(ORIGIN, candidate);
 
-      if (number && house === number) score += 220;
-      else if (number && house) score -= 160;
-      else if (number) score -= 30;
+      if (number && house === number) score += 260;
+      else if (number && house) score -= 180;
+      else if (number) score -= 35;
+
+      if (requestedStreet && candidateStreet === requestedStreet) score += 90;
+      if (
+        requestedNeighbourhood &&
+        candidateNeighbourhood === requestedNeighbourhood
+      ) {
+        score += 45;
+      }
+
+      if (candidateCity === requestedCity && requestedCity) score += 180;
+      if (!requestedCity && candidateCity === "belo horizonte") score += 20;
 
       if (
         candidate.type === "house" ||
@@ -336,8 +445,7 @@ async function geocode(address: string): Promise<Candidate | null> {
       }
 
       if (number && text.includes(` ${number} `)) score += 35;
-      if (city === "belo horizonte") score += 20;
-      if (state.includes("minas gerais") || state === "mg") score += 10;
+      if (stateValue.includes("minas gerais") || stateValue === "mg") score += 10;
       if (country === "brasil" || country === "br") score += 5;
 
       // Em empate, prefira o candidato mais próximo da doceria.
