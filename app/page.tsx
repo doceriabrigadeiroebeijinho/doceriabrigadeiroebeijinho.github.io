@@ -1277,6 +1277,8 @@ export default function Home() {
     delivery.number,
     delivery.city,
     delivery.state,
+    delivery.latitude,
+    delivery.longitude,
   ]);
 
   useEffect(() => {
@@ -3313,7 +3315,7 @@ if (
                           </div>
                           {shippingLocatedAddress && (
                             <div>
-                              <span>Endereço localizado pelo mapa</span>
+                              <span>Endereço confirmado pelo CEP</span>
                               <small>{shippingLocatedAddress}</small>
                             </div>
                           )}
@@ -3326,8 +3328,8 @@ if (
                             <strong>{formatMoney(deliveryFee)}</strong>
                           </div>
                           <p className="freight-rounding-note">
-                            O valor é calculado a R$ 1,00 por km de rota de carro,
-                            ida + volta, e arredondado para cima até o próximo valor par.
+                            O valor é calculado a R$ 1,00 por km, considerando a distância aproximada do CEP
+                            em ida + volta, e arredondado para cima até o próximo valor par.
                           </p>
                           <div className="freight-price freight-total">
                             <span>Total com entrega</span>
