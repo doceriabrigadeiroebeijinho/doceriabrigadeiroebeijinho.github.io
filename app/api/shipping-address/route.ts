@@ -458,6 +458,7 @@ async function geocode(address: string): Promise<Candidate | null> {
   return ranked[0]?.candidate ?? null;
 }
 
+// Google Routes: distância oficial da rota de carro.
 async function routeWithGoogle(
   address: string,
   apiKey: string,
