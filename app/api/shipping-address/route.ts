@@ -486,7 +486,14 @@ async function routeWithGoogle(
       },
     );
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Google Routes API error", {
+        status: response.status,
+        body: errorText.slice(0, 1000),
+      });
+      return null;
+    }
 
     const data = (await response.json()) as {
       routes?: Array<{ distanceMeters?: number }>;
@@ -494,9 +501,14 @@ async function routeWithGoogle(
 
     const meters = data.routes?.[0]?.distanceMeters;
 
-    return typeof meters === "number" && Number.isFinite(meters)
-      ? meters
-      : null;
+    if (!(typeof meters === "number" && Number.isFinite(meters))) {
+      console.error("Google Routes API returned no distance", {
+        body: JSON.stringify(data).slice(0, 1000),
+      });
+      return null;
+    }
+
+    return meters;
   } catch {
     return null;
   }
