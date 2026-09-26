@@ -475,12 +475,20 @@ async function routeWithGoogle(
           "X-Goog-FieldMask": "routes.distanceMeters",
         },
         body: JSON.stringify({
-          origin: { address: ORIGIN },
+          origin: {
+            location: {
+              latLng: {
+                latitude: ORIGIN.lat,
+                longitude: ORIGIN.lon,
+              },
+            },
+          },
           destination: { address },
           travelMode: "DRIVE",
           routingPreference: "TRAFFIC_UNAWARE",
           computeAlternativeRoutes: false,
           languageCode: "pt-BR",
+          regionCode: "BR",
           units: "METRIC",
         }),
       },
