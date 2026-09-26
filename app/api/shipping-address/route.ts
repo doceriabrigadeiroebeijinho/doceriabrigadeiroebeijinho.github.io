@@ -641,7 +641,8 @@ export async function POST(request: Request) {
     if (googleApiKey) {
       // Quando a chave do Google estiver configurada, a distância do frete
       // vem diretamente da Google Routes API usando o endereço completo.
-      meters = await routeWithGoogle(address, googleApiKey);
+      const routeAddress = address || fallbackAddress;
+      meters = await routeWithGoogle(routeAddress, googleApiKey);
 
       if (meters === null) {
         return Response.json(
