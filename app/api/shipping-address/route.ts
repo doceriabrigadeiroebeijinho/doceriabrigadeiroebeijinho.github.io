@@ -2,43 +2,36 @@ const RATE_PER_KM = 1;
 const ROUNDING_STEP = 2;
 const MAX_RADIUS_KM = 50;
 const ORIGIN = { lat: -20.0109557, lon: -44.0094064 } as const;
-const TIMEOUT = 12000;
+const TIMEOUT = 8000;
 
 type C = { lat: number; lon: number };
-type Candidate = C & {
-  displayName: string;
-  type?: string;
-  address?: Record<string, string | undefined>;
+
+type CepData = {
+  cep: string;
+  street: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  latitude: number;
+  longitude: number;
 };
 
-const fetchT = async (input: string | URL, init: RequestInit = {}) => {
+const digits = (value?: string) => (value ?? "").replace(/\D/g, "");
+
+const fetchWithTimeout = async (url: string) => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT);
 
   try {
-    return await fetch(input, {
-      ...init,
+    return await fetch(url, {
       signal: controller.signal,
       cache: "no-store",
+      headers: { Accept: "application/json" },
     });
   } finally {
     clearTimeout(timer);
   }
 };
-
-const norm = (value?: string) =>
-  (value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const digits = (value?: string) => (value ?? "").replace(/\D/g, "");
-
-const numberFromAddress = (value: string) =>
-  value.match(/(?:^|[,;\s])(?:n[ºo]?\.?\s*)?(\d{1,6})(?:\D|$)/i)?.[1] ?? "";
 
 const distanceKm = (a: C, b: C) => {
   const earthRadiusKm = 6371;
@@ -54,469 +47,84 @@ const distanceKm = (a: C, b: C) => {
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 };
 
-async function searchPhoton(query: string): Promise<Candidate[]> {
+async function lookupBrasilApiV2(cep: string): Promise<CepData | null> {
   try {
-    const url = new URL("https://photon.komoot.io/api/");
-    url.searchParams.set("q", query);
-    url.searchParams.set("limit", "10");
-    url.searchParams.set("lat", String(ORIGIN.lat));
-    url.searchParams.set("lon", String(ORIGIN.lon));
-    url.searchParams.set("zoom", "10");
-    url.searchParams.set("lang", "pt");
+    const response = await fetchWithTimeout(
+      `https://brasilapi.com.br/api/cep/v2/${cep}`,
+    );
 
-    const response = await fetchT(url, {
-      headers: {
-        Accept: "application/json",
-        "Accept-Language": "pt-BR",
-        "User-Agent": "DoceriaFrete/9.0",
-      },
-    });
-
-    if (!response.ok) return [];
+    if (!response.ok) return null;
 
     const data = (await response.json()) as {
-      features?: Array<{
-        geometry?: { coordinates?: [number, number] };
-        properties?: Record<string, string | undefined>;
-      }>;
-    };
-
-    return (data.features ?? []).flatMap((feature) => {
-      const coordinates = feature.geometry?.coordinates;
-      if (
-        !Array.isArray(coordinates) ||
-        coordinates.length < 2 ||
-        !Number.isFinite(Number(coordinates[0])) ||
-        !Number.isFinite(Number(coordinates[1]))
-      ) {
-        return [];
-      }
-
-      const properties = feature.properties ?? {};
-      const address: Record<string, string | undefined> = {
-        house_number: properties.housenumber,
-        city: properties.city,
-        state: properties.state,
-        postcode: properties.postcode,
-        country: properties.country,
-        country_code: properties.countrycode,
-        street: properties.street,
-        district: properties.district,
+      cep?: string;
+      street?: string;
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      location?: {
+        coordinates?: {
+          latitude?: string | number;
+          longitude?: string | number;
+        };
       };
-
-      const displayName = [
-        properties.street && properties.housenumber
-          ? `${properties.street}, ${properties.housenumber}`
-          : properties.street,
-        properties.district,
-        properties.city,
-        properties.state,
-        properties.postcode,
-      ]
-        .filter(Boolean)
-        .join(", ");
-
-      return [
-        {
-          lat: Number(coordinates[1]),
-          lon: Number(coordinates[0]),
-          displayName: displayName || query,
-          type: properties.osm_value,
-          address,
-        },
-      ];
-    });
-  } catch {
-    return [];
-  }
-}
-
-async function searchNominatimStructured(params: {
-  street?: string;
-  housenumber?: string;
-  neighbourhood?: string;
-  city?: string;
-  state?: string;
-  postalcode?: string;
-}): Promise<Candidate[]> {
-  try {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("format", "jsonv2");
-    url.searchParams.set("addressdetails", "1");
-    url.searchParams.set("countrycodes", "br");
-    url.searchParams.set("limit", "10");
-
-    for (const [key, value] of Object.entries(params)) {
-      if (value?.trim()) url.searchParams.set(key, value.trim());
-    }
-
-    const response = await fetchT(url, {
-      headers: {
-        Accept: "application/json",
-        "Accept-Language": "pt-BR",
-        "User-Agent": "DoceriaFrete/9.0",
-      },
-    });
-
-    if (!response.ok) return [];
-
-    const data = (await response.json()) as Array<{
-      lat?: string;
-      lon?: string;
-      display_name?: string;
-      type?: string;
-      address?: Record<string, string | undefined>;
-    }>;
-
-    return data.flatMap((item) => {
-      const lat = Number(item.lat);
-      const lon = Number(item.lon);
-
-      return Number.isFinite(lat) && Number.isFinite(lon)
-        ? [
-            {
-              lat,
-              lon,
-              displayName: item.display_name ?? "",
-              type: item.type,
-              address: item.address,
-            },
-          ]
-        : [];
-    });
-  } catch {
-    return [];
-  }
-}
-
-async function searchNominatim(query: string): Promise<Candidate[]> {
-  try {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("format", "jsonv2");
-    url.searchParams.set("addressdetails", "1");
-    url.searchParams.set("countrycodes", "br");
-    url.searchParams.set("limit", "10");
-    url.searchParams.set("q", query);
-
-    const response = await fetchT(url, {
-      headers: {
-        Accept: "application/json",
-        "Accept-Language": "pt-BR",
-        "User-Agent": "DoceriaFrete/9.0",
-      },
-    });
-
-    if (!response.ok) return [];
-
-    const data = (await response.json()) as Array<{
-      lat?: string;
-      lon?: string;
-      display_name?: string;
-      type?: string;
-      address?: Record<string, string | undefined>;
-    }>;
-
-    return data.flatMap((item) => {
-      const lat = Number(item.lat);
-      const lon = Number(item.lon);
-
-      return Number.isFinite(lat) && Number.isFinite(lon)
-        ? [
-            {
-              lat,
-              lon,
-              displayName: item.display_name ?? query,
-              type: item.type,
-              address: item.address,
-            },
-          ]
-        : [];
-    });
-  } catch {
-    return [];
-  }
-}
-
-async function geocode(address: string): Promise<Candidate | null> {
-  const cleaned = address
-    .replace(/\bBrasil\b/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  const cep = cleaned.match(/\b\d{5}-?\d{3}\b/)?.[0] ?? "";
-
-  const withoutCep = cleaned
-    .replace(/\b\d{5}-?\d{3}\b/g, "")
-    .replace(/\s+/g, " ")
-    .replace(/\s*,\s*,+/g, ",")
-    .trim()
-    .replace(/^,|,$/g, "")
-    .trim();
-
-  const number = numberFromAddress(withoutCep);
-
-  const parts = withoutCep
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  // A cidade deve vir do endereço informado. Nunca mais forçamos
-  // "Belo Horizonte" quando o cliente informou outra cidade, como Contagem.
-  let city = "";
-  let state = "";
-  let cityPartIndex = -1;
-
-  for (let i = parts.length - 1; i >= 0; i -= 1) {
-    const part = parts[i];
-
-    if (/^MG$/i.test(part) || /^Minas Gerais$/i.test(part)) {
-      state = "Minas Gerais";
-      if (i > 0) {
-        city = parts[i - 1];
-        cityPartIndex = i - 1;
-      }
-      break;
-    }
-
-    const combined = part.match(
-      /^(.*?)(?:\\s*-\\s*|\\s+)((?:MG)|(?:Minas Gerais))$/i,
-    );
-
-    if (combined) {
-      city = combined[1].trim();
-      state = /Minas Gerais/i.test(combined[2])
-        ? "Minas Gerais"
-        : "Minas Gerais";
-      cityPartIndex = i;
-      break;
-    }
-  }
-
-  // Aceita "Belo Horizonte - MG" e "Contagem - MG", mas também
-  // funciona quando a pessoa informa apenas a cidade sem a UF.
-  if (!city) {
-    for (let i = parts.length - 1; i >= 1; i -= 1) {
-      if (
-        /belo horizonte|contagem|betim|ibirite|ribeirao das neves|nova lima|sabará|sabara|santa luzia|vespasiano|caete|brumadinho|juatuba|sarzedo|mario campos|esmeraldas|confins|lagoa santa|raposos|itabirito/i.test(
-          parts[i],
-        )
-      ) {
-        city = parts[i];
-        cityPartIndex = i;
-        break;
-      }
-    }
-  }
-
-  // O negócio está em MG; quando o usuário não informa a UF, assumimos MG,
-  // mas preservamos a cidade que ele digitou.
-  if (!state) state = "Minas Gerais";
-
-  const streetPart =
-    parts[0] && !/^\d{1,6}$/.test(parts[0])
-      ? parts[0]
-      : parts[1] && !/^\d{1,6}$/.test(parts[1])
-        ? parts[1]
-        : withoutCep;
-
-  const street = streetPart
-    .replace(/(?:,\\s*)?(?:n[ºo]?\\.?\\s*)?\d{1,6}(?=\\s*$)/i, "")
-    .trim();
-
-  let neighbourhood = "";
-  if (cityPartIndex > 1) {
-    const possibleNeighbourhood = parts[cityPartIndex - 1];
-    if (
-      possibleNeighbourhood &&
-      !/^\d{1,6}$/.test(possibleNeighbourhood) &&
-      norm(possibleNeighbourhood) !== norm(street)
-    ) {
-      neighbourhood = possibleNeighbourhood;
-    }
-  }
-
-  const locationSuffix = [city, state, "Brasil"].filter(Boolean).join(", ");
-  const baseWithoutNumber = withoutCep
-    .replace(
-      /(?:,\\s*)?(?:n[ºo]?\\.?\\s*)?\d{1,6}(?=\\s*(?:,|$))/i,
-      "",
-    )
-    .replace(/\\s+,/g, ",")
-    .trim();
-
-  const queries = [
-    [withoutCep, locationSuffix].filter(Boolean).join(", "),
-    [baseWithoutNumber, locationSuffix].filter(Boolean).join(", "),
-    [street, city, state, "Brasil"].filter(Boolean).join(", "),
-    cleaned,
-  ]
-    .map((query) => query.replace(/\\s+/g, " ").trim())
-    .filter(Boolean);
-
-  const all: Candidate[] = [];
-
-  if (street || number) {
-    all.push(
-      ...(await searchNominatimStructured({
-        street,
-        housenumber: number,
-        neighbourhood,
-        city,
-        state,
-        postalcode: cep,
-      })),
-    );
-  }
-
-  for (const query of [...new Set(queries)]) {
-    all.push(...(await searchPhoton(query)));
-  }
-
-  for (const query of [...new Set(queries)]) {
-    if (all.length >= 30) break;
-    all.push(...(await searchNominatim(query)));
-  }
-
-  const eligible = all.filter((candidate) => {
-    const distance = distanceKm(ORIGIN, candidate);
-    if (distance > MAX_RADIUS_KM) return false;
-
-    const candidateCity = norm(
-      candidate.address?.city ??
-        candidate.address?.town ??
-        candidate.address?.municipality,
-    );
-
-    // Quando o cliente informou uma cidade, não aceitamos um candidato
-    // localizado em outra cidade. Isso evita, por exemplo, transformar
-    // "Contagem" em "Belo Horizonte".
-    if (city && candidateCity && candidateCity !== norm(city)) {
-      return false;
-    }
-
-    return true;
-  });
-
-  if (!eligible.length) return null;
-
-  const requestedCity = norm(city);
-  const requestedStreet = norm(street);
-  const requestedNeighbourhood = norm(neighbourhood);
-
-  const ranked = eligible
-    .map((candidate) => {
-      const a = candidate.address ?? {};
-      const house = digits(a.house_number);
-      const text = norm(candidate.displayName);
-      const candidateCity = norm(
-        a.city ?? a.town ?? a.municipality,
-      );
-      const candidateStreet = norm(a.road ?? a.street);
-      const candidateNeighbourhood = norm(
-        a.neighbourhood ?? a.suburb ?? a.district,
-      );
-      const stateValue = norm(a.state ?? a.state_code);
-      const country = norm(a.country ?? a.country_code);
-
-      let score = 0;
-      const distance = distanceKm(ORIGIN, candidate);
-
-      if (number && house === number) score += 260;
-      else if (number && house) score -= 180;
-      else if (number) score -= 35;
-
-      if (requestedStreet && candidateStreet === requestedStreet) score += 90;
-      if (
-        requestedNeighbourhood &&
-        candidateNeighbourhood === requestedNeighbourhood
-      ) {
-        score += 45;
-      }
-
-      if (candidateCity === requestedCity && requestedCity) score += 180;
-      if (!requestedCity && candidateCity === "belo horizonte") score += 20;
-
-      if (
-        candidate.type === "house" ||
-        candidate.type === "building" ||
-        candidate.type === "apartments"
-      ) {
-        score += 25;
-      }
-
-      if (number && text.includes(` ${number} `)) score += 35;
-      if (stateValue.includes("minas gerais") || stateValue === "mg") score += 10;
-      if (country === "brasil" || country === "br") score += 5;
-
-      // Em empate, prefira o candidato mais próximo da doceria.
-      score -= distance * 0.5;
-
-      return { candidate, score, distance };
-    })
-    .sort((x, y) => y.score - x.score);
-
-  return ranked[0]?.candidate ?? null;
-}
-
-// Google Routes: distância oficial da rota de carro.
-async function routeWithGoogle(
-  address: string,
-  apiKey: string,
-): Promise<number | null> {
-  try {
-    const response = await fetchT(
-      "https://routes.googleapis.com/directions/v2:computeRoutes",
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": "routes.distanceMeters",
-        },
-        body: JSON.stringify({
-          origin: {
-            location: {
-              latLng: {
-                latitude: ORIGIN.lat,
-                longitude: ORIGIN.lon,
-              },
-            },
-          },
-          destination: { address },
-          travelMode: "DRIVE",
-          routingPreference: "TRAFFIC_UNAWARE",
-          computeAlternativeRoutes: false,
-          languageCode: "pt-BR",
-          regionCode: "BR",
-          units: "METRIC",
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Google Routes API error", {
-        status: response.status,
-        body: errorText.slice(0, 1000),
-      });
-      return null;
-    }
-
-    const data = (await response.json()) as {
-      routes?: Array<{ distanceMeters?: number }>;
     };
 
-    const meters = data.routes?.[0]?.distanceMeters;
+    const latitude = Number(data.location?.coordinates?.latitude);
+    const longitude = Number(data.location?.coordinates?.longitude);
 
-    if (!(typeof meters === "number" && Number.isFinite(meters))) {
-      console.error("Google Routes API returned no distance", {
-        body: JSON.stringify(data).slice(0, 1000),
-      });
+    if (
+      !data.street ||
+      !data.city ||
+      !data.state ||
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude)
+    ) {
       return null;
     }
 
-    return meters;
+    return {
+      cep: digits(data.cep ?? cep),
+      street: data.street,
+      neighborhood: data.neighborhood ?? "",
+      city: data.city,
+      state: data.state,
+      latitude,
+      longitude,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function lookupViaCep(cep: string): Promise<CepData | null> {
+  try {
+    const response = await fetchWithTimeout(
+      `https://viacep.com.br/ws/${cep}/json/`,
+    );
+
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as {
+      erro?: boolean;
+      cep?: string;
+      logradouro?: string;
+      bairro?: string;
+      localidade?: string;
+      uf?: string;
+    };
+
+    if (
+      data.erro ||
+      !data.logradouro ||
+      !data.localidade ||
+      !data.uf
+    ) {
+      return null;
+    }
+
+    // ViaCEP não fornece coordenadas. Ele só entra como fallback para
+    // validar o CEP; sem coordenadas não calculamos a distância automaticamente.
+    return null;
   } catch {
     return null;
   }
@@ -536,116 +144,65 @@ export async function POST(request: Request) {
       longitude?: number | null;
     };
 
-    const address = body.address?.trim();
     const cep = digits(body.cep);
-    const hasCepCoordinates =
-      typeof body.latitude === "number" &&
-      Number.isFinite(body.latitude) &&
-      typeof body.longitude === "number" &&
-      Number.isFinite(body.longitude);
 
-    if (
-      (!address || address.length < 8) &&
-      (!body.street?.trim() || !body.number?.trim() || !body.city?.trim())
-    ) {
+    if (!/^\d{8}$/.test(cep)) {
       return Response.json(
-        { error: "Informe o CEP e o número para calcular a entrega." },
+        { error: "Informe um CEP válido com 8 números." },
         { status: 400 },
       );
     }
 
-    let destination: Candidate | null = null;
-
-    const fallbackAddress = [
-      body.street,
-      body.number,
-      body.neighborhood,
-      body.city && body.state
-        ? `${body.city} - ${body.state}`
-        : body.city || body.state,
-      cep ? `CEP ${cep}` : "",
-    ]
-      .filter(Boolean)
-      .join(", ");
-
-    const cepDestination: Candidate | null = hasCepCoordinates
-      ? {
-          lat: body.latitude as number,
-          lon: body.longitude as number,
-          displayName: fallbackAddress || address || "Endereço informado",
-          type: "postcode",
-          address: {
-            road: body.street,
-            street: body.street,
-            house_number: body.number,
-            neighbourhood: body.neighborhood,
-            city: body.city,
-            state: body.state,
-            postcode: body.cep,
-            country: "Brasil",
-            country_code: "br",
-          },
-        }
-      : null;
-
-    if (address) {
-      destination = await geocode(address);
-    }
-
-    if (!destination && cep && body.city?.trim()) {
-      const postalCandidates = await searchNominatimStructured({
-        postalcode: cep,
-        city: body.city,
-        state: body.state || "Minas Gerais",
-      });
-
-      const requestedStreet = norm(body.street);
-      const requestedCity = norm(body.city);
-
-      destination =
-        postalCandidates
-          .filter((candidate) => {
-            const candidateCity = norm(
-              candidate.address?.city ??
-                candidate.address?.town ??
-                candidate.address?.municipality,
-            );
-            return !candidateCity || candidateCity === requestedCity;
-          })
-          .sort((a, b) => {
-            const streetA = norm(a.address?.road ?? a.address?.street);
-            const streetB = norm(b.address?.road ?? b.address?.street);
-            const scoreA =
-              (streetA && requestedStreet && streetA === requestedStreet ? 100 : 0) -
-              distanceKm(ORIGIN, a);
-            const scoreB =
-              (streetB && requestedStreet && streetB === requestedStreet ? 100 : 0) -
-              distanceKm(ORIGIN, b);
-            return scoreB - scoreA;
-          })[0] ?? null;
-    }
-
-    // A posição aproximada do CEP é a referência estável para o cálculo.
-    // Só usamos um geocodificador de endereço quando ele está próximo do CEP.
-    if (cepDestination) {
-      if (!destination || distanceKm(cepDestination, destination) > 3) {
-        destination = cepDestination;
-      }
-    }
-
-    if (!destination) {
+    if (!body.number?.trim()) {
       return Response.json(
-        {
-          error:
-            "Não foi possível localizar o endereço pelo CEP. Confira o CEP e o número informados e tente novamente.",
-        },
-        { status: 422 },
+        { error: "Informe o número do endereço para continuar." },
+        { status: 400 },
       );
     }
 
-    const straightLineKm = distanceKm(ORIGIN, destination);
+    let cepData: CepData | null = null;
 
-    if (straightLineKm > MAX_RADIUS_KM) {
+    if (
+      typeof body.latitude === "number" &&
+      Number.isFinite(body.latitude) &&
+      typeof body.longitude === "number" &&
+      Number.isFinite(body.longitude)
+    ) {
+      cepData = {
+        cep,
+        street: body.street?.trim() ?? "",
+        neighborhood: body.neighborhood?.trim() ?? "",
+        city: body.city?.trim() ?? "",
+        state: body.state?.trim() ?? "",
+        latitude: body.latitude,
+        longitude: body.longitude,
+      };
+    } else {
+      cepData = await lookupBrasilApiV2(cep);
+    }
+
+    // Se o V2 não retornar coordenadas, tentamos confirmar o CEP no ViaCEP.
+    // Não usamos geocodificação livre: isso evita que uma rua com nome
+    // semelhante seja localizada em outro bairro/cidade.
+    if (!cepData) {
+      await lookupViaCep(cep);
+      return Response.json(
+        {
+          error:
+            "Não conseguimos obter a localização aproximada deste CEP agora. Confira o CEP e tente novamente.",
+        },
+        { status: 503 },
+      );
+    }
+
+    const destination = {
+      lat: cepData.latitude,
+      lon: cepData.longitude,
+    };
+
+    const oneWayKm = distanceKm(ORIGIN, destination);
+
+    if (oneWayKm > MAX_RADIUS_KM) {
       return Response.json(
         {
           error:
@@ -655,45 +212,36 @@ export async function POST(request: Request) {
       );
     }
 
-    const googleApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
-    let meters: number | null = null;
-
-    if (googleApiKey) {
-      // Quando a chave do Google estiver configurada, a distância do frete
-      // vem diretamente da Google Routes API usando o endereço completo.
-      const routeAddress = address || fallbackAddress;
-      meters = await routeWithGoogle(routeAddress, googleApiKey);
-
-      if (meters === null) {
-        return Response.json(
-          {
-            error:
-              "O Google Maps não conseguiu calcular a rota deste endereço agora. Confira o endereço e tente novamente.",
-          },
-          { status: 503 },
-        );
-      }
-    } else {
-      // Fallback temporário para manter o cálculo funcional até a chave do Google ser carregada no ambiente.
-      meters = Math.round(straightLineKm * 1000);
-    }
-
-    const oneWayKm = meters / 1000;
+    // O frete é baseado na distância do CEP, não em uma rota de carro.
+    // Ida + volta = distância em linha reta do CEP × 2.
     const roundTripKm = oneWayKm * 2;
     const calculatedFee = roundTripKm * RATE_PER_KM;
     const fee = Math.ceil(calculatedFee / ROUNDING_STEP) * ROUNDING_STEP;
+
+    const locatedAddress = [
+      cepData.street && body.number
+        ? `${cepData.street}, ${body.number}`
+        : cepData.street,
+      cepData.neighborhood,
+      cepData.city && cepData.state
+        ? `${cepData.city} - ${cepData.state}`
+        : cepData.city || cepData.state,
+      `CEP ${cepData.cep}`,
+    ]
+      .filter(Boolean)
+      .join(", ");
 
     return Response.json(
       {
         fee: Number(fee.toFixed(2)),
         oneWayKm: Number(oneWayKm.toFixed(2)),
         roundTripKm: Number(roundTripKm.toFixed(2)),
-        straightLineKm: Number(straightLineKm.toFixed(2)),
-        locatedAddress: destination.displayName,
+        straightLineKm: Number(oneWayKm.toFixed(2)),
+        locatedAddress,
         maxRadiusKm: MAX_RADIUS_KM,
         roundingStep: ROUNDING_STEP,
-        locationSource: googleApiKey ? "Google Routes" : "CEP",
-        distanceMode: googleApiKey ? "rota Google" : "fallback CEP",
+        locationSource: "BrasilAPI CEP V2",
+        distanceMode: "distância aproximada pelo CEP",
       },
       { headers: { "Cache-Control": "no-store" } },
     );
