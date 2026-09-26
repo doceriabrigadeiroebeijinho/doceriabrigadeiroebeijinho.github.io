@@ -652,7 +652,7 @@ export async function POST(request: Request) {
         );
       }
     } else {
-      // Fallback temporário enquanto a chave ainda não foi configurada.
+      // Fallback temporário para manter o cálculo funcional até a chave do Google ser carregada no ambiente.
       meters = Math.round(straightLineKm * 1000);
     }
 
