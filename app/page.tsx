@@ -1230,10 +1230,13 @@ export default function Home() {
         };
       }
 
-      return {
-        ...current,
-        [cakeId]: { ...choice, [field]: value },
-      };
+      if (field === "mass") {
+        return { ...current, [cakeId]: { ...choice, mass: value } };
+      }
+      if (field === "model") {
+        return { ...current, [cakeId]: { ...choice, model: value } };
+      }
+      return { ...current, [cakeId]: { ...choice, filling: value } };
     });
   };
 
