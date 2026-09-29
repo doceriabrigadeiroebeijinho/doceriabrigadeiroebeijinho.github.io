@@ -33,19 +33,35 @@ const fetchWithTimeout = async (url: string) => {
   }
 };
 
-const distanceKm = (a: C, b: C) => {
-  const earthRadiusKm = 6371;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLon = ((b.lon - a.lon) * Math.PI) / 180;
+async function drivingDistanceKm(a: C, b: C): Promise<number | null> {
+  const coordinates = [
+    `${a.lon},${a.lat}`,
+    `${b.lon},${b.lat}`,
+  ].join(";");
 
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  try {
+    const response = await fetchWithTimeout(
+      `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=false&alternatives=false&steps=false`,
+    );
 
-  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-};
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as {
+      code?: string;
+      routes?: Array<{ distance?: number }>;
+    };
+
+    const meters = data.routes?.[0]?.distance;
+
+    if (data.code !== "Ok" || typeof meters !== "number" || !Number.isFinite(meters)) {
+      return null;
+    }
+
+    return meters / 1000;
+  } catch {
+    return null;
+  }
+}
 
 async function lookupBrasilApiV2(cep: string): Promise<CepData | null> {
   try {
@@ -200,7 +216,17 @@ export async function POST(request: Request) {
       lon: cepData.longitude,
     };
 
-    const oneWayKm = distanceKm(ORIGIN, destination);
+    const oneWayKm = await drivingDistanceKm(ORIGIN, destination);
+
+    if (oneWayKm === null) {
+      return Response.json(
+        {
+          error:
+            "Não foi possível calcular a rota de entrega agora. Tente novamente em alguns instantes.",
+        },
+        { status: 503 },
+      );
+    }
 
     if (oneWayKm > MAX_RADIUS_KM) {
       return Response.json(
@@ -212,36 +238,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // O frete é baseado na distância do CEP, não em uma rota de carro.
-    // Ida + volta = distância em linha reta do CEP × 2.
+    // A taxa usa a distância real da rota de carro em ida + volta.
+    // O valor final é arredondado para cima até o próximo valor par.
     const roundTripKm = oneWayKm * 2;
     const calculatedFee = roundTripKm * RATE_PER_KM;
     const fee = Math.ceil(calculatedFee / ROUNDING_STEP) * ROUNDING_STEP;
 
-    const locatedAddress = [
-      cepData.street && body.number
-        ? `${cepData.street}, ${body.number}`
-        : cepData.street,
-      cepData.neighborhood,
-      cepData.city && cepData.state
-        ? `${cepData.city} - ${cepData.state}`
-        : cepData.city || cepData.state,
-      `CEP ${cepData.cep}`,
-    ]
-      .filter(Boolean)
-      .join(", ");
-
     return Response.json(
       {
         fee: Number(fee.toFixed(2)),
-        oneWayKm: Number(oneWayKm.toFixed(2)),
-        roundTripKm: Number(roundTripKm.toFixed(2)),
-        straightLineKm: Number(oneWayKm.toFixed(2)),
-        locatedAddress,
-        maxRadiusKm: MAX_RADIUS_KM,
-        roundingStep: ROUNDING_STEP,
-        locationSource: "BrasilAPI CEP V2",
-        distanceMode: "distância aproximada pelo CEP",
       },
       { headers: { "Cache-Control": "no-store" } },
     );
