@@ -239,6 +239,18 @@ const cakeTiers: CakeTier[] = [
 ];
 
 
+const blackCocoaPrice: Record<string, number> = {
+  mini: 3,
+  p: 5,
+  m: 8,
+  g: 10,
+  gg: 12,
+  corte: 12,
+};
+
+const cakeMassPrice = (cakeId: string, mass: string) =>
+  mass === "Cacau Black" ? blackCocoaPrice[cakeId] ?? 0 : 0;
+
 const cakeSizeCatalog = [
   {
     id: "mini",
@@ -1039,7 +1051,9 @@ export default function Home() {
     const requires48h = selectedDecorations.some((optionId) =>
       Boolean(cakeDecorationOptions.find((option) => option.id === optionId)?.requires48h),
     );
-    const unitPrice = cake.prices[choice.fillingType] + decorationTotal;
+    const massAdditional = cakeMassPrice(cake.id, choice.mass);
+    const unitPrice =
+      cake.prices[choice.fillingType] + decorationTotal + massAdditional;
     const fillingTypeLabel =
       choice.fillingType === "Classico" ? "Clássico" :
       choice.fillingType === "Especial" ? "Especial" : "Gourmet";
