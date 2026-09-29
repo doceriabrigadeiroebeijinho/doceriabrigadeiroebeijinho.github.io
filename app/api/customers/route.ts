@@ -110,9 +110,12 @@ export async function POST(request: Request) {
       );
     }
 
-    scriptUrl = scriptUrl
-      .replace(/\\/edit\\/?$/, "")
-      .replace(/\\/?$/, "/exec");
+    if (scriptUrl.endsWith("/edit")) {
+      scriptUrl = scriptUrl.slice(0, -5);
+    }
+    if (!scriptUrl.endsWith("/exec")) {
+      scriptUrl = scriptUrl.replace(/\/$/, "") + "/exec";
+    }
 
     const scriptResponse = await fetch(scriptUrl, {
       method: "POST",
