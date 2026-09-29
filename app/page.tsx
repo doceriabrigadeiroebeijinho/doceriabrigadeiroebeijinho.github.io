@@ -761,8 +761,6 @@ export default function Home() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [deliveryFee, setDeliveryFee] = useState(0);
-  const [shippingLocatedAddress, setShippingLocatedAddress] = useState("");
-  const [shippingRoundTripKm, setShippingRoundTripKm] = useState(0);
   const [monthlyTermsAccepted, setMonthlyTermsAccepted] = useState(false);
   const [planPaymentMode, setPlanPaymentMode] =
     useState<PlanPaymentMode>("Mensal");
@@ -1147,8 +1145,6 @@ export default function Home() {
     setCepLookupStatus("loading");
     setShippingStatus("idle");
     setDeliveryFee(0);
-    setShippingLocatedAddress("");
-    setShippingRoundTripKm(0);
     setShippingError("");
 
     try {
@@ -1248,7 +1244,6 @@ export default function Home() {
         fee?: number;
         oneWayKm?: number;
         roundTripKm?: number;
-        locatedAddress?: string;
         error?: string;
       };
 
@@ -1257,8 +1252,6 @@ export default function Home() {
       }
 
       setDeliveryFee(result.fee);
-      setShippingLocatedAddress(result.locatedAddress || "");
-      setShippingRoundTripKm(result.roundTripKm || 0);
       setShippingStatus("success");
     } catch (error) {
       setDeliveryFee(0);
@@ -3201,8 +3194,6 @@ if (
                             setCepLookupStatus(cep.length === 8 ? "loading" : "idle");
                             setShippingStatus("idle");
                             setDeliveryFee(0);
-                            setShippingLocatedAddress("");
-                            setShippingRoundTripKm(0);
                             setShippingError("");
 
                             if (cep.length === 8) {
@@ -3309,35 +3300,17 @@ if (
                       )}
                       {shippingStatus === "success" && (
                         <div className="checkout-freight-result full-field" aria-live="polite">
-                          <div>
-                            <span>Endereço informado</span>
-                            <small>{formattedAddress}</small>
-                          </div>
-                          {shippingLocatedAddress && (
-                            <div>
-                              <span>Endereço confirmado pelo CEP</span>
-                              <small>{shippingLocatedAddress}</small>
-                            </div>
-                          )}
-                          <div className="freight-price">
-                            <span>Distância utilizada no cálculo (ida + volta)</span>
-                            <strong>{shippingRoundTripKm.toFixed(2).replace(".", ",")} km</strong>
-                          </div>
                           <div className="freight-price">
                             <span>Taxa de entrega</span>
                             <strong>{formatMoney(deliveryFee)}</strong>
                           </div>
                           <p className="freight-rounding-note">
-                            O valor é calculado a R$ 1,00 por km, considerando a distância aproximada do CEP
-                            em ida + volta, e arredondado para cima até o próximo valor par.
+                            A taxa é calculada automaticamente conforme a rota de entrega.
                           </p>
                           <div className="freight-price freight-total">
                             <span>Total com entrega</span>
                             <strong>{formatMoney(total)}</strong>
                           </div>
-                          <a href={mapsUrl} target="_blank" rel="noreferrer">
-                            Conferir endereço no mapa
-                          </a>
                           <button type="button" onClick={() => void calculateShipping()}>
                             Recalcular entrega
                           </button>
