@@ -332,7 +332,8 @@ type CakeFillingType = "Classico" | "Especial" | "Gourmet";
 
 const monthlyPlanTiers = cakeTiers.slice(0, 3).map((tier) => {
   const fullPrice = tier.prices.mini * 11;
-  const planPrice = fullPrice * 0.85;
+  const planPrice = Math.round(fullPrice * 0.85 * 100) / 100;
+  const monthlyPrice = planPrice / 11;
   return {
     id: `plano-${tier.id}`,
     tierId: tier.id,
@@ -340,7 +341,7 @@ const monthlyPlanTiers = cakeTiers.slice(0, 3).map((tier) => {
     fillings: tier.fillings,
     fullPrice,
     planPrice,
-    monthlyPrice: planPrice / 11,
+    monthlyPrice,
   };
 });
 
@@ -349,7 +350,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-classicos",
     name: "Doces Clássicos",
     type: "sweet",
-    hundredPrice: 155,
+    hundredPrice: 159.65,
     items: [
       {
         id: "brigadeiro",
@@ -378,7 +379,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-especiais",
     name: "Doces Especiais",
     type: "sweet",
-    hundredPrice: 175,
+    hundredPrice: 180.25,
     items: [
       {
         id: "olho-sogra",
@@ -426,7 +427,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-mais-especiais",
     name: "Mais Especiais",
     type: "sweet",
-    hundredPrice: 200,
+    hundredPrice: 206.00,
     items: [
       {
         id: "mms",
@@ -459,7 +460,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-finos",
     name: "Doces Finos",
     type: "sweet",
-    hundredPrice: 270,
+    hundredPrice: 278.10,
     items: [
       {
         id: "amendoas",
@@ -482,7 +483,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-classicos",
     name: "Bombons Clássicos",
     type: "bonbon",
-    hundredPrice: 195,
+    hundredPrice: 200.85,
     items: [
       {
         id: "bombom-brigadeiro",
@@ -520,7 +521,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-especiais",
     name: "Bombons Especiais",
     type: "bonbon",
-    hundredPrice: 255,
+    hundredPrice: 262.65,
     items: [
       {
         id: "bombom-nozes",
@@ -548,7 +549,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-finos",
     name: "Bombons Finos",
     type: "bonbon",
-    hundredPrice: 450,
+    hundredPrice: 463.50,
     items: [
       {
         id: "camafeu",
@@ -606,7 +607,7 @@ const gifts = [
     name: "Cupcake",
     description:
       "Massa fofa e úmida com recheio cremoso e cobertura de chantilly. Perfeito para lembrancinhas e eventos.",
-    price: 6.9,
+    price: 7.107,
     minQty: 12,
     image: "/assets/cupcakes.webp",
   },
@@ -615,7 +616,7 @@ const gifts = [
     name: "Bentô individual",
     description:
       "Bolo individual com frase personalizada, colher, vela, caixinha e sacolinha pronta para presentear.",
-    price: 55.9,
+    price: 57.577,
     minQty: 1,
     image: "/assets/bento-personalized.webp",
   },
@@ -624,7 +625,7 @@ const gifts = [
     name: "Combo Bentô",
     description:
       "Bentô personalizado acompanhado de uma caixa com 6 docinhos à sua escolha.",
-    price: 67.8,
+    price: 69.834,
     minQty: 1,
     image: "/assets/gift-combo-bento.webp",
   },
@@ -633,7 +634,7 @@ const gifts = [
     name: "Caixa Doce Encanto",
     description:
       "25 doces: Ninho com Nutella, Moranguinho com Nutella, Pistache, Ferrero e Prestígio.",
-    price: 75.9,
+    price: 78.177,
     minQty: 1,
     image: "/assets/gift-doce-encanto.webp",
   },
@@ -642,7 +643,7 @@ const gifts = [
     name: "Caixa Bombom Gourmet",
     description:
       "25 bombons: Coco, Nozes, Pistache, Taça de Morango e Quadradinho do Pará.",
-    price: 95.9,
+    price: 98.777,
     minQty: 1,
     image: "/assets/gift-bombom-gourmet.webp",
   },
@@ -2365,6 +2366,18 @@ if (
 
         {catalogTab === "sweets" && (
           <>
+            <div className="sweet-order-rules" aria-label="Regras para pedidos de doces e bombons">
+              <div className="sweet-order-rules-head">
+                <span className="section-kicker">Antes de escolher seus doces</span>
+                <strong>Informações importantes do pedido</strong>
+              </div>
+              <div className="sweet-order-rules-grid">
+                <p><b>Pedido mínimo:</b> 25 unidades por sabor.</p>
+                <p><b>Combinação:</b> até 4 sabores em cada cento.</p>
+                <p><b>Forminhas:</b> coloridas + R$ 1,00 a cada 25 unidades; acetato + R$ 2,00 a cada 25 unidades.</p>
+                <p><b>Disponibilidade:</b> as cores estão sujeitas à disponibilidade e pedidos especiais precisam de antecedência mínima de 72 horas.</p>
+              </div>
+            </div>
             <div className="flavor-filters" aria-label="Tipos de doces">
               {sweetGroups.map((group) => (
                 <button
@@ -2469,12 +2482,7 @@ if (
                 );
               })}
             </div>
-            <p className="catalog-note">
-              Pedido mínimo de 25 unidades por sabor. Você pode combinar até
-              quatro sabores em cada cento. Forminhas coloridas custam R$ 1,00
-              a cada 25 unidades e acetato custa R$ 2,00 a cada 25 unidades.
-              Cores sujeitas à disponibilidade e a pedidos com antecedência mínima de 72 horas.
-            </p>
+
           </>
         )}
 
