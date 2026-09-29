@@ -1927,7 +1927,8 @@ if (
                 const decorationTotal = cake.id === "corte" ? 0 : choice.decorations.reduce(
                   (sum, optionId) => sum + cakeDecorationPrice(optionId, cake.id), 0,
                 );
-                const price = cake.prices[choice.fillingType] + decorationTotal;
+                const massAdditional = cakeMassPrice(cake.id, choice.mass);
+                const price = cake.prices[choice.fillingType] + decorationTotal + massAdditional;
                 const fillingOptions = cake.fillings[choice.fillingType];
                 const fillingTypeLabel =
                   choice.fillingType === "Classico" ? "Clássico" :
