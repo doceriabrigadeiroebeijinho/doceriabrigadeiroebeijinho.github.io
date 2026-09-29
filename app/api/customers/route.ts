@@ -92,11 +92,27 @@ export async function POST(request: Request) {
       );
     }
 
-    if (scriptUrl.includes("/edit")) {
-      scriptUrl = `${scriptUrl.split("/edit")[0]}/exec`;
-    } else if (!scriptUrl.endsWith("/exec")) {
-      scriptUrl = `${scriptUrl.replace(/\/$/, "")}/exec`;
+    // Aceita somente a URL pública de implantação do Apps Script.
+    // URLs do editor (/home/projects/.../edit) não são endpoints HTTP.
+    const appsScriptPattern = new RegExp(
+      "^https://script\\.google\\.com/macros/s/[^/]+(?:/exec|/edit)?/?$",
+    );
+
+    if (!appsScriptPattern.test(scriptUrl)) {
+      console.error("GOOGLE_APPS_SCRIPT_URL inválida:", scriptUrl);
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "A integração com a planilha está configurada com uma URL inválida. No Apps Script, use a URL da implantação do Aplicativo da Web terminada em /exec.",
+        },
+        { status: 500 },
+      );
     }
+
+    scriptUrl = scriptUrl
+      .replace(/\\/edit\\/?$/, "")
+      .replace(/\\/?$/, "/exec");
 
     const scriptResponse = await fetch(scriptUrl, {
       method: "POST",
