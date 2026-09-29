@@ -1858,14 +1858,6 @@ if (
             <a className="button button-primary" href="#cardapio">
               Faça seu pedido aqui
             </a>
-            <a
-              className="button button-secondary"
-              href={WHATSAPP_CATALOG}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Ver catálogo no WhatsApp
-            </a>
           </div>
         </div>
 
