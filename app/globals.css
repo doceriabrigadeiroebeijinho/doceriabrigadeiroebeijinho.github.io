@@ -4751,3 +4751,68 @@ footer a:hover {
   max-width: none !important;
   margin: -26px -26px 22px !important;
 }
+
+
+/* Hierarquia visual do configurador de bolos */
+.cake-size-head > div {
+  display: grid;
+  gap: 4px;
+}
+
+.cake-size-head > div strong {
+  color: var(--cocoa-2);
+  font-size: 0.78rem;
+}
+
+.cake-choice-step {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.cake-choice-step > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: var(--blush);
+  color: var(--rose-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.cake-choice-step > label {
+  margin-top: 0;
+}
+
+.cake-choice-step .cake-static-field {
+  margin-top: 0;
+}
+
+.cake-choice-title {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--cocoa-2);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.cake-choice-step .decoration-picker {
+  margin-top: 0;
+}
+
+@media (max-width: 760px) {
+  .cake-choice-step {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .cake-choice-step > span {
+    width: 28px;
+    height: 28px;
+  }
+}
