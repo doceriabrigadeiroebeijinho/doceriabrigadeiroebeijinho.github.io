@@ -45,7 +45,16 @@ const CUSTOMER_HEADERS = [
 ];
 function doGet(event) {
 try {
-validateToken_(event.parameter.token);
+const params = event && event.parameter ? event.parameter : {};
+if (params.action === "health") {
+validateToken_(params.token);
+return json_({
+ok: true,
+service: "Doceria Brigadeiro & Beijinho",
+timestamp: new Date().toISOString(),
+});
+}
+validateToken_(params.token);
 const date = String(event.parameter.date || "");
 if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
 return json_({
