@@ -1908,6 +1908,12 @@ if (
           </p>
         </div>
 
+        <div className="catalog-category-intro">
+          <span className="section-kicker">Escolha o que você procura</span>
+          <h3>Nosso cardápio</h3>
+          <p>Toque em uma categoria para ver as opções e montar seu pedido.</p>
+        </div>
+
         <div className="catalog-tabs" role="tablist" aria-label="Categorias">
           <button
             className={catalogTab === "cakes" ? "active" : ""}
