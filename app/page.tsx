@@ -54,7 +54,7 @@ const cakeDecorationOptions: CakeDecorationOption[] = [
   {
     id: "papel-topo",
     label: "Papel de arroz no topo do bolo",
-    prices: { mini: 15, p: 15, m: 15, g: 15, gg: 15 },
+    prices: { mini: 10, p: 10, m: 10, g: 10, gg: 10 },
     requires48h: true,
   },
   {
@@ -1965,6 +1965,29 @@ if (
                   acompanha caixa para transporte e duas velinhas simples.
                 </p>
               </div>
+            </div>
+            <div className="cake-category-explanation">
+              <div>
+                <span className="section-kicker">Entenda os tipos de recheio</span>
+                <h3>O que muda entre Clássico, Especial e Gourmet?</h3>
+              </div>
+              <div className="cake-category-grid">
+                <div>
+                  <strong>Clássico</strong>
+                  <p>Recheios tradicionais e sabores afetivos, como brigadeiro, Ninho e Prestígio.</p>
+                </div>
+                <div>
+                  <strong>Especial</strong>
+                  <p>Recheios com combinações mais elaboradas, como Nutella, frutas, nozes e mousses.</p>
+                </div>
+                <div>
+                  <strong>Gourmet</strong>
+                  <p>Recheios com ingredientes mais sofisticados, como pistache, amêndoas e castanhas.</p>
+                </div>
+              </div>
+              <p className="cake-category-note">
+                A diferença entre as três categorias está no tipo de recheio escolhido. A massa e a cobertura continuam sendo escolhidas separadamente, e os adicionais de decoração são somados ao valor do bolo.
+              </p>
             </div>
             <div
               className="static-photo-strip"
