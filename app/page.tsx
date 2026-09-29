@@ -1936,14 +1936,17 @@ if (
 
                 return (
                   <article className="product-card cake-card" key={cake.id}>
-                    <div className="product-card-head">
-                      <span>{cake.subtitle}</span>
+                    <div className="product-card-head cake-size-head">
+                      <div>
+                        <span>Escolha pelo tamanho</span>
+                        <strong>{cake.subtitle}</strong>
+                      </div>
                       <strong>A partir de {formatMoney(Math.min(...Object.values(cake.prices)))}</strong>
                     </div>
                     <h3>{cake.name}</h3>
                     <p>{cake.description}</p>
 
-                    <label>
+                    <div className="cake-choice-step"><span>1</span><label>
                       Tipo de recheio
                       <select
                         value={choice.fillingType}
@@ -1953,9 +1956,9 @@ if (
                         <option value="Especial">Especial · {formatMoney(cake.prices.Especial)}</option>
                         <option value="Gourmet">Gourmet · {formatMoney(cake.prices.Gourmet)}</option>
                       </select>
-                    </label>
+                    </label></div>
 
-                    <label>
+                    <div className="cake-choice-step"><span>2</span><label>
                       Sabor do recheio
                       <select
                         value={choice.filling}
@@ -1963,9 +1966,10 @@ if (
                       >
                         {fillingOptions.map((filling) => <option key={filling}>{filling}</option>)}
                       </select>
-                    </label>
+                    </label></div>
 
-                    <div className="two-fields">
+                    <div className="cake-choice-step"><span>3</span><label>
+                      Massa
                       <label>
                         Massa
                         <select
@@ -1995,7 +1999,7 @@ if (
                         `${selectedDecorationNames[0]} + ${selectedDecorationNames.length - 1} adicionais`;
 
                       return (
-                        <details className="decoration-picker">
+                        <div className="cake-choice-step decoration-step"><span>5</span><div><small className="cake-choice-title">Decoração</small><details className="decoration-picker">
                           <summary>
                             <span className="decoration-summary-copy">
                               <small>Adicionais de decoração</small>
@@ -2027,8 +2031,7 @@ if (
                             <small className="decoration-picker-help">
                               Todos os pedidos precisam de no mínimo 72 horas de antecedência. Para sábado ou domingo, são necessários 5 dias.
                             </small>
-                          </div>
-                        </details>
+                          </details></div></div>
                       );
                     })()}
 
