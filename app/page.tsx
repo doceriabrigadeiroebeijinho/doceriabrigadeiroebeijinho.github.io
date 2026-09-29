@@ -46,25 +46,25 @@ const cakeDecorationOptions: CakeDecorationOption[] = [
   {
     id: "flores",
     label: "Flores naturais",
-    prices: { mini: 10, p: 12, m: 15, g: 20, gg: 25 },
+    prices: { mini: 10.30, p: 12.36, m: 15.45, g: 20.60, gg: 25.75 },
     requires48h: true,
   },
   {
     id: "papel-topo",
     label: "Papel de arroz no topo do bolo",
-    prices: { mini: 15, p: 15, m: 15, g: 15, gg: 15 },
+    prices: { mini: 15.45, p: 15.45, m: 15.45, g: 15.45, gg: 15.45 },
     requires48h: true,
   },
   {
     id: "papel-lateral",
     label: "Papel de arroz na lateral do bolo",
-    prices: { mini: 15, p: 20, m: 30, g: 38, gg: 45 },
+    prices: { mini: 15.45, p: 20.60, m: 30.90, g: 39.14, gg: 46.35 },
     requires48h: true,
   },
   {
     id: "frutas-topo",
     label: "Frutas no topo do bolo",
-    prices: { mini: 10, p: 12, m: 18, g: 25, gg: 30 },
+    prices: { mini: 10.30, p: 12.36, m: 18.54, g: 25.75, gg: 30.90 },
     requires48h: true,
   },
   {
@@ -189,7 +189,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Receitas que agradam toda a família, com três camadas de massa e duas de recheio.",
     fillings: classicFillings,
-    prices: { mini: 110, p: 155, m: 190, g: 295, gg: 390 },
+    prices: { mini: 113.30, p: 159.65, m: 195.70, g: 303.85, gg: 401.70 },
   },
   {
     id: "bolo-especial",
@@ -198,7 +198,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Recheios com frutas, Nutella, nozes e mousses para deixar a comemoração ainda mais especial.",
     fillings: specialFillings,
-    prices: { mini: 130, p: 185, m: 220, g: 340, gg: 455 },
+    prices: { mini: 133.90, p: 190.55, m: 226.60, g: 350.20, gg: 468.65 },
   },
   {
     id: "bolo-gourmet",
@@ -207,7 +207,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Sabores sofisticados com pistache, castanhas, amêndoas e frutas frescas.",
     fillings: gourmetFillings,
-    prices: { mini: 150, p: 200, m: 250, g: 390, gg: 480 },
+    prices: { mini: 154.50, p: 206.00, m: 257.50, g: 401.70, gg: 494.40 },
   },
   {
     id: "corte-classico",
@@ -216,7 +216,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Bolo retangular de aproximadamente 5 kg, chantilly branco e sem decoração personalizada.",
     fillings: classicFillings,
-    prices: { corte: 350 },
+    prices: { corte: 360.50 },
   },
   {
     id: "corte-especial",
@@ -225,7 +225,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Ideal para acompanhar bolo cenográfico e servir cerca de 50 pessoas com praticidade.",
     fillings: specialFillings,
-    prices: { corte: 420 },
+    prices: { corte: 432.60 },
   },
   {
     id: "corte-gourmet",
@@ -234,7 +234,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Versão gourmet para eventos maiores, sem decoração personalizada e pronta para o corte.",
     fillings: gourmetFillings,
-    prices: { corte: 470 },
+    prices: { corte: 484.10 },
   },
 ];
 
@@ -257,7 +257,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-classicos",
     name: "Doces Clássicos",
     type: "sweet",
-    hundredPrice: 155,
+    hundredPrice: 159.65,
     items: [
       {
         id: "brigadeiro",
@@ -286,7 +286,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-especiais",
     name: "Doces Especiais",
     type: "sweet",
-    hundredPrice: 175,
+    hundredPrice: 180.25,
     items: [
       {
         id: "olho-sogra",
@@ -334,7 +334,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-mais-especiais",
     name: "Mais Especiais",
     type: "sweet",
-    hundredPrice: 200,
+    hundredPrice: 206.00,
     items: [
       {
         id: "mms",
@@ -367,7 +367,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-finos",
     name: "Doces Finos",
     type: "sweet",
-    hundredPrice: 270,
+    hundredPrice: 278.10,
     items: [
       {
         id: "amendoas",
@@ -390,7 +390,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-classicos",
     name: "Bombons Clássicos",
     type: "bonbon",
-    hundredPrice: 195,
+    hundredPrice: 200.85,
     items: [
       {
         id: "bombom-brigadeiro",
@@ -428,7 +428,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-especiais",
     name: "Bombons Especiais",
     type: "bonbon",
-    hundredPrice: 255,
+    hundredPrice: 262.65,
     items: [
       {
         id: "bombom-nozes",
@@ -456,7 +456,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-finos",
     name: "Bombons Finos",
     type: "bonbon",
-    hundredPrice: 450,
+    hundredPrice: 463.50,
     items: [
       {
         id: "camafeu",
@@ -514,7 +514,7 @@ const gifts = [
     name: "Cupcake",
     description:
       "Massa fofa e úmida com recheio cremoso e cobertura de chantilly. Perfeito para lembrancinhas e eventos.",
-    price: 6.9,
+    price: 7.107,
     minQty: 12,
     image: "/assets/cupcakes.webp",
   },
@@ -523,7 +523,7 @@ const gifts = [
     name: "Bentô individual",
     description:
       "Bolo individual com frase personalizada, colher, vela, caixinha e sacolinha pronta para presentear.",
-    price: 55.9,
+    price: 57.577,
     minQty: 1,
     image: "/assets/bento-personalized.webp",
   },
@@ -532,7 +532,7 @@ const gifts = [
     name: "Combo Bentô",
     description:
       "Bentô personalizado acompanhado de uma caixa com 6 docinhos à sua escolha.",
-    price: 67.8,
+    price: 69.834,
     minQty: 1,
     image: "/assets/gift-combo-bento.webp",
   },
@@ -541,7 +541,7 @@ const gifts = [
     name: "Caixa Doce Encanto",
     description:
       "25 doces: Ninho com Nutella, Moranguinho com Nutella, Pistache, Ferrero e Prestígio.",
-    price: 75.9,
+    price: 78.177,
     minQty: 1,
     image: "/assets/gift-doce-encanto.webp",
   },
@@ -550,7 +550,7 @@ const gifts = [
     name: "Caixa Bombom Gourmet",
     description:
       "25 bombons: Coco, Nozes, Pistache, Taça de Morango e Quadradinho do Pará.",
-    price: 95.9,
+    price: 98.777,
     minQty: 1,
     image: "/assets/gift-bombom-gourmet.webp",
   },
