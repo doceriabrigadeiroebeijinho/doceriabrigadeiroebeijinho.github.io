@@ -1973,6 +1973,9 @@ if (
                         >
                           <option value="Branca">Branca — feita com leite em pó</option>
                           <option value="Chocolate">Chocolate — feita com cacau 50%</option>
+                          <option value="Cacau Black">
+                            Cacau Black · + {formatMoney(cakeMassPrice(cake.id, "Cacau Black"))}
+                          </option>
                         </select>
                       </label>
                       <div className="cake-static-field">
