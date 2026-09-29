@@ -609,7 +609,7 @@ const gifts = [
       "Massa fofa e úmida com recheio cremoso e cobertura de chantilly. Perfeito para lembrancinhas e eventos.",
     price: 7.107,
     minQty: 12,
-    image: "/assets/cupcakes.webp",
+    image: "/assets/cupcake-vaidehold.webp",
   },
   {
     id: "bento",
@@ -649,11 +649,17 @@ const gifts = [
   },
 ];
 
-const bentoUnitPrice = (fillingType: "Clássico" | "Especial") => {
-  const basePrice = gifts.find((gift) => gift.id === "bento")?.price ?? 0;
-  return fillingType === "Especial"
-    ? Math.round(basePrice * 1.02 * 100) / 100
-    : basePrice;
+const bentoFillingPrice = (
+  giftId: "bento" | "bento-combo",
+  fillingType: "Clássico" | "Especial",
+) => {
+  const basePrice = gifts.find((gift) => gift.id === giftId)?.price ?? 0;
+  return fillingType === "Especial" ? basePrice + 5 : basePrice;
+};
+
+const cupcakePriceWithTopper = (quantity: number, withTopper: boolean) => {
+  const basePrice = gifts.find((gift) => gift.id === "cupcake")?.price ?? 0;
+  return withTopper ? basePrice + 6 / 12 : basePrice;
 };
 
 const formatMoney = (value: number) =>
@@ -884,10 +890,12 @@ export default function Home() {
     cupcakeMass: "Branca",
     cupcakeFilling: "Brigadeiro Tradicional",
     cupcakeQty: 12,
+    cupcakeTopper: false,
     bentoMass: "Branca",
     bentoFillingType: "Clássico",
     bentoFilling: "Brigadeiro com Ninho",
     comboMass: "Branca",
+    comboFillingType: "Clássico",
     comboFilling: "Brigadeiro com Ninho",
     comboSweets: "3 Brigadeiros + 3 Ninhos",
   });
@@ -2498,10 +2506,10 @@ if (
           <div className="gift-grid">
             {gifts.map((gift, index) => (
               <article
-                className={`gift-card ${gift.id === "cupcake" ? "" : "gift-card-with-image"}`}
+                className="gift-card gift-card-with-image"
                 key={gift.id}
               >
-                {gift.id !== "cupcake" && <img src={gift.image} alt={gift.name} />}
+                <img src={gift.image} alt={gift.name} />
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <h3>{gift.name}</h3>
                 <p>{gift.description}</p>
@@ -2555,6 +2563,21 @@ if (
                         ))}
                       </select>
                     </label>
+                    <label>
+                      Topper
+                      <select
+                        value={giftChoices.cupcakeTopper ? "Sim" : "Não"}
+                        onChange={(event) =>
+                          setGiftChoices((current) => ({
+                            ...current,
+                            cupcakeTopper: event.target.value === "Sim",
+                          }))
+                        }
+                      >
+                        <option value="Não">Sem topper</option>
+                        <option value="Sim">Com topper + R$ 6,00 a cada 12 unidades</option>
+                      </select>
+                    </label>
                   </div>
                 )}
                 {gift.id === "bento" && (
@@ -2593,7 +2616,7 @@ if (
                         }
                       >
                         <option value="Clássico">Clássico</option>
-                        <option value="Especial">Especial (+2%)</option>
+                        <option value="Especial">Especial + R$ 5,00</option>
                       </select>
                     </label>
                     <label>
@@ -2615,9 +2638,7 @@ if (
                         ))}
                       </select>
                     </label>
-                    <p className="gift-option-note">
-                      Recheios especiais têm acréscimo de 2% sobre o valor do Bentô.
-                    </p>
+
                   </div>
                 )}
                 {gift.id === "bento-combo" && (
@@ -2638,6 +2659,28 @@ if (
                       </select>
                     </label>
                     <label>
+                      Categoria do recheio
+                      <select
+                        value={giftChoices.comboFillingType}
+                        onChange={(event) =>
+                          setGiftChoices((current) => {
+                            const fillingType = event.target.value as "Clássico" | "Especial";
+                            return {
+                              ...current,
+                              comboFillingType: fillingType,
+                              comboFilling:
+                                fillingType === "Especial"
+                                  ? specialFillings[0]
+                                  : classicFillings[0],
+                            };
+                          })
+                        }
+                      >
+                        <option value="Clássico">Clássico</option>
+                        <option value="Especial">Especial + R$ 5,00</option>
+                      </select>
+                    </label>
+                    <label>
                       Recheio
                       <select
                         value={giftChoices.comboFilling}
@@ -2648,10 +2691,12 @@ if (
                           }))
                         }
                       >
-                        <option>Brigadeiro com Ninho</option>
-                        <option>Brigadeiro</option>
-                        <option>Ninho</option>
-                        <option>Oreo</option>
+                        {(giftChoices.comboFillingType === "Especial"
+                          ? specialFillings
+                          : classicFillings
+                        ).map((filling) => (
+                          <option key={filling}>{filling}</option>
+                        ))}
                       </select>
                     </label>
                     <label>
@@ -2675,10 +2720,12 @@ if (
                 <div className="gift-card-footer">
                   <strong>
                     {gift.id === "cupcake"
-                      ? `${formatMoney(gift.price)} cada`
+                      ? `${formatMoney(cupcakePriceWithTopper(giftChoices.cupcakeQty, giftChoices.cupcakeTopper))} cada`
                       : gift.id === "bento"
-                        ? formatMoney(bentoUnitPrice(giftChoices.bentoFillingType))
-                        : formatMoney(gift.price)}
+                        ? formatMoney(bentoFillingPrice("bento", giftChoices.bentoFillingType))
+                        : gift.id === "bento-combo"
+                          ? formatMoney(bentoFillingPrice("bento-combo", giftChoices.comboFillingType))
+                          : formatMoney(gift.price)}
                   </strong>
                   <button
                     type="button"
@@ -2692,7 +2739,7 @@ if (
                             : gift.id === "bento"
                               ? `Massa ${giftChoices.bentoMass.toLowerCase()} · recheio ${giftChoices.bentoFillingType.toLowerCase()} — ${giftChoices.bentoFilling} · frase personalizada`
                               : gift.id === "bento-combo"
-                                ? `Massa ${giftChoices.comboMass.toLowerCase()} · recheio ${giftChoices.comboFilling} · Bentô + 6 docinhos: ${giftChoices.comboSweets}`
+                                ? `Massa ${giftChoices.comboMass.toLowerCase()} · recheio ${giftChoices.comboFillingType.toLowerCase()} — ${giftChoices.comboFilling} · Bentô + 6 docinhos: ${giftChoices.comboSweets}`
                                 : "presenteável",
                         type: "gift",
                         qty:
@@ -2701,9 +2748,13 @@ if (
                             : gift.minQty,
                         step: gift.id === "cupcake" ? 12 : gift.minQty,
                         unitPrice:
-                          gift.id === "bento"
-                            ? bentoUnitPrice(giftChoices.bentoFillingType)
-                            : gift.price,
+                          gift.id === "cupcake"
+                            ? cupcakePriceWithTopper(giftChoices.cupcakeQty, giftChoices.cupcakeTopper)
+                            : gift.id === "bento"
+                              ? bentoFillingPrice("bento", giftChoices.bentoFillingType)
+                              : gift.id === "bento-combo"
+                                ? bentoFillingPrice("bento-combo", giftChoices.comboFillingType)
+                                : gift.price,
                       })
                     }
                   >
