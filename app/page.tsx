@@ -1970,24 +1970,22 @@ if (
 
                     <div className="cake-choice-step"><span>3</span><label>
                       Massa
-                      <label>
-                        Massa
-                        <select
-                          value={choice.mass}
-                          onChange={(event) => updateCakeChoice(cake.id, "mass", event.target.value)}
-                        >
-                          <option value="Branca">Branca — feita com leite em pó</option>
-                          <option value="Chocolate">Chocolate — feita com cacau 50%</option>
-                          <option value="Cacau Black">
-                            Cacau Black · + {formatMoney(cakeMassPrice(cake.id, "Cacau Black"))}
-                          </option>
-                        </select>
-                      </label>
-                      <div className="cake-static-field">
-                        <span>Cobertura</span>
-                        <strong>Chantilly</strong>
-                      </div>
-                    </div>
+                      <select
+                        value={choice.mass}
+                        onChange={(event) => updateCakeChoice(cake.id, "mass", event.target.value)}
+                      >
+                        <option value="Branca">Branca — feita com leite em pó</option>
+                        <option value="Chocolate">Chocolate — feita com cacau 50%</option>
+                        <option value="Cacau Black">
+                          Cacau Black · + {formatMoney(cakeMassPrice(cake.id, "Cacau Black"))}
+                        </option>
+                      </select>
+                    </label></div>
+
+                    <div className="cake-choice-step"><span>4</span><div className="cake-static-field">
+                      <span>Cobertura</span>
+                      <strong>Chantilly</strong>
+                    </div></div>
 
                     {cake.id !== "corte" && (() => {
                       const selectedDecorationNames = cakeDecorationOptions
