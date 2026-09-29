@@ -5023,3 +5023,52 @@ footer a:hover {
     min-height: 58px;
   }
 }
+
+
+.sweet-order-rules {
+  margin: 0 auto 26px;
+  max-width: 1180px;
+  padding: 22px 24px;
+  border: 1px solid rgba(90, 51, 39, 0.16);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 247, 240, 0.96), rgba(255, 253, 248, 0.96));
+  box-shadow: 0 14px 34px rgba(75, 46, 37, 0.08);
+}
+
+.sweet-order-rules-head {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.sweet-order-rules-head > strong {
+  color: var(--cocoa-2);
+  font-size: 1rem;
+}
+
+.sweet-order-rules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+}
+
+.sweet-order-rules-grid p {
+  margin: 0;
+  color: var(--cocoa-2);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.sweet-order-rules-grid b {
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .sweet-order-rules {
+    padding: 20px;
+  }
+
+  .sweet-order-rules-grid {
+    grid-template-columns: 1fr;
+  }
+}
