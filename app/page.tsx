@@ -46,25 +46,25 @@ const cakeDecorationOptions: CakeDecorationOption[] = [
   {
     id: "flores",
     label: "Flores naturais",
-    prices: { mini: 10, p: 12, m: 15, g: 20, gg: 25 },
+    prices: { mini: 10.30, p: 12.36, m: 15.45, g: 20.60, gg: 25.75 },
     requires48h: true,
   },
   {
     id: "papel-topo",
     label: "Papel de arroz no topo do bolo",
-    prices: { mini: 15, p: 15, m: 15, g: 15, gg: 15 },
+    prices: { mini: 15.45, p: 15.45, m: 15.45, g: 15.45, gg: 15.45 },
     requires48h: true,
   },
   {
     id: "papel-lateral",
     label: "Papel de arroz na lateral do bolo",
-    prices: { mini: 15, p: 20, m: 30, g: 38, gg: 45 },
+    prices: { mini: 15.45, p: 20.60, m: 30.90, g: 39.14, gg: 46.35 },
     requires48h: true,
   },
   {
     id: "frutas-topo",
     label: "Frutas no topo do bolo",
-    prices: { mini: 10, p: 12, m: 18, g: 25, gg: 30 },
+    prices: { mini: 10.30, p: 12.36, m: 18.54, g: 25.75, gg: 30.90 },
     requires48h: true,
   },
   {
@@ -189,7 +189,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Receitas que agradam toda a família, com três camadas de massa e duas de recheio.",
     fillings: classicFillings,
-    prices: { mini: 110, p: 155, m: 190, g: 295, gg: 390 },
+    prices: { mini: 113.30, p: 159.65, m: 195.70, g: 303.85, gg: 401.70 },
   },
   {
     id: "bolo-especial",
@@ -198,7 +198,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Recheios com frutas, Nutella, nozes e mousses para deixar a comemoração ainda mais especial.",
     fillings: specialFillings,
-    prices: { mini: 130, p: 185, m: 220, g: 340, gg: 455 },
+    prices: { mini: 133.90, p: 190.55, m: 226.60, g: 350.20, gg: 468.65 },
   },
   {
     id: "bolo-gourmet",
@@ -207,7 +207,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Sabores sofisticados com pistache, castanhas, amêndoas e frutas frescas.",
     fillings: gourmetFillings,
-    prices: { mini: 150, p: 200, m: 250, g: 390, gg: 480 },
+    prices: { mini: 154.50, p: 206.00, m: 257.50, g: 401.70, gg: 494.40 },
   },
   {
     id: "corte-classico",
@@ -216,7 +216,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Bolo retangular de aproximadamente 5 kg, chantilly branco e sem decoração personalizada.",
     fillings: classicFillings,
-    prices: { corte: 350 },
+    prices: { corte: 360.50 },
   },
   {
     id: "corte-especial",
@@ -225,7 +225,7 @@ const cakeTiers: CakeTier[] = [
     description:
       "Ideal para acompanhar bolo cenográfico e servir cerca de 50 pessoas com praticidade.",
     fillings: specialFillings,
-    prices: { corte: 420 },
+    prices: { corte: 432.60 },
   },
   {
     id: "corte-gourmet",
@@ -234,9 +234,76 @@ const cakeTiers: CakeTier[] = [
     description:
       "Versão gourmet para eventos maiores, sem decoração personalizada e pronta para o corte.",
     fillings: gourmetFillings,
-    prices: { corte: 470 },
+    prices: { corte: 484.10 },
   },
 ];
+
+
+const blackCocoaPrice: Record<string, number> = {
+  mini: 3,
+  p: 5,
+  m: 8,
+  g: 10,
+  gg: 12,
+  corte: 12,
+};
+
+const cakeMassPrice = (cakeId: string, mass: string) =>
+  mass === "Cacau Black" ? blackCocoaPrice[cakeId] ?? 0 : 0;
+
+const cakeSizeCatalog = [
+  {
+    id: "mini",
+    name: "Bolo Mini",
+    subtitle: "12 cm · 6 a 8 fatias",
+    description: "Ideal para mesversários, comemorações íntimas e presentes.",
+    prices: { Classico: cakeTiers[0].prices.mini, Especial: cakeTiers[1].prices.mini, Gourmet: cakeTiers[2].prices.mini },
+    fillings: { Classico: classicFillings, Especial: specialFillings, Gourmet: gourmetFillings },
+  },
+  {
+    id: "p",
+    name: "Bolo P",
+    subtitle: "15 cm · 12 a 15 fatias",
+    description: "Um tamanho versátil para pequenas comemorações.",
+    prices: { Classico: cakeTiers[0].prices.p, Especial: cakeTiers[1].prices.p, Gourmet: cakeTiers[2].prices.p },
+    fillings: { Classico: classicFillings, Especial: specialFillings, Gourmet: gourmetFillings },
+  },
+  {
+    id: "m",
+    name: "Bolo M",
+    subtitle: "20 cm · 20 a 28 fatias",
+    description: "Uma opção confortável para comemorações em família.",
+    prices: { Classico: cakeTiers[0].prices.m, Especial: cakeTiers[1].prices.m, Gourmet: cakeTiers[2].prices.m },
+    fillings: { Classico: classicFillings, Especial: specialFillings, Gourmet: gourmetFillings },
+  },
+  {
+    id: "g",
+    name: "Bolo G",
+    subtitle: "25 cm · 35 a 40 fatias",
+    description: "Para festas maiores e comemorações com mais convidados.",
+    prices: { Classico: cakeTiers[0].prices.g, Especial: cakeTiers[1].prices.g, Gourmet: cakeTiers[2].prices.g },
+    fillings: { Classico: classicFillings, Especial: specialFillings, Gourmet: gourmetFillings },
+  },
+  {
+    id: "gg",
+    name: "Bolo GG",
+    subtitle: "30 cm · 55 a 60 fatias",
+    description: "O maior tamanho para festas e eventos.",
+    prices: { Classico: cakeTiers[0].prices.gg, Especial: cakeTiers[1].prices.gg, Gourmet: cakeTiers[2].prices.gg },
+    fillings: { Classico: classicFillings, Especial: specialFillings, Gourmet: gourmetFillings },
+  },
+  {
+    id: "corte",
+    name: "Bolo de Corte",
+    subtitle: "Cerca de 50 pessoas",
+    description: "Bolo retangular de aproximadamente 5 kg, pronto para servir.",
+    prices: { Classico: cakeTiers[3].prices.corte, Especial: cakeTiers[4].prices.corte, Gourmet: cakeTiers[5].prices.corte },
+    fillings: { Classico: classicFillings, Especial: specialFillings, Gourmet: gourmetFillings },
+  },
+] as const;
+
+type CakeSizeId = (typeof cakeSizeCatalog)[number]["id"];
+type CakeFillingType = "Classico" | "Especial" | "Gourmet";
 
 const monthlyPlanTiers = cakeTiers.slice(0, 3).map((tier) => {
   const fullPrice = tier.prices.mini * 11;
@@ -257,7 +324,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-classicos",
     name: "Doces Clássicos",
     type: "sweet",
-    hundredPrice: 155,
+    hundredPrice: 159.65,
     items: [
       {
         id: "brigadeiro",
@@ -286,7 +353,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-especiais",
     name: "Doces Especiais",
     type: "sweet",
-    hundredPrice: 175,
+    hundredPrice: 180.25,
     items: [
       {
         id: "olho-sogra",
@@ -334,7 +401,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-mais-especiais",
     name: "Mais Especiais",
     type: "sweet",
-    hundredPrice: 200,
+    hundredPrice: 206.00,
     items: [
       {
         id: "mms",
@@ -367,7 +434,7 @@ const sweetGroups: SweetGroup[] = [
     id: "doces-finos",
     name: "Doces Finos",
     type: "sweet",
-    hundredPrice: 270,
+    hundredPrice: 278.10,
     items: [
       {
         id: "amendoas",
@@ -390,7 +457,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-classicos",
     name: "Bombons Clássicos",
     type: "bonbon",
-    hundredPrice: 195,
+    hundredPrice: 200.85,
     items: [
       {
         id: "bombom-brigadeiro",
@@ -428,7 +495,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-especiais",
     name: "Bombons Especiais",
     type: "bonbon",
-    hundredPrice: 255,
+    hundredPrice: 262.65,
     items: [
       {
         id: "bombom-nozes",
@@ -456,7 +523,7 @@ const sweetGroups: SweetGroup[] = [
     id: "bombons-finos",
     name: "Bombons Finos",
     type: "bonbon",
-    hundredPrice: 450,
+    hundredPrice: 463.50,
     items: [
       {
         id: "camafeu",
@@ -514,7 +581,7 @@ const gifts = [
     name: "Cupcake",
     description:
       "Massa fofa e úmida com recheio cremoso e cobertura de chantilly. Perfeito para lembrancinhas e eventos.",
-    price: 6.9,
+    price: 7.107,
     minQty: 12,
     image: "/assets/cupcakes.webp",
   },
@@ -523,7 +590,7 @@ const gifts = [
     name: "Bentô individual",
     description:
       "Bolo individual com frase personalizada, colher, vela, caixinha e sacolinha pronta para presentear.",
-    price: 55.9,
+    price: 57.577,
     minQty: 1,
     image: "/assets/bento-personalized.webp",
   },
@@ -532,7 +599,7 @@ const gifts = [
     name: "Combo Bentô",
     description:
       "Bentô personalizado acompanhado de uma caixa com 6 docinhos à sua escolha.",
-    price: 67.8,
+    price: 69.834,
     minQty: 1,
     image: "/assets/gift-combo-bento.webp",
   },
@@ -541,7 +608,7 @@ const gifts = [
     name: "Caixa Doce Encanto",
     description:
       "25 doces: Ninho com Nutella, Moranguinho com Nutella, Pistache, Ferrero e Prestígio.",
-    price: 75.9,
+    price: 78.177,
     minQty: 1,
     image: "/assets/gift-doce-encanto.webp",
   },
@@ -550,7 +617,7 @@ const gifts = [
     name: "Caixa Bombom Gourmet",
     description:
       "25 bombons: Coco, Nozes, Pistache, Taça de Morango e Quadradinho do Pará.",
-    price: 95.9,
+    price: 98.777,
     minQty: 1,
     image: "/assets/gift-bombom-gourmet.webp",
   },
@@ -709,29 +776,32 @@ export default function Home() {
     {},
   );
   const [cakeChoices, setCakeChoices] = useState<
-    Record<
-      string,
-      {
-        size: string;
-        mass: string;
-        model: string;
-        filling: string;
-        decorations: string[];
-      }
-    >
+    Record<CakeSizeId, {
+      fillingType: CakeFillingType;
+      filling: string;
+      mass: string;
+      model: string;
+      decorations: string[];
+    }>
   >(() =>
     Object.fromEntries(
-      cakeTiers.map((tier) => [
-        tier.id,
+      cakeSizeCatalog.map((cake) => [
+        cake.id,
         {
-          size: Object.keys(tier.prices)[0],
+          fillingType: "Classico",
+          filling: cake.fillings.Classico[0],
           mass: "Branca",
           model: "Chantilly",
-          filling: tier.fillings[0],
-          decorations: ["topo"],
+          decorations: cake.id === "corte" ? [] : ["topo"],
         },
       ]),
-    ),
+    ) as Record<CakeSizeId, {
+      fillingType: CakeFillingType;
+      filling: string;
+      mass: string;
+      model: string;
+      decorations: string[];
+    }>,
   );
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orderOpen, setOrderOpen] = useState(false);
@@ -761,8 +831,6 @@ export default function Home() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [deliveryFee, setDeliveryFee] = useState(0);
-  const [shippingLocatedAddress, setShippingLocatedAddress] = useState("");
-  const [shippingRoundTripKm, setShippingRoundTripKm] = useState(0);
   const [monthlyTermsAccepted, setMonthlyTermsAccepted] = useState(false);
   const [planPaymentMode, setPlanPaymentMode] =
     useState<PlanPaymentMode>("Mensal");
@@ -969,35 +1037,32 @@ export default function Home() {
     setToast(`${item.name} adicionado ao pedido`);
   };
 
-  const addCake = (tier: CakeTier) => {
-    const choice = cakeChoices[tier.id];
-    const selectedDecorations =
-      choice.size === "corte" ? [] : choice.decorations;
+  const addCake = (cake: (typeof cakeSizeCatalog)[number]) => {
+    const choice = cakeChoices[cake.id];
+    const selectedDecorations = cake.id === "corte" ? [] : choice.decorations;
     const decorationTotal = selectedDecorations.reduce(
-      (sum, optionId) => sum + cakeDecorationPrice(optionId, choice.size),
+      (sum, optionId) => sum + cakeDecorationPrice(optionId, cake.id),
       0,
     );
     const decorationLabels = selectedDecorations
-      .map(
-        (optionId) =>
-          cakeDecorationOptions.find((option) => option.id === optionId)?.label,
-      )
+      .map((optionId) => cakeDecorationOptions.find((option) => option.id === optionId)?.label)
       .filter(Boolean)
       .join(" + ");
     const requires48h = selectedDecorations.some((optionId) =>
-      Boolean(
-        cakeDecorationOptions.find((option) => option.id === optionId)
-          ?.requires48h,
-      ),
+      Boolean(cakeDecorationOptions.find((option) => option.id === optionId)?.requires48h),
     );
-    const unitPrice = tier.prices[choice.size] + decorationTotal;
+    const massAdditional = cakeMassPrice(cake.id, choice.mass);
+    const unitPrice =
+      cake.prices[choice.fillingType] + decorationTotal + massAdditional;
+    const fillingTypeLabel =
+      choice.fillingType === "Classico" ? "Clássico" :
+      choice.fillingType === "Especial" ? "Especial" : "Gourmet";
+
     addItem({
-      id: tier.id,
-      name: tier.name,
-      variant: `${sizes[choice.size]} · massa ${choice.mass.toLowerCase()} · modelo ${choice.model.toLowerCase()} · ${choice.filling} · ${
-        choice.size === "corte"
-          ? "sem decoração personalizada"
-          : decorationLabels || "sem decoração adicional"
+      id: cake.id,
+      name: cake.name,
+      variant: `${cake.subtitle} · recheio ${fillingTypeLabel} · massa ${choice.mass.toLowerCase()} · modelo ${choice.model.toLowerCase()} · ${choice.filling} · ${
+        cake.id === "corte" ? "sem decoração personalizada" : decorationLabels || "sem decoração adicional"
       }`,
       type: "cake",
       qty: 1,
@@ -1104,14 +1169,33 @@ export default function Home() {
   };
 
   const updateCakeChoice = (
-    tierId: string,
-    field: "size" | "mass" | "model" | "filling",
+    cakeId: CakeSizeId,
+    field: "mass" | "model" | "fillingType" | "filling",
     value: string,
   ) => {
-    setCakeChoices((current) => ({
-      ...current,
-      [tierId]: { ...current[tierId], [field]: value },
-    }));
+    setCakeChoices((current) => {
+      const choice = current[cakeId];
+      const cake = cakeSizeCatalog.find((item) => item.id === cakeId);
+      if (!cake) return current;
+      if (field === "fillingType") {
+        const fillingType = value as CakeFillingType;
+        return {
+          ...current,
+          [cakeId]: {
+            ...choice,
+            fillingType,
+            filling: cake.fillings[fillingType][0],
+          },
+        };
+      }
+      if (field === "mass") {
+        return { ...current, [cakeId]: { ...choice, mass: value } };
+      }
+      if (field === "model") {
+        return { ...current, [cakeId]: { ...choice, model: value } };
+      }
+      return { ...current, [cakeId]: { ...choice, filling: value } };
+    });
   };
 
   const toggleCakeDecoration = (tierId: string, optionId: string) => {
@@ -1147,8 +1231,6 @@ export default function Home() {
     setCepLookupStatus("loading");
     setShippingStatus("idle");
     setDeliveryFee(0);
-    setShippingLocatedAddress("");
-    setShippingRoundTripKm(0);
     setShippingError("");
 
     try {
@@ -1248,7 +1330,6 @@ export default function Home() {
         fee?: number;
         oneWayKm?: number;
         roundTripKm?: number;
-        locatedAddress?: string;
         error?: string;
       };
 
@@ -1257,8 +1338,6 @@ export default function Home() {
       }
 
       setDeliveryFee(result.fee);
-      setShippingLocatedAddress(result.locatedAddress || "");
-      setShippingRoundTripKm(result.roundTripKm || 0);
       setShippingStatus("success");
     } catch (error) {
       setDeliveryFee(0);
@@ -1290,15 +1369,6 @@ export default function Home() {
       return () => window.clearTimeout(resetTimer);
     }
   }, [delivery.service]);
-
-  const originMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    ORIGIN,
-  )}`;
-  const mapsUrl = !formattedAddress
-    ? originMapsUrl
-    : `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
-        ORIGIN,
-      )}&destination=${encodeURIComponent(formattedAddress)}`;
 
   const sendWhatsApp = async () => {
     if (cart.length === 0) {
@@ -1849,163 +1919,130 @@ if (
               ))}
             </div>
             <div className="cake-grid">
-            {cakeTiers.map((tier) => {
-              const choice = cakeChoices[tier.id];
-              const decorationTotal =
-                choice.size === "corte"
-                  ? 0
-                  : choice.decorations.reduce(
-                      (sum, optionId) =>
-                        sum + cakeDecorationPrice(optionId, choice.size),
-                      0,
-                    );
-              const price = tier.prices[choice.size] + decorationTotal;
-              return (
-                <article className="product-card cake-card" key={tier.id}>
-                  <div className="product-card-head">
-                    <span>{tier.eyebrow}</span>
-                    <strong>A partir de {formatMoney(Math.min(...Object.values(tier.prices)))}</strong>
-                  </div>
-                  <h3>{tier.name}</h3>
-                  <p>{tier.description}</p>
-                  <label>
-                    Tamanho
-                    <select
-                      value={choice.size}
-                      onChange={(event) =>
-                        updateCakeChoice(tier.id, "size", event.target.value)
-                      }
-                    >
-                      {Object.keys(tier.prices).map((size) => (
-                        <option value={size} key={size}>
-                          {sizes[size]} · {formatMoney(tier.prices[size])}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="two-fields">
-                    <label>
+              {cakeSizeCatalog.map((cake) => {
+                const choice = cakeChoices[cake.id];
+                const decorationTotal = cake.id === "corte" ? 0 : choice.decorations.reduce(
+                  (sum, optionId) => sum + cakeDecorationPrice(optionId, cake.id), 0,
+                );
+                const massAdditional = cakeMassPrice(cake.id, choice.mass);
+                const price = cake.prices[choice.fillingType] + decorationTotal + massAdditional;
+                const fillingOptions = cake.fillings[choice.fillingType];
+                const fillingTypeLabel =
+                  choice.fillingType === "Classico" ? "Clássico" :
+                  choice.fillingType === "Especial" ? "Especial" : "Gourmet";
+
+                return (
+                  <article className="product-card cake-card" key={cake.id}>
+                    <div className="product-card-head cake-size-head">
+                      <div>
+                        <span>Escolha pelo tamanho</span>
+                        <strong>{cake.subtitle}</strong>
+                      </div>
+                      <strong>A partir de {formatMoney(Math.min(...Object.values(cake.prices)))}</strong>
+                    </div>
+                    <h3>{cake.name}</h3>
+                    <p>{cake.description}</p>
+
+                    <div className="cake-choice-step"><span>1</span><label>
+                      Tipo de recheio
+                      <select
+                        value={choice.fillingType}
+                        onChange={(event) => updateCakeChoice(cake.id, "fillingType", event.target.value)}
+                      >
+                        <option value="Classico">Clássico · {formatMoney(cake.prices.Classico)}</option>
+                        <option value="Especial">Especial · {formatMoney(cake.prices.Especial)}</option>
+                        <option value="Gourmet">Gourmet · {formatMoney(cake.prices.Gourmet)}</option>
+                      </select>
+                    </label></div>
+
+                    <div className="cake-choice-step"><span>2</span><label>
+                      Sabor do recheio
+                      <select
+                        value={choice.filling}
+                        onChange={(event) => updateCakeChoice(cake.id, "filling", event.target.value)}
+                      >
+                        {fillingOptions.map((filling) => <option key={filling}>{filling}</option>)}
+                      </select>
+                    </label></div>
+
+                    <div className="cake-choice-step"><span>3</span><label>
                       Massa
                       <select
                         value={choice.mass}
-                        onChange={(event) =>
-                          updateCakeChoice(tier.id, "mass", event.target.value)
-                        }
+                        onChange={(event) => updateCakeChoice(cake.id, "mass", event.target.value)}
                       >
-                        <option value="Branca">
-                          Branca — feita com leite em pó
-                        </option>
-                        <option value="Chocolate">
-                          Chocolate — feita com cacau 50%
+                        <option value="Branca">Branca — feita com leite em pó</option>
+                        <option value="Chocolate">Chocolate — feita com cacau 50%</option>
+                        <option value="Cacau Black">
+                          Cacau Black · + {formatMoney(cakeMassPrice(cake.id, "Cacau Black"))}
                         </option>
                       </select>
-                    </label>
-                    <div className="cake-static-field">
+                    </label></div>
+
+                    <div className="cake-choice-step"><span>4</span><div className="cake-static-field">
                       <span>Cobertura</span>
                       <strong>Chantilly</strong>
-                    </div>
-                  </div>
-                  <label>
-                    Recheio
-                    <select
-                      value={choice.filling}
-                      onChange={(event) =>
-                        updateCakeChoice(tier.id, "filling", event.target.value)
-                      }
-                    >
-                      {tier.fillings.map((filling) => (
-                        <option key={filling}>{filling}</option>
-                      ))}
-                    </select>
-                  </label>
-                  {choice.size !== "corte" && (() => {
-                    const selectedDecorationNames = cakeDecorationOptions
-                      .filter((option) => choice.decorations.includes(option.id))
-                      .map((option) => option.label.replace(" — sob avaliação", ""));
-                    const decorationSummary =
-                      selectedDecorationNames.length === 0
-                        ? "Escolher decoração"
-                        : selectedDecorationNames.length <= 2
-                          ? selectedDecorationNames.join(" + ")
-                          : `${selectedDecorationNames[0]} + ${selectedDecorationNames.length - 1} adicionais`;
+                    </div></div>
 
-                    return (
-                      <details className="decoration-picker">
-                        <summary>
-                          <span className="decoration-summary-copy">
-                            <small>Adicionais de decoração</small>
-                            <strong>{decorationSummary}</strong>
-                          </span>
-                          <span className="decoration-summary-meta">
-                            <em>
-                              {decorationTotal > 0
-                                ? `+ ${formatMoney(decorationTotal)}`
-                                : "sem adicional"}
-                            </em>
-                            <b aria-hidden="true">+</b>
-                          </span>
-                        </summary>
-                        <div className="decoration-picker-panel">
-                          <p>
-                            Escolha uma ou mais opções. O valor é calculado de
-                            acordo com o tamanho do bolo.
-                          </p>
-                          <div className="decoration-picker-list">
-                            {cakeDecorationOptions.map((option) => {
-                              const optionPrice = cakeDecorationPrice(
-                                option.id,
-                                choice.size,
-                              );
-                              const selected = choice.decorations.includes(option.id);
-                              return (
-                                <label
-                                  className={`decoration-picker-row ${
-                                    selected ? "selected" : ""
-                                  }`}
-                                  key={option.id}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={selected}
-                                    onChange={() =>
-                                      toggleCakeDecoration(tier.id, option.id)
-                                    }
-                                  />
-                                  <span>{option.label}</span>
-                                  <small>
-                                    {optionPrice > 0
-                                      ? `+ ${formatMoney(optionPrice)}`
-                                      : option.id === "avaliar"
-                                        ? "sob avaliação"
-                                        : "sem adicional"}
-                                  </small>
-                                </label>
-                              );
-                            })}
-                          </div>
-                          <small className="decoration-picker-help">
-                            Todos os pedidos precisam de no mínimo 72 horas de
-                            antecedência. Para sábado ou domingo, são necessários 5 dias.
-                          </small>
-                        </div>
-                      </details>
-                    );
-                  })()}
-                  <div className="product-card-footer">
-                    <strong>{formatMoney(price)}</strong>
-                    <button type="button" onClick={() => addCake(tier)}>
-                      Adicionar
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+                    {cake.id !== "corte" && (() => {
+                      const selectedDecorationNames = cakeDecorationOptions
+                        .filter((option) => choice.decorations.includes(option.id))
+                        .map((option) => option.label.replace(" — sob avaliação", ""));
+                      const decorationSummary =
+                        selectedDecorationNames.length === 0 ? "Escolher decoração" :
+                        selectedDecorationNames.length <= 2 ? selectedDecorationNames.join(" + ") :
+                        `${selectedDecorationNames[0]} + ${selectedDecorationNames.length - 1} adicionais`;
+
+                      return (
+                        <div className="cake-choice-step decoration-step"><span>5</span><div><small className="cake-choice-title">Decoração</small><details className="decoration-picker">
+                          <summary>
+                            <span className="decoration-summary-copy">
+                              <small>Adicionais de decoração</small>
+                              <strong>{decorationSummary}</strong>
+                            </span>
+                            <span className="decoration-summary-meta">
+                              <em>{decorationTotal > 0 ? `+ ${formatMoney(decorationTotal)}` : "sem adicional"}</em>
+                              <b aria-hidden="true">+</b>
+                            </span>
+                          </summary>
+                          <div className="decoration-picker-panel">
+                            <p>Escolha uma ou mais opções. O valor é calculado de acordo com o tamanho do bolo.</p>
+                            <div className="decoration-picker-list">
+                              {cakeDecorationOptions.map((option) => {
+                                const optionPrice = cakeDecorationPrice(option.id, cake.id);
+                                const selected = choice.decorations.includes(option.id);
+                                return (
+                                  <label className={`decoration-picker-row ${selected ? "selected" : ""}`} key={option.id}>
+                                    <input type="checkbox" checked={selected} onChange={() => toggleCakeDecoration(cake.id, option.id)} />
+                                    <span>{option.label}</span>
+                                    <small>
+                                      {optionPrice > 0 ? `+ ${formatMoney(optionPrice)}` :
+                                        option.id === "avaliar" ? "sob avaliação" : "sem adicional"}
+                                    </small>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <small className="decoration-picker-help">
+                              Todos os pedidos precisam de no mínimo 72 horas de antecedência. Para sábado ou domingo, são necessários 5 dias.
+                            </small>
+                          </details></div></div>
+                      );
+                    })()}
+
+                    <div className="product-card-footer">
+                      <strong>{formatMoney(price)}</strong>
+                      <button type="button" onClick={() => addCake(cake)}>Adicionar</button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
             <p className="catalog-note cake-catalog-note">
-              O tamanho Mini é uma ótima escolha para mesversários,
-              comemorações íntimas e presentes. Todos os pedidos precisam de
-              72 horas de antecedência. Para pedidos com data no sábado ou domingo,
-              a antecedência mínima é de 5 dias.
+              Os bolos estão organizados por tamanho. Em cada tamanho, escolha
+              primeiro o tipo de recheio e depois o sabor. Todos os pedidos
+              precisam de 72 horas de antecedência. Para pedidos com data no
+              sábado ou domingo, a antecedência mínima é de 5 dias.
             </p>
           </>
         )}
@@ -3201,8 +3238,6 @@ if (
                             setCepLookupStatus(cep.length === 8 ? "loading" : "idle");
                             setShippingStatus("idle");
                             setDeliveryFee(0);
-                            setShippingLocatedAddress("");
-                            setShippingRoundTripKm(0);
                             setShippingError("");
 
                             if (cep.length === 8) {
@@ -3309,35 +3344,17 @@ if (
                       )}
                       {shippingStatus === "success" && (
                         <div className="checkout-freight-result full-field" aria-live="polite">
-                          <div>
-                            <span>Endereço informado</span>
-                            <small>{formattedAddress}</small>
-                          </div>
-                          {shippingLocatedAddress && (
-                            <div>
-                              <span>Endereço confirmado pelo CEP</span>
-                              <small>{shippingLocatedAddress}</small>
-                            </div>
-                          )}
-                          <div className="freight-price">
-                            <span>Distância utilizada no cálculo (ida + volta)</span>
-                            <strong>{shippingRoundTripKm.toFixed(2).replace(".", ",")} km</strong>
-                          </div>
                           <div className="freight-price">
                             <span>Taxa de entrega</span>
                             <strong>{formatMoney(deliveryFee)}</strong>
                           </div>
                           <p className="freight-rounding-note">
-                            O valor é calculado a R$ 1,00 por km, considerando a distância aproximada do CEP
-                            em ida + volta, e arredondado para cima até o próximo valor par.
+                            A taxa é calculada automaticamente conforme a rota de entrega.
                           </p>
                           <div className="freight-price freight-total">
                             <span>Total com entrega</span>
                             <strong>{formatMoney(total)}</strong>
                           </div>
-                          <a href={mapsUrl} target="_blank" rel="noreferrer">
-                            Conferir endereço no mapa
-                          </a>
                           <button type="button" onClick={() => void calculateShipping()}>
                             Recalcular entrega
                           </button>
