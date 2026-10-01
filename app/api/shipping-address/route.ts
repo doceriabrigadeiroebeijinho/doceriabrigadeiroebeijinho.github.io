@@ -2,7 +2,7 @@ const RATE_PER_KM = 1;
 const ROUNDING_STEP = 2;
 const MAX_RADIUS_KM = 50;
 const ORIGIN = { lat: -20.0109557, lon: -44.0094064 } as const;
-const TIMEOUT = 8000;
+const TIMEOUT = 10000;
 
 type C = { lat: number; lon: number };
 
@@ -37,23 +37,54 @@ async function geocodeAddress(address: string): Promise<C | null> {
   const query = address.trim();
   if (!query) return null;
 
+  // Tentativa 1: Nominatim/OpenStreetMap. Informamos um User-Agent explícito
+  // para evitar recusas do serviço e identificamos a aplicação corretamente.
   try {
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "jsonv2");
     url.searchParams.set("q", query);
     url.searchParams.set("limit", "1");
     url.searchParams.set("countrycodes", "br");
+    url.searchParams.set("addressdetails", "1");
+
+    const response = await fetchWithTimeout(url.toString());
+    if (response.ok) {
+      const data = (await response.json()) as Array<{
+        lat?: string;
+        lon?: string;
+      }>;
+
+      const latitude = Number(data[0]?.lat);
+      const longitude = Number(data[0]?.lon);
+
+      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        return { lat: latitude, lon: longitude };
+      }
+    }
+  } catch {
+    // Segue para o segundo provedor.
+  }
+
+  // Tentativa 2: Photon/Komoot, como fallback de geocodificação.
+  try {
+    const url = new URL("https://photon.komoot.io/api/");
+    url.searchParams.set("q", query);
+    url.searchParams.set("limit", "1");
 
     const response = await fetchWithTimeout(url.toString());
     if (!response.ok) return null;
 
-    const data = (await response.json()) as Array<{
-      lat?: string;
-      lon?: string;
-    }>;
+    const data = (await response.json()) as {
+      features?: Array<{
+        geometry?: {
+          coordinates?: [number, number];
+        };
+      }>;
+    };
 
-    const latitude = Number(data[0]?.lat);
-    const longitude = Number(data[0]?.lon);
+    const coordinates = data.features?.[0]?.geometry?.coordinates;
+    const longitude = Number(coordinates?.[0]);
+    const latitude = Number(coordinates?.[1]);
 
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
       return null;
