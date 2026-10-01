@@ -3959,19 +3959,19 @@ if (
               e enviar.
             </p>
             <p>
-              <strong>Você está tentando agendar uma data que pode não estar disponível
-              ou que pode não seguir as regras de agendamento.</strong>
+              <strong>ATENÇÃO: a disponibilidade da data e do horário escolhidos ainda
+              NÃO foi confirmada.</strong>
             </p>
             <p>
-              A antecedência mínima recomendada é de 72 horas nos dias úteis e de 5 dias
-              para pedidos com data no sábado ou domingo. O site não bloqueia a solicitação
-              por esse motivo.
+              Você está solicitando um pedido para uma data que pode já estar ocupada
+              ou que pode não seguir as regras de agendamento. A antecedência mínima é
+              de 72 horas nos dias úteis e de 5 dias para pedidos com data no sábado
+              ou domingo.
             </p>
             <p>
-              Você pode finalizar o pedido normalmente. <strong>Envie a solicitação pelo
-              WhatsApp para confirmar se a data e o horário poderão ser realizados.</strong>
-              A reserva só será considerada confirmada após nossa conferência e o pagamento
-              dentro do prazo informado.
+              <strong>Você pode finalizar o pedido mesmo assim.</strong> Envie a solicitação
+              pelo WhatsApp para que possamos verificar a agenda e confirmar se será
+              possível realizar o seu pedido na data e horário escolhidos.
             </p>
             <p>
               Após a conferência, o pedido precisa ter o pagamento realizado em até 48 horas
