@@ -881,11 +881,6 @@ export default function Home() {
     useState<PlanPaymentMode>("Mensal");
   const [orderSubmitting, setOrderSubmitting] = useState(false);
   const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
-  const [minimumOrderTime, setMinimumOrderTime] = useState(0);
-  const [busyWindows, setBusyWindows] = useState<BusyWindow[]>([]);
-  const [availabilityStatus, setAvailabilityStatus] = useState<
-    "idle" | "loading" | "connected" | "unavailable"
-  >("idle");
   const [giftChoices, setGiftChoices] = useState({
     cupcakeMass: "Branca",
     cupcakeFilling: "Brigadeiro Tradicional",
@@ -950,44 +945,6 @@ export default function Home() {
 
 
 
-  useEffect(() => {
-    if (!details.eventDate) {
-      const timer = window.setTimeout(() => {
-        setBusyWindows([]);
-        setAvailabilityStatus("idle");
-      }, 0);
-      return () => window.clearTimeout(timer);
-    }
-
-    const controller = new AbortController();
-    const loadingTimer = window.setTimeout(
-      () => setAvailabilityStatus("loading"),
-      0,
-    );
-    fetch(`/api/availability?date=${encodeURIComponent(details.eventDate)}`, {
-      signal: controller.signal,
-      cache: "no-store",
-    })
-      .then(async (response) => {
-        const payload = (await response.json()) as {
-          busy?: BusyWindow[];
-          connected?: boolean;
-        };
-        setBusyWindows(payload.busy ?? []);
-        setAvailabilityStatus(payload.connected ? "connected" : "unavailable");
-      })
-      .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setBusyWindows([]);
-        setAvailabilityStatus("unavailable");
-      });
-
-    return () => {
-      window.clearTimeout(loadingTimer);
-      controller.abort();
-    };
-  }, [details.eventDate]);
-
   const activeSweetGroup =
     sweetGroups.find((group) => group.id === sweetGroupId) ?? sweetGroups[0];
 
@@ -1005,29 +962,10 @@ export default function Home() {
     if (!details.eventDate) return [];
 
     const selectedDate = new Date(`${details.eventDate}T12:00:00`);
-    const options =
-      selectedDate.getDay() === 0 ? sundayTimeOptions : weekdayTimeOptions;
-    return options.filter((time) => {
-      const slotStart = new Date(
-        `${details.eventDate}T${time}:00`,
-      ).getTime();
-      const slotEnd = slotStart + 30 * 60 * 1000;
-      const overlapsAgenda = busyWindows.some((window) => {
-        const busyStart = new Date(window.start).getTime();
-        const busyEnd = new Date(window.end).getTime();
-        return slotStart < busyEnd && slotEnd > busyStart;
-      });
-
-      const earliestAllowedTime =
-        minimumOrderTime + requiredLeadHours * 60 * 60 * 1000;
-      return slotStart >= earliestAllowedTime && !overlapsAgenda;
-    });
-  }, [
-    busyWindows,
-    details.eventDate,
-    minimumOrderTime,
-    requiredLeadHours,
-  ]);
+    return selectedDate.getDay() === 0
+      ? sundayTimeOptions
+      : weekdayTimeOptions;
+  }, [details.eventDate]);
 
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.qty * item.unitPrice, 0),
@@ -1469,15 +1407,7 @@ if (
     );
     const hoursUntilOrder =
       (selectedDateTime.getTime() - Date.now()) / (60 * 60 * 1000);
-    if (hoursUntilOrder < requiredLeadHours) {
-      setCheckoutStep(1);
-      setToast(
-        requiredLeadHours === 120
-          ? "Pedidos para sábado ou domingo precisam de no mínimo 5 dias de antecedência."
-          : "Todos os pedidos precisam de no mínimo 72 horas de antecedência.",
-      );
-      return;
-    }
+    const leadTimeRuleRespected = hoursUntilOrder >= requiredLeadHours;
     const eventMinutes =
       selectedDateTime.getHours() * 60 + selectedDateTime.getMinutes();
     const isSunday = selectedDateTime.getDay() === 0;
@@ -3342,16 +3272,11 @@ if (
                           </option>
                         ))}
                       </select>
-                      {availabilityStatus === "loading" && (
-                        <small className="availability-note">
-                          Verificando os horários disponíveis…
-                        </small>
-                      )}
-                      {availabilityStatus === "connected" && (
-                        <small className="availability-note success">
-                          Horários já ocupados são removidos automaticamente.
-                        </small>
-                      )}
+                      <small className="availability-note">
+                        A data e o horário selecionados são apenas uma solicitação.
+                        A agenda e a antecedência mínima serão conferidas no WhatsApp
+                        antes da confirmação do pedido.
+                      </small>
                     </label>
                     <label>
                       Escrita ou frase no bolo
@@ -3398,19 +3323,19 @@ if (
                       />
                     </label>
                     <p className="form-hint full-field order-deadline-hint">
-                      <strong>Antecedência mínima deste pedido: {requiredLeadLabel}.</strong>{" "}
-                      Todos os pedidos precisam de pelo menos 72 horas de antecedência.
-                      Para pedidos com data no sábado ou domingo, a antecedência mínima
-                      é de 5 dias.
+                      <strong>Atenção ao agendamento:</strong> você pode selecionar qualquer
+                      data disponível no calendário e finalizar a solicitação do pedido.
+                      A data e o horário não ficam reservados automaticamente.
+                      <br />
+                      <strong>Antecedência mínima recomendada:</strong> 72 horas nos dias úteis
+                      e 5 dias para pedidos com data no sábado ou domingo.
                       <br />
                       <strong>Segunda a sábado:</strong> 08:00 às 18:00 ·{" "}
                       <strong>Domingo:</strong> 07:00 às 08:30 e 12:30 às 16:00.
                       <br />
-                      Retire ou receba a encomenda no horário confirmado. De
-                      segunda a sexta, após as 18h, o pedido ficará disponível
-                      no dia seguinte, a partir das 8h, ou conforme nossa
-                      disponibilidade. Aos domingos, valem somente os horários
-                      oferecidos no agendamento.
+                      Mesmo que o prazo de antecedência ou a disponibilidade não sejam atendidos,
+                      o pedido poderá ser enviado. A confirmação será feita pelo WhatsApp após
+                      a conferência da agenda e das regras de produção.
                     </p>
                   </div>
                 </section>
@@ -4034,12 +3959,23 @@ if (
               e enviar.
             </p>
             <p>
-              A antecedência mínima para fazer a encomenda é de 72 horas em dias úteis
-              e de 5 dias para pedidos com data no sábado ou domingo.
+              <strong>Você está tentando agendar uma data que pode não estar disponível
+              ou que pode não seguir as regras de agendamento.</strong>
             </p>
             <p>
-              Após o envio, o pedido precisa ser conferido e o pagamento realizado
-              em até 48 horas para que a reserva seja confirmada.
+              A antecedência mínima recomendada é de 72 horas nos dias úteis e de 5 dias
+              para pedidos com data no sábado ou domingo. O site não bloqueia a solicitação
+              por esse motivo.
+            </p>
+            <p>
+              Você pode finalizar o pedido normalmente. <strong>Envie a solicitação pelo
+              WhatsApp para confirmar se a data e o horário poderão ser realizados.</strong>
+              A reserva só será considerada confirmada após nossa conferência e o pagamento
+              dentro do prazo informado.
+            </p>
+            <p>
+              Após a conferência, o pedido precisa ter o pagamento realizado em até 48 horas
+              para que a reserva seja confirmada.
             </p>
             <p>
               Sem o pagamento dentro do prazo, o pedido não será confirmado.
