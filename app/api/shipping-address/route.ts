@@ -33,6 +33,38 @@ const fetchWithTimeout = async (url: string) => {
   }
 };
 
+async function geocodeAddress(address: string): Promise<C | null> {
+  const query = address.trim();
+  if (!query) return null;
+
+  try {
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("q", query);
+    url.searchParams.set("limit", "1");
+    url.searchParams.set("countrycodes", "br");
+
+    const response = await fetchWithTimeout(url.toString());
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as Array<{
+      lat?: string;
+      lon?: string;
+    }>;
+
+    const latitude = Number(data[0]?.lat);
+    const longitude = Number(data[0]?.lon);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return null;
+    }
+
+    return { lat: latitude, lon: longitude };
+  } catch {
+    return null;
+  }
+}
+
 async function drivingDistanceKm(a: C, b: C): Promise<number | null> {
   const coordinates = [
     `${a.lon},${a.lat}`,
@@ -176,45 +208,47 @@ export async function POST(request: Request) {
       );
     }
 
-    let cepData: CepData | null = null;
+    const cepData = await lookupBrasilApiV2(cep);
+    const validatedAddress = [
+      body.street?.trim() || cepData?.street || "",
+      body.number?.trim() || "",
+      body.neighborhood?.trim() || cepData?.neighborhood || "",
+      body.city?.trim() || cepData?.city || "",
+      body.state?.trim() || cepData?.state || "",
+      cep,
+    ]
+      .filter(Boolean)
+      .join(", ");
 
-    if (
-      typeof body.latitude === "number" &&
-      Number.isFinite(body.latitude) &&
-      typeof body.longitude === "number" &&
-      Number.isFinite(body.longitude)
-    ) {
-      cepData = {
-        cep,
-        street: body.street?.trim() ?? "",
-        neighborhood: body.neighborhood?.trim() ?? "",
-        city: body.city?.trim() ?? "",
-        state: body.state?.trim() ?? "",
-        latitude: body.latitude,
-        longitude: body.longitude,
-      };
-    } else {
-      cepData = await lookupBrasilApiV2(cep);
+    // Primeiro tentamos localizar o endereço completo, incluindo o número.
+    // Isso evita usar o ponto aproximado do CEP quando ele estiver impreciso.
+    let destination = await geocodeAddress(validatedAddress);
+
+    // Se não houver resultado para o número exato, tentamos o logradouro +
+    // bairro/cidade. Essa busca é apenas um fallback de localização.
+    if (!destination) {
+      const streetAddress = [
+        body.street?.trim() || cepData?.street || "",
+        body.neighborhood?.trim() || cepData?.neighborhood || "",
+        body.city?.trim() || cepData?.city || "",
+        body.state?.trim() || cepData?.state || "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      destination = await geocodeAddress(streetAddress);
     }
 
-    // Se o V2 não retornar coordenadas, tentamos confirmar o CEP no ViaCEP.
-    // Não usamos geocodificação livre: isso evita que uma rua com nome
-    // semelhante seja localizada em outro bairro/cidade.
-    if (!cepData) {
+    if (!destination) {
       await lookupViaCep(cep);
       return Response.json(
         {
           error:
-            "Não conseguimos obter a localização aproximada deste CEP agora. Confira o CEP e tente novamente.",
+            "Não conseguimos localizar este endereço para calcular a entrega agora. Confira os dados e tente novamente.",
         },
         { status: 503 },
       );
     }
-
-    const destination = {
-      lat: cepData.latitude,
-      lon: cepData.longitude,
-    };
 
     const oneWayKm = await drivingDistanceKm(ORIGIN, destination);
 
