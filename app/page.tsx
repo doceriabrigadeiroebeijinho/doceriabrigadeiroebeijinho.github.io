@@ -1338,8 +1338,6 @@ export default function Home() {
       }
 
       setDeliveryFee(result.fee);
-      setShippingLocatedAddress(result.locatedAddress || "");
-      setShippingRoundTripKm(result.roundTripKm || 0);
       setShippingStatus("success");
     } catch (error) {
       setDeliveryFee(0);
@@ -2831,8 +2829,6 @@ if (
                   setCepLookupStatus(cep.length === 8 ? "loading" : "idle");
                   setShippingStatus("idle");
                   setDeliveryFee(0);
-                  setShippingLocatedAddress("");
-                  setShippingRoundTripKm(0);
                   setShippingError("");
 
                   if (cep.length === 8) {
@@ -3436,8 +3432,6 @@ if (
                             setCepLookupStatus(cep.length === 8 ? "loading" : "idle");
                             setShippingStatus("idle");
                             setDeliveryFee(0);
-                            setShippingLocatedAddress("");
-                            setShippingRoundTripKm(0);
                             setShippingError("");
 
                             if (cep.length === 8) {
