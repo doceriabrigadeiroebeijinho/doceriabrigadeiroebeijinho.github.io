@@ -1780,14 +1780,32 @@ if (
 
       <section className="hero" id="inicio">
         <div className="hero-copy">
-          <h1>Doces que transformam momentos em lembranças</h1>
+          <span className="eyebrow">Bolos e doces artesanais em Belo Horizonte</span>
+          <h1>Bolos personalizados para a sua comemoração</h1>
           <p>
-            Bolos personalizados e doces artesanais feitos sob encomenda em
-            Belo Horizonte, com cuidado em cada detalhe.
+            Sim, fazemos bolos personalizados. Você escolhe o tamanho, sabor,
+            cores e detalhes da decoração. Também temos doces, bombons, bentôs
+            e cupcakes para completar a mesa.
           </p>
+
+          <div className="hero-categories" aria-label="O que você encontra aqui">
+            <a href="#cardapio" onClick={() => setCatalogTab("cakes")}>
+              <strong>Bolos</strong>
+              <span>Personalizados</span>
+            </a>
+            <a href="#cardapio" onClick={() => setCatalogTab("sweets")}>
+              <strong>Doces & bombons</strong>
+              <span>Para festas e eventos</span>
+            </a>
+            <a href="#cardapio" onClick={() => setCatalogTab("gifts")}>
+              <strong>Bentôs & cupcakes</strong>
+              <span>Presentes e lembranças</span>
+            </a>
+          </div>
+
           <div className="hero-buttons">
             <a className="button button-primary" href="#cardapio">
-              Faça seu pedido aqui
+              Ver cardápio e fazer pedido
             </a>
           </div>
         </div>
@@ -1803,17 +1821,16 @@ if (
         </div>
       </section>
 
-      <section className="steps-section" id="como-pedir">
+      <section className="steps-section compact" id="como-pedir">
         <div className="section-heading left">
-          <span className="section-kicker">Do pedido à comemoração</span>
-          <h2>Seu pedido em quatro etapas simples</h2>
+          <span className="section-kicker">Como funciona</span>
+          <h2>É mais simples do que parece</h2>
         </div>
         <div className="steps-grid">
           {[
-            ["1", "Escolha", "Adicione bolo, doces, bombons ou presentes ao pedido."],
-            ["2", "Personalize", "Informe frase, idade, cores e detalhes da decoração."],
-            ["3", "Receba", "Escolha retirada ou informe o endereço completo para calcular a entrega."],
-            ["4", "Confirme", "Revise os dados e envie a solicitação para conferirmos a disponibilidade."],
+            ["1", "Escolha", "Veja os produtos e monte seu pedido."],
+            ["2", "Personalize", "Escolha sabor, tamanho e detalhes do bolo."],
+            ["3", "Confirme", "Informe a data, revise os valores e envie a solicitação."],
           ].map(([number, title, text]) => (
             <article key={number}>
               <div className="step-inline-title">
@@ -1824,9 +1841,11 @@ if (
             </article>
           ))}
         </div>
-        <a className="steps-cta" href="#cardapio">
-          Clique aqui e faça seu pedido
-        </a>
+        <div className="quick-rules">
+          <span><strong>60%</strong> de entrada</span>
+          <span><strong>Pix ou cartão</strong></span>
+          <span><strong>Entrega</strong> calculada pelo CEP</span>
+        </div>
       </section>
 
       <section className="catalog-section" id="cardapio">
@@ -2775,19 +2794,35 @@ if (
         <div className="section-heading">
           <span className="section-kicker">Antes de chamar no WhatsApp</span>
           <h2>Dúvidas frequentes</h2>
-          <p>As principais informações sobre nossos bolos, doces, pagamento e entrega estão aqui. Toque na pergunta para ver a resposta.</p>
+          <p>As respostas essenciais estão aqui. Para valores e opções, consulte diretamente o cardápio.</p>
         </div>
         <div className="faq-grid">
-          <details className="faq-item"><summary>Vocês fazem bolos personalizados?</summary><p>Sim! Fazemos bolos personalizados para aniversários, mesversários e outras comemorações. Você pode escolher tema, cores, frase, idade e outros detalhes. Decorações diferentes das opções do cardápio ficam sujeitas à avaliação.</p></details>
-          <details className="faq-item"><summary>Vocês fazem doces e bombons?</summary><p>Sim! Temos brigadeiros, beijinhos, doces especiais, doces finos, bombons e outras opções. As opções e preços ficam disponíveis na aba <strong>Doces &amp; bombons</strong> do cardápio.</p></details>
-          <details className="faq-item"><summary>Quais sabores e tamanhos de bolo vocês têm?</summary><p>Temos bolos Clássicos, Especiais e Gourmet nos tamanhos Mini (6 a 8 fatias), P (12 a 15), M (20 a 28), G (35 a 40) e GG (55 a 60 fatias). Também temos bolo de corte para cerca de 50 pessoas. Os sabores aparecem nas opções do cardápio.</p></details>
-          <details className="faq-item"><summary>Vocês entregam?</summary><p>Sim! Fazemos entregas. No momento do pedido, informe seu CEP e complete o número e complemento do endereço. A taxa de entrega é calculada e adicionada automaticamente ao resumo.</p></details>
-          <details className="faq-item"><summary>Precisa pagar entrada para confirmar o pedido?</summary><p>Sim. Para pedidos avulsos, a confirmação é feita com <strong>60% de entrada</strong>. Os 40% restantes ficam para o momento da entrega ou retirada, conforme a forma de pagamento escolhida.</p></details>
-          <details className="faq-item"><summary>Vocês aceitam cartão de crédito?</summary><p>Sim! Aceitamos <strong>cartão de crédito e Pix</strong>. No cartão, o pagamento inicial é feito por link seguro. No Pix, os produtos avulsos têm <strong>3% de desconto</strong>.</p></details>
-          <details className="faq-item"><summary>Posso escolher a decoração do bolo?</summary><p>Sim. O topo de bolo simples está incluído. Também temos opções como flores naturais, papel de arroz e frutas, com valores adicionais conforme o tamanho. Outras decorações podem ser avaliadas antes da confirmação.</p></details>
-          <details className="faq-item"><summary>O pedido é confirmado na hora que envio pelo site?</summary><p>Não. O envio pelo site gera uma solicitação para conferirmos a disponibilidade da data e do horário. Depois da confirmação, o pagamento precisa ser realizado dentro do prazo informado para reservar a encomenda.</p></details>
+          <details className="faq-item">
+            <summary>Vocês fazem bolos personalizados?</summary>
+            <p>Sim. Você pode escolher tema, cores, frase, idade e detalhes da decoração. O topo simples está incluído; outras decorações são avaliadas conforme a referência.</p>
+          </details>
+          <details className="faq-item">
+            <summary>Quais tamanhos e sabores de bolo vocês têm?</summary>
+            <p>Temos Mini, P, M, G e GG, além de bolo de corte. Os sabores ficam organizados por Clássico, Especial e Gourmet na seção de bolos.</p>
+          </details>
+          <details className="faq-item">
+            <summary>Vocês fazem doces e bombons?</summary>
+            <p>Sim. Temos brigadeiros, beijinhos, doces especiais, doces finos, bombons, bentôs e cupcakes. Veja as opções e preços no cardápio.</p>
+          </details>
+          <details className="faq-item">
+            <summary>Vocês entregam?</summary>
+            <p>Sim. Informe o CEP e o número do endereço no pedido. O endereço é localizado e a taxa de entrega é calculada pela rota.</p>
+          </details>
+          <details className="faq-item">
+            <summary>Como funciona o pagamento e a confirmação?</summary>
+            <p>Nos pedidos avulsos, são 60% de entrada e 40% na entrega ou retirada. Aceitamos Pix e cartão. O envio do pedido pelo site é uma solicitação: a data só fica confirmada após conferirmos a disponibilidade e o pagamento.</p>
+          </details>
         </div>
-        <div className="faq-footer"><strong>Não encontrou sua dúvida?</strong><span>Depois de consultar o FAQ e o cardápio, fale conosco pelo WhatsApp para assuntos específicos do seu pedido.</span><a href={WHATSAPP_INFO_URL} target="_blank" rel="noreferrer">Falar sobre meu pedido →</a></div>
+        <div className="faq-footer">
+          <strong>Não encontrou sua dúvida?</strong>
+          <span>Depois de consultar o cardápio, fale conosco pelo WhatsApp para assuntos específicos do seu pedido.</span>
+          <a href={WHATSAPP_INFO_URL} target="_blank" rel="noreferrer">Falar sobre meu pedido →</a>
+        </div>
       </section>
 
       <section className="delivery-section" id="entrega">
