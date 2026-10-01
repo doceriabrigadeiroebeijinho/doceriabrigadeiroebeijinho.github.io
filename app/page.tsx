@@ -1660,63 +1660,57 @@ if (
 
     const message = messageBlocks.join("\n\n");
 
-    setOrderSubmitting(true);
-    try {
-      const response = await fetch("/api/customers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderCode,
-          name: customer.name,
-          phone: customer.phone,
-          eventDate: details.eventDate,
-          eventTime: details.eventTime,
-          service: delivery.service,
-          address:
-            delivery.service === "Entrega" ? formattedAddress : ORIGIN,
-          items: cart.map((item) => ({
-            name: item.name,
-            variant: item.variant,
-            type: item.type,
-            quantity: item.qty,
-            totalCents: Math.round(item.qty * item.unitPrice * 100),
-          })),
-          totalCents: Math.round(total * 100),
-          paymentMethod: `${paymentMethod} · restante: ${balancePaymentMethod}`,
-          planPaymentMode: planSubtotal > 0 ? planPaymentMode : null,
-          planTermsAccepted:
-            planSubtotal > 0 ? monthlyTermsAccepted : false,
-          summary: {
-            productsCents: Math.round(regularSubtotal * 100),
-            couponCode: appliedCoupon || "",
-            couponDiscountCents: Math.round(couponDiscount * 100),
-            pixDiscountCents: Math.round(pixDiscount * 100),
-            deliveryCents: Math.round(deliveryFee * 100),
-            totalCents: Math.round(total * 100),
-            depositCents: Math.round(deposit * 100),
-            balanceCents: Math.round(balance * 100),
-            planCents: Math.round(planSubtotal * 100),
-            balancePaymentMethod,
-          },
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Não foi possível salvar o cadastro");
-      }
-    } catch {
-      setToast(
-        "Não foi possível salvar o cadastro agora. Tente enviar novamente.",
-      );
-      setOrderSubmitting(false);
-      return;
-    }
-    setOrderSubmitting(false);
     setPendingWhatsAppMessage(message);
     setPendingWhatsAppUrl(
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,
     );
     setOrderMessageCopied(false);
     setPaymentNoticeOpen(true);
+    setOrderSubmitting(false);
+
+    void fetch("/api/customers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        orderCode,
+        name: customer.name,
+        phone: customer.phone,
+        eventDate: details.eventDate,
+        eventTime: details.eventTime,
+        service: delivery.service,
+        address:
+          delivery.service === "Entrega" ? formattedAddress : ORIGIN,
+        items: cart.map((item) => ({
+          name: item.name,
+          variant: item.variant,
+          type: item.type,
+          quantity: item.qty,
+          totalCents: Math.round(item.qty * item.unitPrice * 100),
+        })),
+        totalCents: Math.round(total * 100),
+        paymentMethod: `${paymentMethod} · restante: ${balancePaymentMethod}`,
+        planPaymentMode: planSubtotal > 0 ? planPaymentMode : null,
+        planTermsAccepted:
+          planSubtotal > 0 ? monthlyTermsAccepted : false,
+        summary: {
+          productsCents: Math.round(regularSubtotal * 100),
+          couponCode: appliedCoupon || "",
+          couponDiscountCents: Math.round(couponDiscount * 100),
+          pixDiscountCents: Math.round(pixDiscount * 100),
+          deliveryCents: Math.round(deliveryFee * 100),
+          totalCents: Math.round(total * 100),
+          depositCents: Math.round(deposit * 100),
+          balanceCents: Math.round(balance * 100),
+          planCents: Math.round(planSubtotal * 100),
+          balancePaymentMethod,
+        },
+      }),
+    }).catch(() => {
+      setToast(
+        "A solicitação foi preparada, mas não conseguimos salvar o cadastro agora.",
+      );
+    });
   };
 
   const copyWhatsAppMessage = async () => {
@@ -3915,9 +3909,8 @@ if (
             <span>Antes de enviar</span>
             <h2>Seu pedido está pronto para o WhatsApp</h2>
             <p>
-              O pedido já foi salvo no cadastro. Ao abrir o WhatsApp, a mensagem
-              completa será preenchida automaticamente para você apenas conferir
-              e enviar.
+              Sua solicitação está pronta para o WhatsApp. A mensagem completa será
+              preenchida automaticamente para você conferir e enviar.
             </p>
             <p>
               <strong>ATENÇÃO: a disponibilidade da data e do horário escolhidos ainda
