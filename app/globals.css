@@ -2181,7 +2181,11 @@ footer a:hover {
 }
 
 .payment-notice-modal {
-  width: min(520px, 100%);
+  box-sizing: border-box;
+  width: min(520px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: clamp(26px, 5vw, 42px);
   border: 1px solid rgba(255, 255, 255, 0.78);
   border-radius: 30px;
@@ -2213,10 +2217,18 @@ footer a:hover {
 }
 
 .payment-notice-modal > div {
+  position: sticky;
+  bottom: 0;
   display: flex;
   justify-content: flex-end;
   gap: 9px;
-  margin-top: 24px;
+  margin: 24px -6px -6px;
+  padding: 14px 6px 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 253, 248, 0),
+    var(--paper) 26%
+  );
 }
 
 .payment-notice-modal button {
@@ -3809,6 +3821,12 @@ footer a:hover {
     width: max-content;
     max-width: calc(100% - 24px);
     text-align: center;
+  }
+
+  .payment-notice-modal {
+    width: min(520px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    padding: 24px 20px 20px;
   }
 
   .payment-notice-modal > div {
