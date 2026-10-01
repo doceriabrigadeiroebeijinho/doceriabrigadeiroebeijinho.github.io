@@ -2771,6 +2771,25 @@ if (
         </div>
       </section>
 
+      <section className="faq-section" id="faq">
+        <div className="section-heading">
+          <span className="section-kicker">Antes de chamar no WhatsApp</span>
+          <h2>Dúvidas frequentes</h2>
+          <p>As principais informações sobre nossos bolos, doces, pagamento e entrega estão aqui. Toque na pergunta para ver a resposta.</p>
+        </div>
+        <div className="faq-grid">
+          <details className="faq-item"><summary>Vocês fazem bolos personalizados?</summary><p>Sim! Fazemos bolos personalizados para aniversários, mesversários e outras comemorações. Você pode escolher tema, cores, frase, idade e outros detalhes. Decorações diferentes das opções do cardápio ficam sujeitas à avaliação.</p></details>
+          <details className="faq-item"><summary>Vocês fazem doces e bombons?</summary><p>Sim! Temos brigadeiros, beijinhos, doces especiais, doces finos, bombons e outras opções. As opções e preços ficam disponíveis na aba <strong>Doces &amp; bombons</strong> do cardápio.</p></details>
+          <details className="faq-item"><summary>Quais sabores e tamanhos de bolo vocês têm?</summary><p>Temos bolos Clássicos, Especiais e Gourmet nos tamanhos Mini (6 a 8 fatias), P (12 a 15), M (20 a 28), G (35 a 40) e GG (55 a 60 fatias). Também temos bolo de corte para cerca de 50 pessoas. Os sabores aparecem nas opções do cardápio.</p></details>
+          <details className="faq-item"><summary>Vocês entregam?</summary><p>Sim! Fazemos entregas. No momento do pedido, informe seu CEP e complete o número e complemento do endereço. A taxa de entrega é calculada e adicionada automaticamente ao resumo.</p></details>
+          <details className="faq-item"><summary>Precisa pagar entrada para confirmar o pedido?</summary><p>Sim. Para pedidos avulsos, a confirmação é feita com <strong>60% de entrada</strong>. Os 40% restantes ficam para o momento da entrega ou retirada, conforme a forma de pagamento escolhida.</p></details>
+          <details className="faq-item"><summary>Vocês aceitam cartão de crédito?</summary><p>Sim! Aceitamos <strong>cartão de crédito e Pix</strong>. No cartão, o pagamento inicial é feito por link seguro. No Pix, os produtos avulsos têm <strong>3% de desconto</strong>.</p></details>
+          <details className="faq-item"><summary>Posso escolher a decoração do bolo?</summary><p>Sim. O topo de bolo simples está incluído. Também temos opções como flores naturais, papel de arroz e frutas, com valores adicionais conforme o tamanho. Outras decorações podem ser avaliadas antes da confirmação.</p></details>
+          <details className="faq-item"><summary>O pedido é confirmado na hora que envio pelo site?</summary><p>Não. O envio pelo site gera uma solicitação para conferirmos a disponibilidade da data e do horário. Depois da confirmação, o pagamento precisa ser realizado dentro do prazo informado para reservar a encomenda.</p></details>
+        </div>
+        <div className="faq-footer"><strong>Não encontrou sua dúvida?</strong><span>Depois de consultar o FAQ e o cardápio, fale conosco pelo WhatsApp para assuntos específicos do seu pedido.</span><a href={WHATSAPP_INFO_URL} target="_blank" rel="noreferrer">Falar sobre meu pedido →</a></div>
+      </section>
+
       <section className="delivery-section" id="entrega">
         <div className="delivery-card location-card">
           <span className="section-kicker">Retirada no Solar do Barreiro</span>
