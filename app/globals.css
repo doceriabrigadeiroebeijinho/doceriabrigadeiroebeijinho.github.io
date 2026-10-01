@@ -5105,3 +5105,103 @@ footer a:hover {
 .faq-footer strong{white-space:nowrap}.faq-footer span{color:rgba(255,255,255,.78);font-size:.88rem;line-height:1.5}
 .faq-footer a{padding:12px 18px;border-radius:999px;background:var(--rose);color:white;font-weight:800;white-space:nowrap}
 @media(max-width:760px){.faq-section{width:min(100% - 28px,620px);padding:70px 0 78px}.faq-grid{grid-template-columns:1fr;gap:10px;margin-top:28px}.faq-item summary{padding:19px 48px 19px 18px;font-size:.92rem}.faq-item p{padding:0 18px 20px;font-size:.87rem}.faq-footer{grid-template-columns:1fr;gap:10px;padding:20px}.faq-footer a{width:fit-content}}
+
+
+/* Hierarquia da página: deixar claro logo na entrada o que a doceria oferece. */
+.hero-categories {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 650px;
+  margin-top: 26px;
+}
+
+.hero-categories a {
+  display: flex;
+  min-height: 76px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 253, 248, 0.72);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.hero-categories a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(198, 111, 120, 0.42);
+  background: var(--paper);
+}
+
+.hero-categories strong {
+  font-size: 0.9rem;
+}
+
+.hero-categories span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.steps-section.compact {
+  margin-bottom: 100px;
+}
+
+.steps-section.compact .steps-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.quick-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin-top: 18px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.78rem;
+}
+
+.quick-rules span {
+  position: relative;
+}
+
+.quick-rules span + span::before {
+  position: absolute;
+  left: -13px;
+  content: "•";
+  color: var(--rose);
+}
+
+@media (max-width: 900px) {
+  .hero-categories {
+    max-width: none;
+  }
+
+  .steps-section.compact .steps-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .hero-categories {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-categories a {
+    min-height: 62px;
+  }
+
+  .steps-section.compact .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-rules {
+    display: grid;
+    gap: 8px;
+  }
+
+  .quick-rules span + span::before {
+    display: none;
+  }
+}
