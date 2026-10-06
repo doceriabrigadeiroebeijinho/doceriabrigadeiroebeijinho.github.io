@@ -880,6 +880,14 @@ export default function Home() {
   const [planPaymentMode, setPlanPaymentMode] =
     useState<PlanPaymentMode>("Mensal");
   const [orderSubmitting, setOrderSubmitting] = useState(false);
+  const [orderSuccessOpen, setOrderSuccessOpen] = useState(false);
+  const [lastSubmittedOrder, setLastSubmittedOrder] = useState<any>(null);
+  const [customerPortalOpen, setCustomerPortalOpen] = useState(false);
+  const [customerLookupName, setCustomerLookupName] = useState("");
+  const [customerLookupPhone, setCustomerLookupPhone] = useState("");
+  const [customerOrders, setCustomerOrders] = useState<any[]>([]);
+  const [customerLoading, setCustomerLoading] = useState(false);
+  const [customerError, setCustomerError] = useState("");
   const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
   const [giftChoices, setGiftChoices] = useState({
     cupcakeMass: "Branca",
@@ -1373,6 +1381,82 @@ export default function Home() {
   const originMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     ORIGIN,
   )}`;
+  const openCustomerPortal = () => {
+    setCustomerPortalOpen(true);
+    setCustomerError("");
+    setCustomerOrders([]);
+  };
+
+  const lookupCustomerOrders = async () => {
+    const name = customerLookupName.trim();
+    const phone = customerLookupPhone.trim();
+    if (!name || !phone) {
+      setCustomerError("Informe seu nome e WhatsApp.");
+      return;
+    }
+    setCustomerLoading(true);
+    setCustomerError("");
+    try {
+      const response = await fetch(`/api/orders?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`, { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "Não encontramos pedidos para esses dados.");
+      setCustomerOrders(Array.isArray(result.orders) ? result.orders : []);
+      if (!result.orders?.length) setCustomerError("Não encontramos pedidos com esses dados.");
+    } catch (error) {
+      setCustomerOrders([]);
+      setCustomerError(error instanceof Error ? error.message : "Não foi possível consultar seus pedidos agora.");
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  const submitOrderDirectly = async () => {
+    if (cart.length === 0) { setCheckoutStep(0); setToast("Adicione pelo menos um item ao pedido"); return; }
+    if (!customer.name.trim() || !customer.phone.trim()) { setCheckoutStep(2); setToast("Preencha nome e WhatsApp para continuar"); return; }
+    if (!details.eventDate || !details.eventTime) { setCheckoutStep(1); setToast("Informe a data e o horário da encomenda"); return; }
+    if (delivery.service === "Entrega" && (cleanCep(delivery.cep).length !== 8 || !delivery.street.trim() || !delivery.number.trim() || !delivery.city.trim() || !delivery.state.trim())) { setCheckoutStep(2); setToast("Informe o CEP e o número para preencher o endereço da entrega"); return; }
+    if (delivery.service === "Entrega" && (shippingStatus !== "success" || deliveryFee <= 0)) { setCheckoutStep(2); setToast("Aguarde o cálculo da entrega antes de continuar"); return; }
+    if (!paymentMethod) { setCheckoutStep(3); setToast("Escolha Pix ou cartão para continuar"); return; }
+    if (planSubtotal > 0 && !monthlyTermsAccepted) { setCheckoutStep(3); setToast("Leia e aceite as condições do pacote para continuar"); return; }
+    const selectedDateTime = new Date(`${details.eventDate}T${details.eventTime}:00`);
+    const eventMinutes = selectedDateTime.getHours() * 60 + selectedDateTime.getMinutes();
+    const isSunday = selectedDateTime.getDay() === 0;
+    const sundayHours = (eventMinutes >= 420 && eventMinutes <= 510) || (eventMinutes >= 750 && eventMinutes <= 960);
+    const weekdayHours = eventMinutes >= 480 && eventMinutes <= 1080;
+    const hoursUntilOrder = (selectedDateTime.getTime() - Date.now()) / 3600000;
+    if (hoursUntilOrder < requiredLeadHours) { setCheckoutStep(1); setToast(`Esta data exige ${requiredLeadLabel}.`); return; }
+    if ((isSunday && !sundayHours) || (!isSunday && !weekdayHours)) { setCheckoutStep(1); setToast(isSunday ? "Aos domingos: 07:00–08:30 ou 12:30–16:00" : "De segunda a sábado: 08:00–18:00"); return; }
+    setOrderSubmitting(true);
+    const orderCode = `BB-${Date.now().toString().slice(-6)}`;
+    try {
+      const response = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderCode, name: customer.name.trim(), phone: customer.phone.trim(),
+          eventDate: details.eventDate, eventTime: details.eventTime, service: delivery.service,
+          address: delivery.service === "Entrega" ? formattedAddress : ORIGIN,
+          items: cart.map((item) => ({ name: item.name, variant: item.variant, type: item.type, quantity: item.qty, totalCents: Math.round(item.qty * item.unitPrice * 100) })),
+          totalCents: Math.round(total * 100),
+          paymentMethod: `${paymentMethod} · restante: ${balancePaymentMethod}`,
+          planPaymentMode: planSubtotal > 0 ? planPaymentMode : null,
+          planTermsAccepted: planSubtotal > 0 ? monthlyTermsAccepted : false,
+          personalization: { phrase: details.phrase, age: details.age, decoration: details.decoration, colors: details.colors },
+          summary: { productsCents: Math.round(regularSubtotal * 100), couponCode: appliedCoupon || "", couponDiscountCents: Math.round(couponDiscount * 100), pixDiscountCents: Math.round(pixDiscount * 100), deliveryCents: Math.round(deliveryFee * 100), totalCents: Math.round(total * 100), depositCents: Math.round(deposit * 100), balanceCents: Math.round(balance * 100), planCents: Math.round(planSubtotal * 100), balancePaymentMethod },
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "Não foi possível registrar o pedido.");
+      setLastSubmittedOrder({ orderCode: result.orderCode || orderCode, name: customer.name.trim(), eventDate: details.eventDate, eventTime: details.eventTime, service: delivery.service, total, deposit, balance, paymentMethod });
+      setOrderSuccessOpen(true);
+      setOrderOpen(false);
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : "Não foi possível registrar o pedido. Tente novamente.");
+    } finally {
+      setOrderSubmitting(false);
+    }
+  };
+
   const sendWhatsApp = async () => {
     if (cart.length === 0) {
       setCheckoutStep(0);
@@ -1763,6 +1847,9 @@ if (
           >
             <span />
             <span />
+          </button>
+          <button className="header-cta" type="button" onClick={openCustomerPortal}>
+            Já sou cliente
           </button>
           <button
             className="header-cta"
@@ -3370,7 +3457,7 @@ if (
                       <strong>Domingo:</strong> 07:00 às 08:30 e 12:30 às 16:00.
                       <br />
                       Mesmo que o prazo de antecedência ou a disponibilidade não sejam atendidos,
-                      o pedido poderá ser enviado. A confirmação será feita pelo WhatsApp após
+                      o pedido poderá ser enviado. A confirmação será feita após
                       a conferência da agenda e das regras de produção.
                     </p>
                   </div>
@@ -3938,7 +4025,7 @@ if (
                   <button
                     type="button"
                     className="whatsapp-button"
-                    onClick={() => void sendWhatsApp()}
+                    onClick={() => void submitOrderDirectly()}
                     disabled={orderSubmitting}
                   >
                     {orderSubmitting
