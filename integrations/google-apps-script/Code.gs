@@ -54,6 +54,11 @@ service: "Doceria Brigadeiro & Beijinho",
 timestamp: new Date().toISOString(),
 });
 }
+
+if (params.action === "customer-orders") {
+validateToken_(params.token);
+return customerOrdersResponse_(params.name, params.phone);
+}
 validateToken_(params.token);
 const date = String(event.parameter.date || "");
 if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -189,6 +194,55 @@ error: String(error),
 });
 }
 }
+function customerOrdersResponse_(name, phone) {
+const spreadsheet = SETTINGS.spreadsheetId
+? SpreadsheetApp.openById(SETTINGS.spreadsheetId)
+: SpreadsheetApp.getActiveSpreadsheet();
+
+if (!spreadsheet) throw new Error("Planilha não encontrada");
+
+const orders = spreadsheet.getSheetByName("Pedidos");
+if (!orders || orders.getLastRow() < 2) {
+return json_({ ok: true, orders: [] });
+}
+
+const wantedName = String(name || "").trim().toLowerCase();
+const wantedPhone = normalizePhone_(phone);
+const values = orders.getDataRange().getValues();
+
+const result = values.slice(1)
+.filter((row) => {
+const rowName = String(row[5] || "").trim().toLowerCase();
+const rowPhone = normalizePhone_(row[6]);
+return rowName === wantedName && rowPhone === wantedPhone;
+})
+.map((row) => ({
+orderCode: String(row[1] || ""),
+status: String(row[2] || "Novo"),
+eventDate: row[3] ? Utilities.formatDate(new Date(row[3]), SETTINGS.timeZone, "yyyy-MM-dd") : "",
+eventDateLabel: row[3] ? Utilities.formatDate(new Date(row[3]), SETTINGS.timeZone, "dd/MM/yyyy") : "",
+eventTime: String(row[4] || ""),
+name: String(row[5] || ""),
+service: String(row[8] || ""),
+address: String(row[9] || ""),
+itemsText: String(row[10] || ""),
+totalCents: Math.round(Number(row[15] || 0) * 100),
+depositCents: Math.round(Number(row[16] || 0) * 100),
+balanceCents: Math.round(Number(row[17] || 0) * 100),
+paymentInitial: String(row[18] || ""),
+paymentBalance: String(row[19] || ""),
+plan: String(row[20] || ""),
+observations: String(row[21] || ""),
+}))
+.reverse();
+
+return json_({ ok: true, orders: result });
+}
+
+function normalizePhone_(value) {
+return String(value || "").replace(/\D/g, "");
+}
+
 function createComandaPdf_(payload, items, summary) {
 const orderCode = payload.orderCode || `BB-${Date.now().toString().slice(-6)}`;
 const clientName = payload.name || "Cliente";
