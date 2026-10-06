@@ -4112,6 +4112,69 @@ if (
         </div>
       )}
 
+      {orderSuccessOpen && lastSubmittedOrder && (
+        <div className="payment-notice-overlay" role="dialog" aria-modal="true" aria-label="Pedido recebido">
+          <div className="payment-notice-modal customer-portal-modal">
+            <span>Pedido recebido</span>
+            <h2>Seu pedido foi registrado</h2>
+            <p>Obrigada, {lastSubmittedOrder.name}! O pedido <strong>{lastSubmittedOrder.orderCode}</strong> foi enviado para nossa organização de pedidos.</p>
+            <div className="order-success-summary">
+              <div><span>Data solicitada</span><strong>{lastSubmittedOrder.eventDate} às {lastSubmittedOrder.eventTime}</strong></div>
+              <div><span>Atendimento</span><strong>{lastSubmittedOrder.service}</strong></div>
+              <div><span>Valor total</span><strong>{formatMoney(lastSubmittedOrder.total)}</strong></div>
+              <div><span>Pagamento inicial</span><strong>{formatMoney(lastSubmittedOrder.deposit)}</strong></div>
+              {lastSubmittedOrder.balance > 0 && <div><span>Restante</span><strong>{formatMoney(lastSubmittedOrder.balance)}</strong></div>}
+            </div>
+            <div className="payment-notice-info">
+              <strong>Próximos passos</strong>
+              <p>A data e o horário continuam sujeitos à conferência da agenda. Você não precisa enviar o pedido pelo WhatsApp.</p>
+              <p>Depois da conferência, você receberá as orientações para confirmação e pagamento da entrada.</p>
+            </div>
+            <div>
+              <button type="button" onClick={() => { setOrderSuccessOpen(false); setCart([]); }}>Fechar</button>
+              <button type="button" onClick={() => { setOrderSuccessOpen(false); openCustomerPortal(); }}>Ver meus pedidos</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {customerPortalOpen && (
+        <div className="payment-notice-overlay" role="dialog" aria-modal="true" aria-label="Meus pedidos">
+          <div className="payment-notice-modal customer-portal-modal">
+            <span>Área do cliente</span>
+            <h2>Meus pedidos</h2>
+            {customerOrders.length === 0 ? (
+              <>
+                <p>Informe o mesmo nome e WhatsApp usados nos seus pedidos.</p>
+                <div className="customer-portal-fields">
+                  <label>Nome<input type="text" value={customerLookupName} onChange={(e) => setCustomerLookupName(e.target.value)} placeholder="Seu nome completo" /></label>
+                  <label>WhatsApp<input type="tel" value={customerLookupPhone} onChange={(e) => setCustomerLookupPhone(e.target.value)} placeholder="(31) 99999-9999" /></label>
+                </div>
+                {customerError && <p className="customer-portal-error">{customerError}</p>}
+                <div>
+                  <button type="button" onClick={() => setCustomerPortalOpen(false)}>Fechar</button>
+                  <button type="button" onClick={() => void lookupCustomerOrders()} disabled={customerLoading}>{customerLoading ? "Consultando..." : "Ver meus pedidos"}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p>Encontramos {customerOrders.length} pedido(s).</p>
+                <div className="customer-order-list">
+                  {customerOrders.map((order) => (
+                    <article key={order.orderCode} className="customer-order-card">
+                      <div><strong>{order.orderCode}</strong><span>{order.eventDateLabel} · {order.eventTime}</span></div>
+                      <div><span>{order.status}</span><strong>{formatMoney(order.totalCents / 100)}</strong></div>
+                      <p>{order.itemsText}</p>
+                      <small>{order.service}{order.address ? ` · ${order.address}` : ""}</small>
+                    </article>
+                  ))}
+                </div>
+                <div><button type="button" onClick={() => setCustomerOrders([])}>Consultar outro</button><button type="button" onClick={() => setCustomerPortalOpen(false)}>Fechar</button></div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       {toast && <div className="toast" role="status">{toast}</div>}
 
     </main>
