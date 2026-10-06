@@ -1423,8 +1423,6 @@ export default function Home() {
     const isSunday = selectedDateTime.getDay() === 0;
     const sundayHours = (eventMinutes >= 420 && eventMinutes <= 510) || (eventMinutes >= 750 && eventMinutes <= 960);
     const weekdayHours = eventMinutes >= 480 && eventMinutes <= 1080;
-    const hoursUntilOrder = (selectedDateTime.getTime() - Date.now()) / 3600000;
-    if (hoursUntilOrder < requiredLeadHours) { setCheckoutStep(1); setToast(`Esta data exige ${requiredLeadLabel}.`); return; }
     if ((isSunday && !sundayHours) || (!isSunday && !weekdayHours)) { setCheckoutStep(1); setToast(isSunday ? "Aos domingos: 07:00–08:30 ou 12:30–16:00" : "De segunda a sábado: 08:00–18:00"); return; }
     setOrderSubmitting(true);
     const orderCode = `BB-${Date.now().toString().slice(-6)}`;
@@ -3396,9 +3394,9 @@ if (
                         ))}
                       </select>
                       <small className="availability-note">
-                        A data e o horário selecionados são apenas uma solicitação.
-                        A agenda e a antecedência mínima serão conferidas no WhatsApp
-                        antes da confirmação do pedido.
+                        A data e o horário escolhidos são uma preferência para o seu
+                        pedido. Vamos conferir a disponibilidade da agenda e a
+                        antecedência necessária antes de confirmar a encomenda.
                       </small>
                     </label>
                     <label>
@@ -4030,7 +4028,7 @@ if (
                   >
                     {orderSubmitting
                       ? "Salvando cadastro..."
-                      : "Enviar pedido no WhatsApp"}
+                      : "Enviar pedido"}
                   </button>
                 )}
               </div>
@@ -4127,8 +4125,14 @@ if (
             </div>
             <div className="payment-notice-info">
               <strong>Próximos passos</strong>
-              <p>A data e o horário continuam sujeitos à conferência da agenda. Você não precisa enviar o pedido pelo WhatsApp.</p>
-              <p>Depois da conferência, você receberá as orientações para confirmação e pagamento da entrada.</p>
+              <p>
+                Seu pedido foi recebido com sucesso! Agora vamos conferir a
+                disponibilidade da data e horário escolhidos.
+              </p>
+              <p>
+                Após essa confirmação, entraremos em contato pelo WhatsApp para
+                finalizar os detalhes do pedido e orientar sobre o pagamento da entrada.
+              </p>
             </div>
             <div>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); setCart([]); }}>Fechar</button>
