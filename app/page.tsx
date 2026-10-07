@@ -1180,7 +1180,7 @@ export default function Home() {
         error?: string;
       };
 
-      if (!response.ok || !result.street || !result.city || !result.state) {
+      if (!response.ok || !result.city || !result.state) {
         throw new Error(result.error || "Não foi possível localizar este CEP.");
       }
 
@@ -1339,7 +1339,7 @@ export default function Home() {
     if (cart.length === 0) { setCheckoutStep(0); setToast("Adicione pelo menos um item ao pedido"); return; }
     if (!customer.name.trim() || !customer.phone.trim()) { setCheckoutStep(2); setToast("Preencha nome e WhatsApp para continuar"); return; }
     if (!details.eventDate || !details.eventTime) { setCheckoutStep(1); setToast("Informe a data e o horário da encomenda"); return; }
-    if (delivery.service === "Entrega" && (cleanCep(delivery.cep).length !== 8 || !delivery.street.trim() || !delivery.number.trim() || !delivery.city.trim() || !delivery.state.trim())) { setCheckoutStep(2); setToast("Informe o CEP e o número para preencher o endereço da entrega"); return; }
+    if (delivery.service === "Entrega" && (cleanCep(delivery.cep).length !== 8 || !delivery.number.trim() || !delivery.city.trim() || !delivery.state.trim())) { setCheckoutStep(2); setToast("Informe o CEP e o número para preencher o endereço da entrega"); return; }
     if (delivery.service === "Entrega" && (shippingStatus !== "success" || deliveryFee <= 0)) { setCheckoutStep(2); setToast("Aguarde o cálculo da entrega antes de continuar"); return; }
     if (!paymentMethod) { setCheckoutStep(3); setToast("Escolha Pix ou cartão para continuar"); return; }
     const selectedDateTime = new Date(`${details.eventDate}T${details.eventTime}:00`);
@@ -2717,11 +2717,11 @@ if (
             {cepLookupStatus === "error" && (
               <small className="shipping-error">Confira o CEP informado e tente novamente.</small>
             )}
-            {delivery.street && (
+            {cepLookupStatus === "success" && (
               <>
                 <label className="full-field">
                   Rua
-                  <input type="text" value={delivery.street} readOnly />
+                  <input\n                    type="text"\n                    value={delivery.street}\n                    readOnly={Boolean(delivery.street)}\n                    onChange={(event) => {\n                      setDelivery((current) => ({ ...current, street: event.target.value }));\n                      setShippingStatus("idle");\n                      setDeliveryFee(0);\n                      setShippingError("");\n                    }}\n                    placeholder="Rua ou avenida (preencha se o CEP não identificar)"\n                  />
                 </label>
                 <label>
                   Número
