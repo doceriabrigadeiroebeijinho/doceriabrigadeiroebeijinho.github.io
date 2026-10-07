@@ -2768,7 +2768,18 @@ if (
               <>
                 <label className="full-field">
                   Rua
-                  <input\n                    type="text"\n                    value={delivery.street}\n                    readOnly={Boolean(delivery.street)}\n                    onChange={(event) => {\n                      setDelivery((current) => ({ ...current, street: event.target.value }));\n                      setShippingStatus("idle");\n                      setDeliveryFee(0);\n                      setShippingError("");\n                    }}\n                    placeholder="Rua ou avenida (preencha se o CEP não identificar)"\n                  />
+                  <input
+                    type="text"
+                    value={delivery.street}
+                    readOnly={Boolean(delivery.street)}
+                    onChange={(event) => {
+                      setDelivery((current) => ({ ...current, street: event.target.value }));
+                      setShippingStatus("idle");
+                      setDeliveryFee(0);
+                      setShippingError("");
+                    }}
+                    placeholder="Rua ou avenida (preencha se o CEP não identificar)"
+                  />
                 </label>
                 <label>
                   Número
