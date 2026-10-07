@@ -1409,6 +1409,9 @@ export default function Home() {
       ].filter(Boolean).join("\n");
 
       setPendingWhatsAppMessage(submittedOrderMessage);
+      setPendingWhatsAppUrl(
+        `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(submittedOrderMessage)}`,
+      );
       setOrderMessageCopied(false);
       setLastSubmittedOrder({ orderCode: submittedOrderCode, name: customer.name.trim(), eventDate: details.eventDate, eventTime: details.eventTime, service: delivery.service, total, deposit, balance, paymentMethod });
       setOrderSuccessOpen(true);
@@ -3811,6 +3814,15 @@ if (
                 onClick={() => void copyWhatsAppMessage()}
               >
                 {orderMessageCopied ? "Pedido copiado!" : "Copiar pedido"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = pendingWhatsAppUrl;
+                  if (url) window.open(url, "_blank", "noopener,noreferrer");
+                }}
+              >
+                Enviar no WhatsApp
               </button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); setCart([]); }}>Fechar</button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); openCustomerPortal(); }}>Ver meus pedidos</button>
