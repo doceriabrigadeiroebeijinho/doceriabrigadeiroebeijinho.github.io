@@ -1366,7 +1366,51 @@ export default function Home() {
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "Não foi possível registrar o pedido.");
-      setLastSubmittedOrder({ orderCode: result.orderCode || orderCode, name: customer.name.trim(), eventDate: details.eventDate, eventTime: details.eventTime, service: delivery.service, total, deposit, balance, paymentMethod });
+      const submittedOrderCode = result.orderCode || orderCode;
+      const submittedItems = cart
+        .map(
+          (item) =>
+            `• ${item.qty}x ${item.name}${item.variant ? ` — ${item.variant}` : ""} — ${formatMoney(item.qty * item.unitPrice)}`,
+        )
+        .join("\n");
+      const submittedOrderMessage = [
+        "*PEDIDO PELO SITE*",
+        `Código: *${submittedOrderCode}*`,
+        "",
+        "*CLIENTE*",
+        customer.name.trim(),
+        `WhatsApp: ${customer.phone.trim()}`,
+        "",
+        "*ITENS DO PEDIDO*",
+        submittedItems,
+        "",
+        details.phrase || details.age || details.colors || details.decoration
+          ? [
+              "*PERSONALIZAÇÃO*",
+              details.phrase && `• Frase: ${details.phrase}`,
+              details.age && `• Idade: ${details.age}`,
+              details.colors && `• Cores: ${details.colors}`,
+              details.decoration && `• Observações: ${details.decoration}`,
+            ].filter(Boolean).join("\n")
+          : "",
+        delivery.service === "Entrega"
+          ? `*ENTREGA*\n${formattedAddress}\nTaxa de entrega: ${formatMoney(deliveryFee)}`
+          : "*RETIRADA*\n" + ORIGIN,
+        "",
+        "*RESUMO*",
+        `Data solicitada: ${details.eventDate} às ${details.eventTime}`,
+        `Valor total: *${formatMoney(total)}*`,
+        `Entrada (60%): *${formatMoney(deposit)}*`,
+        `Restante (40%): *${formatMoney(balance)}*`,
+        `Pagamento: ${paymentMethod}`,
+        "",
+        "*CONFIRMAÇÃO*",
+        "Peço a conferência das informações e da disponibilidade para confirmação do pedido.",
+      ].filter(Boolean).join("\n");
+
+      setPendingWhatsAppMessage(submittedOrderMessage);
+      setOrderMessageCopied(false);
+      setLastSubmittedOrder({ orderCode: submittedOrderCode, name: customer.name.trim(), eventDate: details.eventDate, eventTime: details.eventTime, service: delivery.service, total, deposit, balance, paymentMethod });
       setOrderSuccessOpen(true);
       setOrderOpen(false);
     } catch (error) {
@@ -3762,6 +3806,12 @@ if (
               </p>
             </div>
             <div>
+              <button
+                type="button"
+                onClick={() => void copyWhatsAppMessage()}
+              >
+                {orderMessageCopied ? "Pedido copiado!" : "Copiar pedido"}
+              </button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); setCart([]); }}>Fechar</button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); openCustomerPortal(); }}>Ver meus pedidos</button>
             </div>
