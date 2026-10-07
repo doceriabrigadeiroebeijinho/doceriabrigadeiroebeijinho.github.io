@@ -1404,6 +1404,18 @@ export default function Home() {
         `Restante (40%): *${formatMoney(balance)}*`,
         `Pagamento: ${paymentMethod}`,
         "",
+        paymentMethod === "Pix"
+          ? [
+              "*DADOS PARA PIX*",
+              `Chave: ${PIX_KEY}`,
+              "Titular: Déborah Bacelar Braga",
+              "Banco: Inter",
+            ].join("\n")
+          : [
+              "*PAGAMENTO POR CARTÃO*",
+              `Link seguro: ${CARD_PAYMENT_URL}`,
+            ].join("\n"),
+        "",
         "*CONFIRMAÇÃO*",
         "Peço a conferência das informações e da disponibilidade para confirmação do pedido.",
       ].filter(Boolean).join("\n");
