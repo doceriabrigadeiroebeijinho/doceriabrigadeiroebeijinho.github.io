@@ -787,8 +787,8 @@ const sweetsCatalogGallery = [
 
 export default function Home() {
   const [catalogTab, setCatalogTab] = useState<
-    "cakes" | "sweets" | "gifts"
-  >("cakes");
+    "choose" | "cakes" | "sweets" | "gifts"
+  >("choose");
   const [sweetGroupId, setSweetGroupId] = useState(sweetGroups[0].id);
   const [sweetQuantities, setSweetQuantities] = useState<Record<string, number>>(
     {},
@@ -1776,7 +1776,7 @@ if (
           </div>
 
           <div className="hero-buttons">
-            <a className="button button-primary" href="#cardapio">
+            <a className="button button-primary" href="#cardapio" onClick={() => setCatalogTab("choose")}>
               Ver cardápio e fazer pedido
             </a>
           </div>
@@ -1796,36 +1796,62 @@ if (
       <section className="catalog-section" id="cardapio">
         <div className="section-heading">
           <span className="section-kicker">Faça seu pedido aqui</span>
-          <h2>Escolha o que você quer encomendar</h2>
+          <h2>O que você precisa?</h2>
           <p>
-            Toque em uma categoria abaixo para ver os produtos, personalizar
-            seu pedido e conferir o valor antes de finalizar.
+            Escolha uma opção para começar seu pedido.
           </p>
         </div>
 
-        <div className="catalog-tabs" role="tablist" aria-label="Categorias">
-          <button
-            className={catalogTab === "cakes" ? "active" : ""}
-            onClick={() => setCatalogTab("cakes")}
-            type="button"
-          >
-            Bolos
-          </button>
-          <button
-            className={catalogTab === "sweets" ? "active" : ""}
-            onClick={() => setCatalogTab("sweets")}
-            type="button"
-          >
-            Doces & bombons
-          </button>
-          <button
-            className={catalogTab === "gifts" ? "active" : ""}
-            onClick={() => setCatalogTab("gifts")}
-            type="button"
-          >
-            Bentô, Cupcakes & Presentes
-          </button>
-        </div>
+        {catalogTab === "choose" ? (
+          <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
+            <button type="button" onClick={() => setCatalogTab("cakes")}>
+              <span className="catalog-choice-icon">🎂</span>
+              <strong>Quero um bolo</strong>
+              <small>Bolos personalizados e bolos de corte</small>
+            </button>
+            <button type="button" onClick={() => setCatalogTab("sweets")}>
+              <span className="catalog-choice-icon">🍬</span>
+              <strong>Quero doces</strong>
+              <small>Doces e bombons para festas e eventos</small>
+            </button>
+            <button type="button" onClick={() => setCatalogTab("gifts")}>
+              <span className="catalog-choice-icon">🎁</span>
+              <strong>Quero um presente</strong>
+              <small>Bentôs, cupcakes e opções para presentear</small>
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="catalog-category-bar">
+              <button type="button" onClick={() => setCatalogTab("choose")}>
+                ← Escolher outra categoria
+              </button>
+              <div className="catalog-tabs" role="tablist" aria-label="Categorias">
+                <button
+                  className={catalogTab === "cakes" ? "active" : ""}
+                  onClick={() => setCatalogTab("cakes")}
+                  type="button"
+                >
+                  Bolos
+                </button>
+                <button
+                  className={catalogTab === "sweets" ? "active" : ""}
+                  onClick={() => setCatalogTab("sweets")}
+                  type="button"
+                >
+                  Doces & bombons
+                </button>
+                <button
+                  className={catalogTab === "gifts" ? "active" : ""}
+                  onClick={() => setCatalogTab("gifts")}
+                  type="button"
+                >
+                  Bentô, Cupcakes & Presentes
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {catalogTab === "cakes" && (
           <>
