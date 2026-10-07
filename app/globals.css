@@ -442,6 +442,75 @@ img {
   line-height: 1.7;
 }
 
+.catalog-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0 auto 34px;
+}
+
+.catalog-choice-grid button {
+  display: flex;
+  min-height: 190px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(255, 253, 248, 0.82);
+  box-shadow: 0 18px 46px rgba(75, 46, 37, 0.07);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.catalog-choice-grid button:hover {
+  transform: translateY(-3px);
+  border-color: var(--rose);
+  box-shadow: 0 22px 52px rgba(75, 46, 37, 0.11);
+}
+
+.catalog-choice-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.catalog-choice-grid strong {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.catalog-choice-grid small {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.catalog-category-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.catalog-category-bar > button {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--rose-dark);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.catalog-category-bar .catalog-tabs {
+  margin: 0;
+}
+
 .catalog-tabs,
 .flavor-filters {
   display: flex;
@@ -5470,6 +5539,34 @@ footer a:hover {
   .instagram-section p {
     font-size: 0.9rem;
     line-height: 1.62;
+  }
+
+  .catalog-choice-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .catalog-choice-grid button {
+    min-height: 118px;
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .catalog-choice-grid strong {
+    font-size: 1.8rem;
+  }
+
+  .catalog-category-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .catalog-category-bar .catalog-tabs {
+    width: 100%;
+    margin-bottom: 0;
   }
 
   .catalog-tabs {
