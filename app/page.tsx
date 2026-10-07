@@ -1828,7 +1828,7 @@ if (
           />
         </a>
         <nav className={mobileMenu ? "nav-open" : ""} aria-label="Navegação principal">
-          <a href="#como-pedir" onClick={() => setMobileMenu(false)}>Como pedir</a>
+          <a href="#cardapio" onClick={() => setMobileMenu(false)}>Como pedir</a>
           <a href="#cardapio" onClick={() => setMobileMenu(false)}>Cardápio</a>
           <a href="#galeria" onClick={() => setMobileMenu(false)}>Galeria</a>
           <a href="#avaliacoes" onClick={() => setMobileMenu(false)}>Avaliações</a>
@@ -1906,47 +1906,14 @@ if (
         </div>
       </section>
 
-      <section className="steps-section compact" id="como-pedir">
-        <div className="section-heading left">
-          <span className="section-kicker">Como funciona</span>
-          <h2>É mais simples do que parece</h2>
-        </div>
-        <div className="steps-grid">
-          {[
-            ["1", "Escolha", "Veja os produtos e monte seu pedido."],
-            ["2", "Personalize", "Escolha sabor, tamanho e detalhes do bolo."],
-            ["3", "Confirme", "Informe a data, revise os valores e envie a solicitação."],
-          ].map(([number, title, text]) => (
-            <article key={number}>
-              <div className="step-inline-title">
-                <span>{number}</span>
-                <h3>{title}</h3>
-              </div>
-              <p>{text}</p>
-            </article>
-          ))}
-        </div>
-        <div className="quick-rules">
-          <span><strong>60%</strong> de entrada</span>
-          <span><strong>Pix ou cartão</strong></span>
-          <span><strong>Entrega</strong> calculada pelo CEP</span>
-        </div>
-      </section>
-
       <section className="catalog-section" id="cardapio">
         <div className="section-heading">
-          <span className="section-kicker">Escolha, personalize e simule</span>
-          <h2>Monte sua encomenda com tranquilidade</h2>
+          <span className="section-kicker">Faça seu pedido aqui</span>
+          <h2>Escolha o que você quer encomendar</h2>
           <p>
-            Escolha os produtos, personalize os detalhes e acompanhe o valor da
-            sua encomenda antes de finalizar.
+            Toque em uma categoria abaixo para ver os produtos, personalizar
+            seu pedido e conferir o valor antes de finalizar.
           </p>
-        </div>
-
-        <div className="catalog-category-intro">
-          <span className="section-kicker">Escolha o que você procura</span>
-          <h3>Nosso cardápio</h3>
-          <p>Toque em uma categoria para ver as opções e montar seu pedido.</p>
         </div>
 
         <div className="catalog-tabs" role="tablist" aria-label="Categorias">
