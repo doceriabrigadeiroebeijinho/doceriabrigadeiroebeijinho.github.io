@@ -1444,11 +1444,6 @@ if (
       setToast("Escolha Pix ou cartão para continuar");
       return;
     }
-      setCheckoutStep(3);
-      setToast("Leia e aceite as condições do pacote para continuar");
-      return;
-    }
-
     const orderCode = `BB-${Date.now().toString().slice(-6)}`;
 
     const formatCakeItemForWhatsApp = (item: CartItem) => {
