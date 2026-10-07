@@ -3510,8 +3510,6 @@ if (
                         </div>
                       </div>
                     )}
-                      </div>
-                    )}
                     <div className="payment-due-now">
                       <span>Pagamento inicial</span>
                       <strong>{formatMoney(deposit)}</strong>
