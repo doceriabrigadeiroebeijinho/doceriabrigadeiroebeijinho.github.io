@@ -271,6 +271,20 @@ export async function POST(request: Request) {
     }
 
     if (!destination) {
+      const bodyLatitude = Number(body.latitude);
+      const bodyLongitude = Number(body.longitude);
+
+      if (Number.isFinite(bodyLatitude) && Number.isFinite(bodyLongitude)) {
+        destination = { lat: bodyLatitude, lon: bodyLongitude };
+      } else if (cepData) {
+        destination = {
+          lat: cepData.latitude,
+          lon: cepData.longitude,
+        };
+      }
+    }
+
+    if (!destination) {
       await lookupViaCep(cep);
       return Response.json(
         {
