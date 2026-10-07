@@ -1800,19 +1800,19 @@ if (
         {catalogTab === "choose" ? (
           <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
             <button type="button" onClick={() => setCatalogTab("cakes")}>
-              <span className="catalog-choice-icon">🎂</span>
               <strong>Quero um bolo</strong>
               <small>Bolos personalizados e bolos de corte</small>
+              <small className="catalog-choice-price">A partir de R$ 115,00</small>
             </button>
             <button type="button" onClick={() => setCatalogTab("sweets")}>
-              <span className="catalog-choice-icon">🍬</span>
               <strong>Quero doces</strong>
               <small>Doces e bombons para festas e eventos</small>
+              <small className="catalog-choice-price">A partir de R$ 160,00 / 100 unidades</small>
             </button>
             <button type="button" onClick={() => setCatalogTab("gifts")}>
-              <span className="catalog-choice-icon">🎁</span>
               <strong>Quero um presente</strong>
               <small>Bentôs, cupcakes e opções para presentear</small>
+              <small className="catalog-choice-price">A partir de R$ 59,90</small>
             </button>
           </div>
         ) : (
