@@ -5292,3 +5292,418 @@ footer a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================================
+   MOBILE-FIRST — ajuste de experiência para celular
+   Mantém o layout desktop e prioriza toque, leitura e formulário.
+   ========================================================= */
+
+@media (max-width: 760px) {
+  html {
+    scroll-padding-top: 82px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .site-header {
+    top: 8px;
+    width: calc(100% - 20px);
+    min-height: 64px;
+    margin-top: 8px;
+    padding: 8px 10px 8px 14px;
+    border-radius: 20px;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  .brand {
+    width: 122px;
+    height: 52px;
+  }
+
+  .site-header nav {
+    display: none;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .menu-toggle {
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .header-cta {
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: 0.74rem;
+  }
+
+  .header-cta b {
+    display: none;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    width: min(100% - 24px, 620px);
+    min-height: 0;
+    margin-top: 14px;
+    gap: 18px;
+  }
+
+  .hero-copy {
+    padding: 28px 4px 0;
+  }
+
+  .hero h1 {
+    max-width: none;
+    margin: 20px 0 16px;
+    font-size: clamp(3.45rem, 16vw, 5rem);
+    line-height: 0.86;
+  }
+
+  .hero-copy > p {
+    font-size: 0.94rem;
+    line-height: 1.62;
+  }
+
+  .hero-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .button {
+    width: 100%;
+    min-height: 50px;
+  }
+
+  .trust-row {
+    gap: 9px 16px;
+    margin-top: 22px;
+    font-size: 0.72rem;
+  }
+
+  .hero-visual {
+    min-height: 430px;
+    border-radius: 34px 18px 34px 18px;
+  }
+
+  .hero-image {
+    height: 430px;
+  }
+
+  .hero-card {
+    right: 12px;
+    bottom: 12px;
+    grid-template-columns: 52px 1fr;
+    gap: 10px;
+    width: calc(100% - 24px);
+    padding: 10px 12px 10px 8px;
+    border-radius: 18px;
+  }
+
+  .hero-card img {
+    width: 52px;
+    height: 52px;
+  }
+
+  .hero-card strong {
+    font-size: 1rem;
+  }
+
+  .hero-card span {
+    font-size: 0.7rem;
+  }
+
+  .feature-strip {
+    grid-template-columns: repeat(2, 1fr);
+    width: min(100% - 24px, 620px);
+    margin: 14px auto 72px;
+    border-radius: 22px;
+  }
+
+  .feature-strip > div {
+    min-height: 94px;
+    padding: 16px 10px;
+  }
+
+  .feature-strip > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .feature-strip > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .feature-strip strong {
+    font-size: 1.8rem;
+  }
+
+  .catalog-section,
+  .steps-section {
+    width: min(100% - 24px, 620px);
+    margin-bottom: 76px;
+  }
+
+  .section-heading {
+    margin-bottom: 28px;
+  }
+
+  .section-heading h2,
+  .gallery-copy h2,
+  .delivery-section h2,
+  .about-copy h2,
+  .instagram-section h2 {
+    font-size: clamp(2.45rem, 12vw, 3.5rem);
+  }
+
+  .section-heading p,
+  .gallery-copy p,
+  .delivery-section > div > p,
+  .about-copy > p,
+  .instagram-section p {
+    font-size: 0.9rem;
+    line-height: 1.62;
+  }
+
+  .catalog-tabs {
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .catalog-tabs button {
+    min-height: 54px;
+    padding: 12px 14px;
+    font-size: 0.78rem;
+  }
+
+  .cake-grid,
+  .gift-grid,
+  .sweet-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-card {
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .product-card h3,
+  .sweet-group-title h3,
+  .gift-card h3 {
+    font-size: 2rem;
+  }
+
+  .product-card > p,
+  .gift-card > p {
+    min-height: 0;
+    font-size: 0.84rem;
+  }
+
+  .product-card-footer {
+    align-items: stretch;
+  }
+
+  .product-card-footer button,
+  .sweet-card button,
+  .gift-card button {
+    min-height: 46px;
+  }
+
+  .cake-guide {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .two-fields,
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 50px;
+    font-size: 16px;
+  }
+
+  .sweet-card {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .sweet-photo {
+    width: 52px;
+    height: 52px;
+  }
+
+  .sweet-quantity-control {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .sweet-quantity-control select {
+    min-height: 46px;
+    font-size: 16px;
+  }
+
+  .sweet-quantity-control button {
+    min-height: 46px;
+  }
+
+  .gift-card {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .gift-card-with-image {
+    min-height: 0;
+  }
+
+  .gift-card-with-image > img {
+    width: calc(100% + 40px) !important;
+    margin: -20px -20px 18px !important;
+  }
+
+  .gift-options {
+    margin-bottom: 20px;
+  }
+
+  .gift-card-footer {
+    position: static;
+    margin-top: 20px;
+  }
+
+  .monthly-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    border-radius: 26px;
+  }
+
+  .monthly-carousel {
+    min-height: 360px;
+  }
+
+  .monthly-hero > .monthly-hero-copy {
+    padding: 26px 20px 28px;
+  }
+
+  .monthly-hero h3,
+  .monthly-plan-heading h3 {
+    font-size: clamp(2.5rem, 12vw, 3.5rem);
+  }
+
+  .monthly-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .monthly-hero button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .order-success-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-section {
+    width: min(100% - 24px, 620px);
+  }
+
+  .faq-item summary {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+  }
+
+  .faq-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-footer a {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Mantém ações importantes confortáveis para toque. */
+  button,
+  a {
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header {
+    width: calc(100% - 14px);
+    padding-left: 10px;
+  }
+
+  .brand {
+    width: 108px;
+  }
+
+  .header-cta {
+    padding: 0 11px;
+  }
+
+  .hero {
+    width: calc(100% - 18px);
+  }
+
+  .hero-copy {
+    padding-top: 22px;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 15vw, 4rem);
+  }
+
+  .hero-visual,
+  .hero-image {
+    height: 370px;
+    min-height: 370px;
+  }
+
+  .feature-strip,
+  .catalog-section,
+  .steps-section,
+  .faq-section {
+    width: calc(100% - 18px);
+  }
+
+  .feature-strip > div {
+    min-height: 88px;
+    padding-inline: 7px;
+  }
+
+  .feature-strip strong {
+    font-size: 1.55rem;
+  }
+
+  .product-card,
+  .gift-card {
+    padding: 18px;
+  }
+
+  .gift-card-with-image > img {
+    width: calc(100% + 36px) !important;
+    margin: -18px -18px 16px !important;
+  }
+
+  .monthly-carousel {
+    min-height: 310px;
+  }
+}
