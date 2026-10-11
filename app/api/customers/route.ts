@@ -43,16 +43,16 @@ type OrderRequestBody = {
 
 
 function normalizeWhatsAppPhone(phone: string) {
-  const digits = phone.replace(/\\D/g, "");
+  const digits = phone.replace(/\D/g, "");
 
-  if (digits.startsWith("55") && digits.length >= 12) {
+  if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
     return digits;
   }
 
   const withoutLeadingZero = digits.replace(/^0+/, "");
 
   if (withoutLeadingZero.length === 10 || withoutLeadingZero.length === 11) {
-    return `55${withoutLeadingZero}`;
+    return "55" + withoutLeadingZero;
   }
 
   return "";
@@ -63,6 +63,12 @@ function formatWhatsAppMoney(cents: number) {
     style: "currency",
     currency: "BRL",
   }).format((cents || 0) / 100);
+}
+
+function formatWhatsAppDate(value: string) {
+  if (!value) return "não informada";
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match ? match[3] + "/" + match[2] + "/" + match[1] : value;
 }
 
 async function sendWhatsAppOrderConfirmation(params: {
@@ -85,69 +91,69 @@ async function sendWhatsAppOrderConfirmation(params: {
   }
 
   const recipient = normalizeWhatsAppPhone(params.phone);
-
   if (!recipient) {
-    console.warn("WhatsApp inválido para envio:", params.phone);
+    console.warn("WhatsApp inválido para envio.");
     return { sent: false, reason: "invalid_phone" };
   }
 
-  const message = [
-    `Olá, ${params.name}! Seu pedido na Doceria Brigadeiro & Beijinho foi registrado com sucesso.`,
-    "",
-    `Pedido: ${params.orderCode}`,
-    `Data solicitada: ${params.eventDate || "não informada"}`,
-    `Horário: ${params.eventTime || "não informado"}`,
-    `Serviço: ${params.service || "não informado"}`,
-    `Total: ${formatWhatsAppMoney(params.totalCents)}`,
-    `Entrada: ${formatWhatsAppMoney(params.depositCents)}`,
-    `Restante: ${formatWhatsAppMoney(params.balanceCents)}`,
-    "",
-    "A data e o horário ainda estão sujeitos à conferência da nossa agenda. Após a conferência, enviaremos as orientações para confirmação e pagamento.",
-    "",
-    "Obrigada pelo pedido!",
-  ].join("\\n");
-
-  if (message.length > 1024) {
-    console.error("Mensagem de confirmação do WhatsApp excedeu 1024 caracteres.");
-    return { sent: false, reason: "message_too_long" };
-  }
+  // Mensagem iniciada pela empresa deve usar um modelo aprovado pela Meta.
+  // confirmacao_pedido deve estar aprovado em pt_BR com 8 variáveis no corpo.
+  const templateParameters = [
+    params.name,
+    params.orderCode,
+    formatWhatsAppDate(params.eventDate),
+    params.eventTime || "não informado",
+    params.service || "não informado",
+    formatWhatsAppMoney(params.totalCents),
+    formatWhatsAppMoney(params.depositCents),
+    formatWhatsAppMoney(params.balanceCents),
+  ].map((value) => ({ type: "text", text: String(value || "não informado") }));
 
   try {
     const apiVersion = process.env.WHATSAPP_GRAPH_API_VERSION?.trim() || "v26.0";
     const response = await fetch(
-      `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`,
+      "https://graph.facebook.com/" + apiVersion + "/" + phoneNumberId + "/messages",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: "Bearer " + token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
           recipient_type: "individual",
           to: recipient,
-          type: "text",
-          text: {
-            preview_url: false,
-            body: message,
+          type: "template",
+          template: {
+            name: "confirmacao_pedido",
+            language: { code: "pt_BR" },
+            components: [
+              {
+                type: "body",
+                parameters: templateParameters,
+              },
+            ],
           },
-          category: "utility",
         }),
         cache: "no-store",
       },
     );
 
     const responseText = await response.text();
-
-    let result: { messages?: Array<{ id?: string }>; error?: unknown } = {};
+    let result: { messages?: Array<{ id?: string }>; error?: { message?: string; code?: number; error_subcode?: number } } = {};
     try {
       result = JSON.parse(responseText);
     } catch {
-      console.error("Resposta não-JSON da API do WhatsApp:", responseText);
+      console.error("Resposta não-JSON da API do WhatsApp.");
     }
 
     if (!response.ok) {
-      console.error("Falha ao enviar confirmação pelo WhatsApp:", result.error || responseText);
+      console.error("Falha ao enviar confirmação pelo WhatsApp:", {
+        status: response.status,
+        code: result.error?.code,
+        subcode: result.error?.error_subcode,
+        message: result.error?.message,
+      });
       return { sent: false, reason: "api_error" };
     }
 
