@@ -609,7 +609,7 @@ const gifts = [
     name: "Combo Bentô",
     description:
       "Bentô personalizado acompanhado de uma caixa com 6 docinhos à sua escolha.",
-    price: 69.9,
+    price: 74.9,
     minQty: 1,
     image: "/assets/gift-combo-bento.webp",
   },
@@ -638,7 +638,7 @@ const bentoFillingPrice = (
   fillingType: "Clássico" | "Especial",
 ) => {
   const basePrice = gifts.find((gift) => gift.id === giftId)?.price ?? 0;
-  return fillingType === "Especial" ? basePrice + 5 : basePrice;
+  return fillingType === "Especial" ? basePrice + 8 : basePrice;
 };
 
 const cupcakePriceWithTopper = (quantity: number, withTopper: boolean) => {
@@ -2134,7 +2134,7 @@ export default function Home() {
                         }
                       >
                         <option value="Clássico">Clássico</option>
-                        <option value="Especial">Especial + R$ 5,00</option>
+                        <option value="Especial">Especial + R$ 8,00</option>
                       </select>
                     </label>
                     <label>
@@ -2195,7 +2195,7 @@ export default function Home() {
                         }
                       >
                         <option value="Clássico">Clássico</option>
-                        <option value="Especial">Especial + R$ 5,00</option>
+                        <option value="Especial">Especial + R$ 8,00</option>
                       </select>
                     </label>
                     <label>
