@@ -11,7 +11,7 @@ pixBank: "Inter",
 const ORDER_HEADERS = [
 "Criado em",
 "Código",
-"Status",
+"Status do pedido",
 "Data da encomenda",
 "Horário",
 "Cliente",
@@ -32,6 +32,25 @@ const ORDER_HEADERS = [
 "Pacote de mesversário",
 "Observações",
 "Comanda PDF",
+"Status do pagamento",
+"Data do sinal",
+"Enviar ao entregador",
+];
+const ORDER_STATUS_OPTIONS = [
+"Orçamento recebido",
+"Aguardando confirmação de data",
+"Aguardando entrada de 60%",
+"Pedido confirmado (entrada paga)",
+"Em produção",
+"Pronto para entrega/retirada",
+"Concluído",
+"Cancelado",
+];
+const PAYMENT_STATUS_OPTIONS = [
+"Entrada pendente (60%)",
+"Entrada paga (60%)",
+"Quitado (100%)",
+"Cancelado/reembolsado",
 ];
 const CUSTOMER_HEADERS = [
 "Cliente",
@@ -152,7 +171,7 @@ payload.planTermsAccepted
 orders.appendRow([
 new Date(payload.createdAt || Date.now()),
 payload.orderCode || "",
-"Novo",
+"Orçamento recebido",
 dateValue_(payload.eventDate),
 payload.eventTime || "",
 payload.name || "",
@@ -173,19 +192,62 @@ summary.balancePaymentMethod || methods[1] || "",
 cents_(summary.planCents),
 observations,
 "",
+"Entrada pendente (60%)",
+"",
+"",
 ]);
 const orderRow = orders.getLastRow();
+const orderStatusColumn = ORDER_HEADERS.indexOf("Status do pedido") + 1;
+const paymentStatusColumn = ORDER_HEADERS.indexOf("Status do pagamento") + 1;
+const orderStatusRule = SpreadsheetApp.newDataValidation()
+.requireValueInList(ORDER_STATUS_OPTIONS, true)
+.setAllowInvalid(false)
+.build();
+const paymentStatusRule = SpreadsheetApp.newDataValidation()
+.requireValueInList(PAYMENT_STATUS_OPTIONS, true)
+.setAllowInvalid(false)
+.build();
+orders.getRange(orderRow, orderStatusColumn)
+.setDataValidation(orderStatusRule)
+.setBackground("#FFF2CC");
+orders.getRange(orderRow, paymentStatusColumn)
+.setDataValidation(paymentStatusRule)
+.setBackground("#FCE4D6");
 upsertCustomer_(customers, payload, total);
 createCalendarEvent_(payload, itemsText);
 const comandaFile = createComandaPdf_(payload, items, summary);
-const comandaCell = orders.getRange(orderRow, ORDER_HEADERS.length);
+const comandaColumn = ORDER_HEADERS.indexOf("Comanda PDF") + 1;
+const comandaCell = orders.getRange(orderRow, comandaColumn);
 const richText = SpreadsheetApp.newRichTextValue()
 .setText("Abrir comanda")
 .setLinkUrl(comandaFile.getUrl())
 .build();
 comandaCell.setRichTextValue(richText);
+
+const deliveryColumn = ORDER_HEADERS.indexOf("Enviar ao entregador") + 1;
+const deliveryCell = orders.getRange(orderRow, deliveryColumn);
+if (/entrega/i.test(String(payload.service || "")) && String(payload.address || "").trim()) {
+const deliveryMessage = buildDeliveryMessage_(payload, itemsText);
+const deliveryUrl = "https://wa.me/?text=" + encodeURIComponent(deliveryMessage);
+deliveryCell.setRichTextValue(
+SpreadsheetApp.newRichTextValue()
+.setText("Abrir WhatsApp")
+.setLinkUrl(deliveryUrl)
+.build(),
+);
+} else {
+deliveryCell.setValue("Retirada");
+}
+
+let emailSent = false;
+try {
+emailSent = sendNewOrderNotification_(payload, spreadsheet, orders, orderRow, comandaFile, itemsText, summary);
+} catch (notificationError) {
+console.error("Pedido salvo, mas o alerta por e-mail falhou:", String(notificationError));
+}
 return json_({
 ok: true,
+emailSent: emailSent,
 });
 } catch (error) {
 return json_({
@@ -194,6 +256,72 @@ error: String(error),
 });
 }
 }
+
+function buildDeliveryMessage_(payload, itemsText) {
+const p = payload.personalization || {};
+return [
+"*DADOS PARA ENTREGA — DOCERIA BRIGADEIRO & BEIJINHO*",
+`Pedido: ${payload.orderCode || "—"}`,
+`Data: ${formatDateLabel_(payload.eventDate)}`,
+`Horário: ${payload.eventTime || "—"}`,
+"",
+`Cliente: ${payload.name || "—"}`,
+`WhatsApp do cliente: ${payload.phone || "—"}`,
+`Endereço: ${payload.address || "—"}`,
+"",
+"*Itens:*",
+itemsText || "Consultar a comanda do pedido.",
+p.colors ? `Cores/tema: ${p.colors}` : "",
+p.decoration ? `Observações: ${p.decoration}` : "",
+p.phrase ? `Frase no pedido: ${p.phrase}` : "",
+"",
+"Mensagem preparada pelo controle de pedidos do site.",
+].filter(Boolean).join("\n");
+}
+
+function sendNewOrderNotification_(payload, spreadsheet, orders, orderRow, comandaFile, itemsText, summary) {
+const scriptProperties = PropertiesService.getScriptProperties();
+const configuredEmail = String(scriptProperties.getProperty("ORDER_NOTIFICATION_EMAIL") || "").trim();
+const accountEmail = String(Session.getEffectiveUser().getEmail() || "").trim();
+const recipient = configuredEmail || accountEmail;
+if (!recipient) {
+console.warn("Alerta por e-mail não enviado: configure ORDER_NOTIFICATION_EMAIL nas propriedades do script.");
+return false;
+}
+const orderCode = String(payload.orderCode || "sem código");
+const orderUrl = spreadsheet.getUrl() + "#gid=" + orders.getSheetId() + "&range=A" + orderRow;
+const total = formatMoneyFromCents_(summary.totalCents || payload.totalCents);
+const deposit = formatMoneyFromCents_(summary.depositCents || 0);
+const balance = formatMoneyFromCents_(summary.balanceCents || 0);
+const body = [
+"Nova solicitação de encomenda recebida pelo site da Doceria Brigadeiro & Beijinho.",
+"",
+"STATUS INICIAL: Orçamento recebido",
+"STATUS DO PAGAMENTO: Entrada pendente (60%)",
+"",
+"Pedido: " + orderCode,
+"Cliente: " + String(payload.name || ""),
+"WhatsApp: " + String(payload.phone || ""),
+"Data solicitada: " + formatDateLabel_(payload.eventDate) + " às " + String(payload.eventTime || ""),
+"Serviço: " + String(payload.service || ""),
+"Endereço: " + String(payload.address || "Retirada"),
+"",
+"Itens:",
+String(itemsText || "Nenhum item informado"),
+"",
+"Valor estimado: " + total,
+"Entrada prevista (60%): " + deposit,
+"Restante (40%): " + balance,
+"",
+"Abra o pedido na planilha: " + orderUrl,
+"Comanda em PDF: " + comandaFile.getUrl(),
+"",
+"Importante: a solicitação não deve ser considerada confirmada até a data ser conferida e a entrada ser identificada.",
+].join("\n");
+MailApp.sendEmail(recipient, "[Doceria] Nova solicitação " + orderCode + " — " + String(payload.name || ""), body);
+return true;
+}
+
 function customerOrdersResponse_(name, phone) {
 const spreadsheet = SETTINGS.spreadsheetId
 ? SpreadsheetApp.openById(SETTINGS.spreadsheetId)
@@ -526,7 +654,7 @@ const start = new Date(
 const end = new Date(start.getTime() + 30 * 60 * 1000);
 const calendar = getOrderCalendar_();
 calendar.createEvent(
-`[PEDIDO] ${payload.orderCode || ""} · ${payload.name || ""}`,
+`[ORÇAMENTO - AGUARDANDO SINAL] ${payload.orderCode || ""} · ${payload.name || ""}`,
 start,
 end,
 {
@@ -537,7 +665,7 @@ description: [
 "",
 itemsText,
 "",
-"Solicitação recebida pelo site. Confirmar pagamento e disponibilidade.",
+"Solicitação recebida pelo site. A data ainda não está confirmada e a entrada de 60% ainda não foi marcada como paga. Atualize o Status do pedido e o Status do pagamento na planilha após a conferência.",
 ].join("\n"),
 },
 );
