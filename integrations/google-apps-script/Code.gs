@@ -213,16 +213,34 @@ orders.getRange(orderRow, orderStatusColumn)
 orders.getRange(orderRow, paymentStatusColumn)
 .setDataValidation(paymentStatusRule)
 .setBackground("#FCE4D6");
+try {
 upsertCustomer_(customers, payload, total);
+} catch (customerError) {
+console.error("Pedido salvo, mas não foi possível atualizar a aba Clientes:", String(customerError));
+}
+
+let calendarCreated = false;
+try {
 createCalendarEvent_(payload, itemsText);
-const comandaFile = createComandaPdf_(payload, items, summary);
+calendarCreated = true;
+} catch (calendarError) {
+console.error("Pedido salvo, mas não foi possível criar o evento na agenda:", String(calendarError));
+}
+
+let comandaFile = null;
 const comandaColumn = ORDER_HEADERS.indexOf("Comanda PDF") + 1;
 const comandaCell = orders.getRange(orderRow, comandaColumn);
+try {
+comandaFile = createComandaPdf_(payload, items, summary);
 const richText = SpreadsheetApp.newRichTextValue()
 .setText("Abrir comanda")
 .setLinkUrl(comandaFile.getUrl())
 .build();
 comandaCell.setRichTextValue(richText);
+} catch (comandaError) {
+console.error("Pedido salvo, mas não foi possível gerar a comanda PDF:", String(comandaError));
+comandaCell.setValue("Falha ao gerar PDF");
+}
 
 const deliveryColumn = ORDER_HEADERS.indexOf("Enviar ao entregador") + 1;
 const deliveryCell = orders.getRange(orderRow, deliveryColumn);
@@ -248,6 +266,8 @@ console.error("Pedido salvo, mas o alerta por e-mail falhou:", String(notificati
 return json_({
 ok: true,
 emailSent: emailSent,
+calendarCreated: calendarCreated,
+comandaCreated: Boolean(comandaFile),
 });
 } catch (error) {
 return json_({
@@ -314,7 +334,7 @@ String(itemsText || "Nenhum item informado"),
 "Restante (40%): " + balance,
 "",
 "Abra o pedido na planilha: " + orderUrl,
-"Comanda em PDF: " + comandaFile.getUrl(),
+"Comanda em PDF: " + (comandaFile && comandaFile.getUrl ? comandaFile.getUrl() : "não foi gerada; consulte a coluna Comanda PDF na planilha"),
 "",
 "Importante: a solicitação não deve ser considerada confirmada até a data ser conferida e a entrada ser identificada.",
 ].join("\n");
