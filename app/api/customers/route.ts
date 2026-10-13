@@ -109,18 +109,125 @@ async function createClickUpOrderTask(
     personalization.wrappers ? `- Embalagens: ${personalization.wrappers}` : "",
   ].filter(Boolean).join("\n") || "Não informado";
 
-  const clientMessage =
-    `Oi, ${clientName}! Tudo bem? Confirmamos o recebimento da entrada de 60% da sua encomenda ${orderCode}. Seu pedido está confirmado para ${dateLabel} às ${timeLabel}. Obrigada pela preferência!`;
+  const isPickup = service.toLowerCase().includes("retirada");
+  const atendimentoLabel = isPickup ? "Retirada" : service;
+  const paymentLocationLabel = isPickup ? "na retirada" : "na entrega";
+  const itemsSummary = items.length
+    ? items.map((item) => {
+        const quantity = Number(item.quantity || 1);
+        const itemName = item.name || item.type || "Item";
+        const variant = item.variant ? " — " + item.variant : "";
+        return "- " + quantity + " × " + itemName + variant + " — " + formatMoneyFromCents(item.totalCents);
+      }).join("\n")
+    : "- Itens não informados";
+  const deliveryFeeCents = Number(summary.deliveryCents || 0);
+  const clientOrderReceivedMessage = [
+    "Olá, " + clientName + "! Tudo bem? Recebemos sua solicitação de encomenda " + orderCode + " na Doceria Brigadeiro & Beijinho.",
+    "",
+    "Confira os detalhes do pedido:",
+    itemsSummary,
+    "",
+    "Data: " + dateLabel,
+    "Horário: " + timeLabel,
+    "Modalidade: " + atendimentoLabel,
+    (isPickup ? "Endereço para retirada: " : "Endereço para entrega: ") + address,
+    "",
+    "Valor total: " + formatMoneyFromCents(totalCents),
+    "Entrada de 60% para confirmar: " + formatMoneyFromCents(depositCents),
+    "Restante de 40%: " + formatMoneyFromCents(balanceCents),
+    "",
+    "Para confirmar sua encomenda, você prefere realizar o pagamento da entrada via Pix ou cartão de crédito? O pedido e a data serão confirmados após a confirmação do pagamento da entrada. 😊",
+  ].join("\n");
+
+  const clientOrderConfirmedMessage = [
+    "Olá, " + clientName + "! Obrigada por enviar o comprovante.",
+    "Confirmamos o recebimento da entrada de " + formatMoneyFromCents(depositCents) + " e sua encomenda " + orderCode + " está confirmada!",
+    "",
+    "Data: " + dateLabel,
+    "Horário: " + timeLabel,
+    "Modalidade: " + atendimentoLabel,
+    (isPickup ? "Endereço para retirada: " : "Endereço para entrega: ") + address,
+    "",
+    "Valor total: " + formatMoneyFromCents(totalCents),
+    "Entrada recebida: " + formatMoneyFromCents(depositCents),
+    "Restante (" + paymentLocationLabel + "): " + formatMoneyFromCents(balanceCents),
+    "",
+    "Agradecemos pela preferência. Qualquer atualização, entraremos em contato por aqui!",
+  ].join("\n");
+
+  const clientOutForDeliveryMessage = [
+    "Olá, " + clientName + "! Sua encomenda " + orderCode + " já saiu para entrega.",
+    "",
+    "Endereço: " + address,
+    "Data: " + dateLabel,
+    "Horário combinado: " + timeLabel,
+    "",
+    "Por favor, fique atenta ao telefone para receber o pedido. Obrigada!",
+  ].join("\n");
+
+  const clientPickupReadyMessage = [
+    "Olá, " + clientName + "! Sua encomenda " + orderCode + " está pronta e disponível para retirada.",
+    "",
+    "Endereço para retirada: " + address,
+    "Data: " + dateLabel,
+    "Horário combinado: " + timeLabel,
+    "",
+    "Obrigada pela preferência!",
+  ].join("\n");
+
   const deliveryMessage = [
     "ENTREGA — DOCERIA BRIGADEIRO & BEIJINHO",
-    `Cliente: ${clientName}`,
-    `Contato da cliente: ${clientPhone}`,
-    `Endereço: ${address}`,
-    `Dia da entrega: ${dateLabel}`,
-    `Horário da entrega: ${timeLabel}`,
-    `Taxa de entrega: ${formatMoneyFromCents(summary.deliveryCents)}`,
-    `Total a receber na entrega: ${formatMoneyFromCents(balanceCents)}`,
+    "Cliente: " + clientName,
+    "Contato da cliente: " + clientPhone,
+    "Endereço: " + address,
+    "Dia da entrega: " + dateLabel,
+    "Horário da entrega: " + timeLabel,
+    "Taxa de entrega: " + formatMoneyFromCents(deliveryFeeCents),
+    "Total a receber na entrega: " + formatMoneyFromCents(balanceCents),
   ].join("\n");
+
+  const customerNumber = normalizeWhatsappNumber(clientPhone);
+  const makeCustomerWhatsappUrl = (message: string) => customerNumber.length >= 12
+    ? "https://wa.me/" + customerNumber + "?text=" + encodeURIComponent(message)
+    : "https://wa.me/?text=" + encodeURIComponent(message);
+  const customerOrderReceivedUrl = makeCustomerWhatsappUrl(clientOrderReceivedMessage);
+  const customerOrderConfirmedUrl = makeCustomerWhatsappUrl(clientOrderConfirmedMessage);
+  const customerOutForDeliveryUrl = makeCustomerWhatsappUrl(clientOutForDeliveryMessage);
+  const customerPickupReadyUrl = makeCustomerWhatsappUrl(clientPickupReadyMessage);
+
+  const driverNumberRaw = process.env.CLICKUP_DRIVER_WHATSAPP;
+  const driverNumber = driverNumberRaw ? normalizeWhatsappNumber(driverNumberRaw) : "";
+  const deliveryWhatsappUrl = driverNumber.length >= 12
+    ? "https://wa.me/" + driverNumber + "?text=" + encodeURIComponent(deliveryMessage)
+    : "https://wa.me/?text=" + encodeURIComponent(deliveryMessage);
+
+  const whatsappMessageLinks = [
+    "## Mensagem 1 — Pedido recebido",
+    "Enviar após receber a solicitação. O pedido ainda não está confirmado.",
+    "[Abrir WhatsApp — pedido recebido e opções de pagamento](" + customerOrderReceivedUrl + ")",
+    "",
+    "## Mensagem 2 — Entrada recebida e pedido confirmado",
+    "Enviar somente depois de conferir que a entrada de 60% foi recebida.",
+    "[Abrir WhatsApp — confirmação do pedido](" + customerOrderConfirmedUrl + ")",
+    "",
+    ...(isPickup
+      ? [
+          "## Mensagem 3 — Encomenda pronta para retirada",
+          "Enviar quando o pedido estiver pronto.",
+          "[Abrir WhatsApp — pronta para retirada](" + customerPickupReadyUrl + ")",
+        ]
+      : [
+          "## Mensagem 3 — Pedido saiu para entrega",
+          "Enviar quando o pedido realmente sair para entrega.",
+          "[Abrir WhatsApp — saiu para entrega](" + customerOutForDeliveryUrl + ")",
+          "",
+          "## Mensagem 4 — Resumo para o entregador",
+          "Atalho para o WhatsApp do entregador com cliente, telefone, endereço, data, horário, taxa de entrega e valor a receber.",
+          "[Abrir WhatsApp do entregador — resumo da entrega](" + deliveryWhatsappUrl + ")",
+        ]),
+  ].join("\n");
+
+  const clientMessage = clientOrderConfirmedMessage;
 
   const customerNumber = normalizeWhatsappNumber(clientPhone);
   const customerWhatsappUrl = customerNumber.length >= 12
@@ -155,13 +262,7 @@ async function createClickUpOrderTask(
     "## Personalização",
     personalizationLines,
     "",
-    "## Mensagem para a cliente",
-    "Use somente depois de conferir que a entrada de 60% foi recebida.",
-    `[Abrir WhatsApp da cliente com a confirmação pronta](${customerWhatsappUrl})`,
-    "",
-    "## Mensagem para o entregador",
-    "Revise o endereço e o horário antes de enviar. O link abre o WhatsApp com o resumo preenchido; se o número do entregador não estiver configurado, selecione a conversa manualmente.",
-    `[Abrir WhatsApp com o resumo da entrega](${deliveryWhatsappUrl})`,
+    whatsappMessageLinks,
   ].join("\n");
 
   const dueDate = body.eventDate
