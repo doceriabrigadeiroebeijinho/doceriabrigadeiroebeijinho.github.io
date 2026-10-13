@@ -787,7 +787,7 @@ const sweetsCatalogGallery = [
 
 export default function Home() {
   const [catalogTab, setCatalogTab] = useState<
-    "choose" | "cakes" | "sweets" | "gifts"
+    "choose" | "all" | "cakes" | "sweets" | "gifts"
   >("choose");
   const [sweetGroupId, setSweetGroupId] = useState(sweetGroups[0].id);
   const [sweetQuantities, setSweetQuantities] = useState<Record<string, number>>(
@@ -1897,6 +1897,15 @@ if (
               <small className="catalog-choice-cta"><span>Ver opções para presentear</span><span aria-hidden="true">→</span></small>
             </button>
           </div>
+          <button
+            className="catalog-full-menu-cta"
+            type="button"
+            onClick={() => setCatalogTab("all")}
+          >
+            <span>Ainda não decidiu?</span>
+            <strong>Ver o cardápio completo <span aria-hidden="true">→</span></strong>
+            <small>Confira bolos, docinhos, bombons, bentôs e cupcakes em uma só página.</small>
+          </button>
         ) : (
           <>
             <div className="catalog-category-bar">
@@ -1925,12 +1934,19 @@ if (
                 >
                   Bentô, Cupcakes & Presentes
                 </button>
+                <button
+                  className={catalogTab === "all" ? "active" : ""}
+                  onClick={() => setCatalogTab("all")}
+                  type="button"
+                >
+                  Cardápio completo
+                </button>
               </div>
             </div>
           </>
         )}
 
-        {catalogTab === "cakes" && (
+        {(catalogTab === "cakes" || catalogTab === "all") && (
           <>
             <div className="cake-guide">
               <div>
@@ -2214,7 +2230,7 @@ if (
           </>
         )}
 
-        {catalogTab === "sweets" && (
+        {(catalogTab === "sweets" || catalogTab === "all") && (
           <>
             <div className="sweet-order-rules" aria-label="Regras para pedidos de doces e bombons">
               <div className="sweet-order-rules-head">
@@ -2336,7 +2352,7 @@ if (
           </>
         )}
 
-        {catalogTab === "gifts" && (
+        {(catalogTab === "gifts" || catalogTab === "all") && (
           <div className="gift-grid">
             {gifts.map((gift, index) => (
               <article
