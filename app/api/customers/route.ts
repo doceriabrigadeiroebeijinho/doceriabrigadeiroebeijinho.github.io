@@ -112,18 +112,14 @@ async function createClickUpOrderTask(
   const clientMessage =
     `Oi, ${clientName}! Tudo bem? Confirmamos o recebimento da entrada de 60% da sua encomenda ${orderCode}. Seu pedido está confirmado para ${dateLabel} às ${timeLabel}. Obrigada pela preferência!`;
   const deliveryMessage = [
-    "Olá! Seguem os dados da entrega da Doceria Brigadeiro & Beijinho.",
-    "",
-    `Pedido: ${orderCode}`,
+    "ENTREGA — DOCERIA BRIGADEIRO & BEIJINHO",
     `Cliente: ${clientName}`,
-    `Telefone da cliente: ${clientPhone}`,
-    `Atendimento: ${service}`,
+    `Contato da cliente: ${clientPhone}`,
     `Endereço: ${address}`,
-    `Data: ${dateLabel}`,
-    `Horário: ${timeLabel}`,
-    "Itens:",
-    ...items.map((item) => `- ${Number(item.quantity || 1)} × ${item.name || item.type || "Item"}${item.variant ? ` — ${item.variant}` : ""}`),
-    `Observações de personalização: ${personalizationLines.replace(/\n/g, "; ")}`,
+    `Dia da entrega: ${dateLabel}`,
+    `Horário da entrega: ${timeLabel}`,
+    `Taxa de entrega: ${formatMoneyFromCents(summary.deliveryCents)}`,
+    `Total a receber na entrega: ${formatMoneyFromCents(balanceCents)}`,
   ].join("\n");
 
   const customerNumber = normalizeWhatsappNumber(clientPhone);
