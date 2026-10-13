@@ -1523,7 +1523,8 @@ export default function Home() {
         </div>
 
         {catalogTab === "choose" ? (
-          <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
+          <>
+            <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
             <button type="button" onClick={() => setCatalogTab("cakes")} aria-label="Ver bolos, tamanhos e sabores">
               <strong>Quero um bolo</strong>
               <small>Bolos personalizados e bolos de corte</small>
@@ -1552,6 +1553,7 @@ export default function Home() {
             <strong>Ver o cardápio completo <span aria-hidden="true">→</span></strong>
             <small>Confira bolos, docinhos, bombons, bentôs e cupcakes em uma só página.</small>
           </button>
+          </>
         ) : (
           <>
             <div className="catalog-category-bar">
