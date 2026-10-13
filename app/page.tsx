@@ -3017,17 +3017,32 @@ if (
           <span>Como posso te ajudar?</span>
           <b aria-hidden="true">✦</b>
         </button>
-        <a
-          className="whatsapp-float"
-          href={WHATSAPP_INFO_URL}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Falar pelo WhatsApp"
-        >
-          <svg viewBox="0 0 32 32" aria-hidden="true">
-            <path d="M16 3a12.5 12.5 0 0 0-10.9 18.6L3.5 28l6.6-1.6A12.5 12.5 0 1 0 16 3Zm0 22.8c-2 0-3.9-.6-5.5-1.6l-.4-.2-3.9 1 1-3.8-.2-.4A10.2 10.2 0 1 1 16 25.8Zm5.6-7.6c-.3-.1-1.8-.9-2.1-1-.3-.1-.5-.1-.7.2l-1 1.2c-.2.2-.4.2-.7.1-1.9-.9-3.2-1.8-4.5-4-.3-.5.3-.5.9-1.7.1-.2.1-.4 0-.6l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9 0 1.7 1.2 3.3 1.4 3.5.2.2 2.4 3.7 5.9 5.2.8.4 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 1.8-.7 2.1-1.5.3-.7.3-1.4.2-1.5-.2-.2-.5-.3-.8-.4Z" />
-          </svg>
-        </a>
+        <div className="floating-socials" aria-label="Redes sociais">
+          <a
+            className="instagram-float"
+            href={INSTAGRAM}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Acessar o Instagram da Doceria Brigadeiro e Beijinho"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle className="instagram-dot" cx="17.5" cy="6.5" r="1" />
+            </svg>
+          </a>
+          <a
+            className="whatsapp-float"
+            href={WHATSAPP_INFO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Falar pelo WhatsApp"
+          >
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M16 3a12.5 12.5 0 0 0-10.9 18.6L3.5 28l6.6-1.6A12.5 12.5 0 1 0 16 3Zm0 22.8c-2 0-3.9-.6-5.5-1.6l-.4-.2-3.9 1 1-3.8-.2-.4A10.2 10.2 0 1 1 16 25.8Zm5.6-7.6c-.3-.1-1.8-.9-2.1-1-.3-.1-.5-.1-.7.2l-1 1.2c-.2.2-.4.2-.7.1-1.9-.9-3.2-1.8-4.5-4-.3-.5.3-.5.9-1.7.1-.2.1-.4 0-.6l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9 0 1.7 1.2 3.3 1.4 3.5.2.2 2.4 3.7 5.9 5.2.8.4 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 1.8-.7 2.1-1.5.3-.7.3-1.4.2-1.5-.2-.2-.5-.3-.8-.4Z" />
+            </svg>
+          </a>
+        </div>
       </div>
 
       {assistantOpen && (
