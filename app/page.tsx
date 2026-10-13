@@ -3505,7 +3505,6 @@ export default function Home() {
             <h2>Recebemos sua encomenda!</h2>
             <p>
               Obrigada, {lastSubmittedOrder.name}! Sua solicitação <strong>{lastSubmittedOrder.orderCode}</strong> foi registrada.
-              Você não precisa copiar nem enviar o pedido manualmente pelo WhatsApp.
             </p>
             <div className="order-success-summary">
               <div><span>Data solicitada</span><strong>{lastSubmittedOrder.eventDate} às {lastSubmittedOrder.eventTime}</strong></div>
@@ -3517,10 +3516,7 @@ export default function Home() {
             <div className="payment-notice-info">
               <strong>Próximos passos</strong>
               <p>
-                Vamos conferir a disponibilidade da data e os detalhes do pedido. A encomenda só será confirmada depois da nossa confirmação e do pagamento da entrada de 60%.
-              </p>
-              <p>
-                Entraremos em contato pelo WhatsApp informado no cadastro. Até lá, não é necessário enviar a mensagem manualmente.
+                Nossa equipe entrará em contato pelo WhatsApp informado no cadastro para confirmar a disponibilidade da data e os detalhes do pedido. A encomenda será confirmada após a confirmação da data e o pagamento da entrada de 60%.
               </p>
             </div>
             <div>
