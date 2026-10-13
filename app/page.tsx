@@ -2741,6 +2741,51 @@ export default function Home() {
             </button>
           </div>
           <div className="assistant-message">{assistantAnswer}</div>
+          <p className="assistant-category-hint">
+            Quer consultar sabores, tamanhos ou preços? Escolha uma categoria e eu te levo direto ao cardápio.
+          </p>
+          <div className="assistant-options assistant-category-options">
+            <button
+              type="button"
+              onClick={() => {
+                setCatalogTab("cakes");
+                setAssistantOpen(false);
+                document.getElementById("cardapio")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Sabores e tamanhos de bolos
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCatalogTab("sweets");
+                setAssistantOpen(false);
+                document.getElementById("cardapio")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Sabores e preços de doces e bombons
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCatalogTab("gifts");
+                setAssistantOpen(false);
+                document.getElementById("cardapio")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Bentô, cupcakes e presentes
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCatalogTab("all");
+                setAssistantOpen(false);
+                document.getElementById("cardapio")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Ainda não decidi — ver cardápio completo
+            </button>
+          </div>
           <div className="assistant-guest">
             <label htmlFor="guest-count">Quantidade de convidados</label>
             <input
