@@ -1869,20 +1869,23 @@ if (
 
         {catalogTab === "choose" ? (
           <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
-            <button type="button" onClick={() => setCatalogTab("cakes")}>
+            <button type="button" onClick={() => setCatalogTab("cakes")} aria-label="Ver bolos, tamanhos e sabores">
               <strong>Quero um bolo</strong>
               <small>Bolos personalizados e bolos de corte</small>
               <small className="catalog-choice-price">A partir de R$ 115,00</small>
+              <small className="catalog-choice-cta"><span>Ver bolos, tamanhos e sabores</span><span aria-hidden="true">→</span></small>
             </button>
-            <button type="button" onClick={() => setCatalogTab("sweets")}>
+            <button type="button" onClick={() => setCatalogTab("sweets")} aria-label="Ver sabores e preços dos docinhos">
               <strong>Quero doces</strong>
               <small>Doces e bombons para festas e eventos</small>
               <small className="catalog-choice-price">A partir de R$ 160,00 / 100 unidades</small>
+              <small className="catalog-choice-cta"><span>Ver sabores e preços</span><span aria-hidden="true">→</span></small>
             </button>
-            <button type="button" onClick={() => setCatalogTab("gifts")}>
+            <button type="button" onClick={() => setCatalogTab("gifts")} aria-label="Ver opções para presentear">
               <strong>Quero um presente</strong>
               <small>Bentôs, cupcakes e opções para presentear</small>
               <small className="catalog-choice-price">A partir de R$ 59,90</small>
+              <small className="catalog-choice-cta"><span>Ver opções para presentear</span><span aria-hidden="true">→</span></small>
             </button>
           </div>
         ) : (
