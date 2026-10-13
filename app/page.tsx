@@ -1770,6 +1770,24 @@ if (
     return "Para mais de 60 pessoas, vale combinar um bolo decorado com bolo de corte.";
   };
 
+  const sweetsSuggestion = () => {
+    const guests = Math.max(1, Math.floor(Number(guestCount) || 1));
+    const minimumEstimate = guests * 4;
+    const maximumEstimate = guests * 6;
+    const roundUpToPack = (value: number) => Math.max(25, Math.ceil(value / 25) * 25);
+    const roundToPack = (value: number) => Math.max(25, Math.round(value / 25) * 25);
+    const minimumOption = roundUpToPack(minimumEstimate);
+    const maximumOption = Math.max(25, Math.floor(maximumEstimate / 25) * 25);
+    const balancedOption = roundToPack(guests * 5);
+    const recommended = minimumOption <= maximumOption
+      ? Math.min(maximumOption, Math.max(minimumOption, balancedOption))
+      : roundToPack((minimumEstimate + maximumEstimate) / 2);
+    const extraNote = recommended > 200
+      ? " Para quantidades acima de 200, combine as quantidades entre os sabores no cardápio."
+      : "";
+    return `Para ${guests} convidados, a estimativa é de ${minimumEstimate} a ${maximumEstimate} docinhos (4 a 6 por pessoa). Como trabalhamos com quantidades em múltiplos de 25 por sabor, minha sugestão inicial é ${recommended} unidades.${extraNote} Você pode ajustar os sabores e as quantidades diretamente no cardápio.`;
+  };
+
   return (
     <main>
       <header className="site-header">
@@ -3101,8 +3119,11 @@ if (
               id="guest-count"
               type="number"
               min="1"
+              max="1000"
               value={guestCount}
-              onChange={(event) => setGuestCount(Number(event.target.value) || 1)}
+              onChange={(event) =>
+                setGuestCount(Math.max(1, Math.floor(Number(event.target.value) || 1)))
+              }
             />
           </div>
           <div className="assistant-options">
@@ -3111,13 +3132,7 @@ if (
             </button>
             <button
               type="button"
-              onClick={() =>
-                setAssistantAnswer(
-                  `Como referência, considere de ${guestCount * 4} a ${
-                    guestCount * 6
-                  } docinhos para ${guestCount} convidados, ajustando conforme o restante do cardápio.`,
-                )
-              }
+              onClick={() => setAssistantAnswer(sweetsSuggestion())}
             >
               Quantos docinhos?
             </button>
