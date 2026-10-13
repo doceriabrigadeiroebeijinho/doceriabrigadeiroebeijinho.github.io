@@ -42,6 +42,175 @@ type OrderRequestBody = {
 };
 
 
+function onlyDigits(value?: string): string {
+  return String(value || "").replace(/\\D/g, "");
+}
+
+function normalizeWhatsappNumber(value?: string): string {
+  let digits = onlyDigits(value);
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("0") && digits.length >= 12 && !digits.startsWith("55")) {
+    digits = digits.slice(1);
+  }
+  return digits.startsWith("55") ? digits : `55${digits}`;
+}
+
+function formatDateForMessage(value?: string): string {
+  if (!value) return "A combinar";
+  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+}
+
+function formatMoneyFromCents(value?: number): string {
+  return (Number(value || 0) / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
+async function createClickUpOrderTask(
+  body: OrderRequestBody,
+  orderCode: string,
+): Promise<void> {
+  const token = process.env.CLICKUP_API_TOKEN?.trim();
+  const listId = process.env.CLICKUP_LIST_ID?.trim();
+
+  // Keep the order checkout working even before ClickUp credentials are added.
+  if (!token || !listId) {
+    console.info("ClickUp sync skipped: CLICKUP_API_TOKEN/CLICKUP_LIST_ID not configured.");
+    return;
+  }
+
+  const clientName = body.name?.trim() || "Cliente";
+  const clientPhone = body.phone?.trim() || "";
+  const dateLabel = formatDateForMessage(body.eventDate);
+  const timeLabel = body.eventTime || "A combinar";
+  const service = body.service || "A combinar";
+  const address = body.address || (service.toLowerCase().includes("retirada") ? "Retirada na doceria" : "Não informado");
+  const items = body.items || [];
+  const itemsText = items.length
+    ? items.map((item) => {
+        const quantity = Number(item.quantity || 1);
+        const itemName = item.name || item.type || "Item";
+        const variant = item.variant ? ` — ${item.variant}` : "";
+        return `- ${quantity} × ${itemName}${variant} — ${formatMoneyFromCents(item.totalCents)}`;
+      }).join("\\n")
+    : "- Itens não informados";
+  const summary = body.summary || {};
+  const totalCents = Number(summary.totalCents ?? body.totalCents ?? 0);
+  const depositCents = Number(summary.depositCents ?? Math.round(totalCents * 0.6));
+  const balanceCents = Number(summary.balanceCents ?? Math.max(0, totalCents - depositCents));
+  const personalization = body.personalization || {};
+  const personalizationLines = [
+    personalization.phrase ? `- Frase: ${personalization.phrase}` : "",
+    personalization.age ? `- Idade: ${personalization.age}` : "",
+    personalization.decoration ? `- Decoração: ${personalization.decoration}` : "",
+    personalization.colors ? `- Cores: ${personalization.colors}` : "",
+    personalization.wrappers ? `- Embalagens: ${personalization.wrappers}` : "",
+  ].filter(Boolean).join("\\n") || "Não informado";
+
+  const clientMessage =
+    `Oi, ${clientName}! Tudo bem? Confirmamos o recebimento da entrada de 60% da sua encomenda ${orderCode}. Seu pedido está confirmado para ${dateLabel} às ${timeLabel}. Obrigada pela preferência!`;
+  const deliveryMessage = [
+    "Olá! Seguem os dados da entrega da Doceria Brigadeiro & Beijinho.",
+    "",
+    `Pedido: ${orderCode}`,
+    `Cliente: ${clientName}`,
+    `Telefone da cliente: ${clientPhone}`,
+    `Atendimento: ${service}`,
+    `Endereço: ${address}`,
+    `Data: ${dateLabel}`,
+    `Horário: ${timeLabel}`,
+    "Itens:",
+    ...items.map((item) => `- ${Number(item.quantity || 1)} × ${item.name || item.type || "Item"}${item.variant ? ` — ${item.variant}` : ""}`),
+    `Observações de personalização: ${personalizationLines.replace(/\\n/g, "; ")}`,
+  ].join("\\n");
+
+  const customerNumber = normalizeWhatsappNumber(clientPhone);
+  const customerWhatsappUrl = customerNumber.length >= 12
+    ? `https://wa.me/${customerNumber}?text=${encodeURIComponent(clientMessage)}`
+    : `https://wa.me/?text=${encodeURIComponent(clientMessage)}`;
+  const driverNumberRaw = process.env.CLICKUP_DRIVER_WHATSAPP;
+  const driverNumber = driverNumberRaw ? normalizeWhatsappNumber(driverNumberRaw) : "";
+  const deliveryWhatsappUrl = driverNumber.length >= 12
+    ? `https://wa.me/${driverNumber}?text=${encodeURIComponent(deliveryMessage)}`
+    : `https://wa.me/?text=${encodeURIComponent(deliveryMessage)}`;
+
+  const markdownContent = [
+    `# Encomenda ${orderCode}`,
+    "",
+    "**Status inicial:** orçamento recebido — conferir a disponibilidade da data e o pagamento da entrada de 60%.",
+    "",
+    `**Cliente:** ${clientName}`,
+    `**WhatsApp:** ${clientPhone}`,
+    `**Data solicitada:** ${dateLabel} às ${timeLabel}`,
+    `**Atendimento:** ${service}`,
+    `**Endereço:** ${address}`,
+    "",
+    "## Itens",
+    itemsText,
+    "",
+    "## Valores",
+    `- Total estimado: ${formatMoneyFromCents(totalCents)}`,
+    `- Entrada prevista (60%): ${formatMoneyFromCents(depositCents)}`,
+    `- Saldo previsto (40%): ${formatMoneyFromCents(balanceCents)}`,
+    `- Forma de pagamento informada: ${body.paymentMethod || "Não informada"}`,
+    "",
+    "## Personalização",
+    personalizationLines,
+    "",
+    "## Mensagem para a cliente",
+    "Use somente depois de conferir que a entrada de 60% foi recebida.",
+    `[Abrir WhatsApp da cliente com a confirmação pronta](${customerWhatsappUrl})`,
+    "",
+    "## Mensagem para o entregador",
+    "Revise o endereço e o horário antes de enviar. O link abre o WhatsApp com o resumo preenchido; se o número do entregador não estiver configurado, selecione a conversa manualmente.",
+    `[Abrir WhatsApp com o resumo da entrega](${deliveryWhatsappUrl})`,
+  ].join("\\n");
+
+  const dueDate = body.eventDate
+    ? new Date(`${body.eventDate}T${body.eventTime || "12:00"}:00-03:00`).getTime()
+    : NaN;
+  const taskPayload: Record<string, unknown> = {
+    name: `${orderCode} — ${clientName} — ${dateLabel}`,
+    markdown_content: markdownContent,
+    status: "pendente",
+  };
+  if (Number.isFinite(dueDate)) {
+    taskPayload.due_date = dueDate;
+    taskPayload.due_date_time = Boolean(body.eventTime);
+  }
+
+  try {
+    const response = await fetch(`https://api.clickup.com/api/v2/list/${encodeURIComponent(listId)}/task`, {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(taskPayload),
+      cache: "no-store",
+    });
+    const responseText = await response.text();
+    let result: { id?: string; url?: string; err?: string; error?: string } = {};
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      // Keep unexpected HTML/text out of customer-facing checkout errors.
+    }
+    if (!response.ok) {
+      console.error("ClickUp task creation failed:", response.status, result.err || result.error || "API error");
+      return;
+    }
+    console.info("ClickUp task created for order:", orderCode, result.id || "");
+  } catch (error) {
+    // The order is already saved in Google; a ClickUp outage must not fail checkout.
+    console.error("ClickUp sync failed for order:", orderCode, error);
+  }
+}
+
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as OrderRequestBody;
@@ -196,6 +365,8 @@ export async function POST(request: Request) {
         { status: 502 },
       );
     }
+
+    await createClickUpOrderTask(body, generatedOrderCode);
 
     return NextResponse.json({
       success: true,
