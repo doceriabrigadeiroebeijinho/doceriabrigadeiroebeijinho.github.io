@@ -529,6 +529,98 @@ img {
   transform: translateX(3px);
 }
 
+.catalog-full-menu-cta {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+  margin: 0 auto 38px;
+  padding: 22px 28px;
+  border: 0;
+  border-radius: 24px;
+  background: linear-gradient(120deg, var(--cocoa), var(--rose-dark));
+  box-shadow: 0 15px 34px rgba(75, 46, 37, 0.16);
+  color: #fff;
+  text-align: left;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.catalog-full-menu-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 42px rgba(75, 46, 37, 0.22);
+}
+
+.catalog-full-menu-cta:focus-visible {
+  outline: 3px solid var(--rose);
+  outline-offset: 4px;
+}
+
+.catalog-full-menu-cta > span {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.catalog-full-menu-cta strong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.catalog-full-menu-cta strong span {
+  font-family: Arial, sans-serif;
+  font-size: 1.2rem;
+  transition: transform 180ms ease;
+}
+
+.catalog-full-menu-cta:hover strong span {
+  transform: translateX(4px);
+}
+
+.catalog-full-menu-cta small {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.full-menu-heading {
+  grid-column: 1 / -1;
+  margin: 28px 0 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.full-menu-heading > span {
+  color: var(--rose-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.full-menu-heading h3 {
+  margin: 8px 0 7px;
+  color: var(--cocoa);
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.full-menu-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.sweet-catalog-subsection + .sweet-catalog-subsection {
+  margin-top: 42px;
+}
+
 .catalog-category-bar {
   display: flex;
   align-items: center;
@@ -5635,6 +5727,24 @@ footer a:hover {
     min-height: 164px;
     padding: 20px;
     border-radius: 22px;
+  }
+
+  .catalog-full-menu-cta {
+    margin-bottom: 28px;
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .catalog-full-menu-cta strong {
+    font-size: 1.75rem;
+  }
+
+  .catalog-full-menu-cta small {
+    font-size: 0.78rem;
+  }
+
+  .full-menu-heading {
+    margin-top: 22px;
   }
 
   .catalog-choice-grid strong {
