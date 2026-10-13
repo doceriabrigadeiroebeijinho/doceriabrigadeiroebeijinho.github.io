@@ -2138,6 +2138,13 @@ footer a:hover {
   gap: 10px;
 }
 
+.floating-socials {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
 .assistant-teaser {
   min-height: 46px;
   padding: 0 18px;
@@ -2149,15 +2156,52 @@ footer a:hover {
   font-weight: 800;
 }
 
+.instagram-float,
 .whatsapp-float {
   display: grid;
   width: 58px;
   height: 58px;
+  flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
+  color: white;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.instagram-float {
+  background: linear-gradient(135deg, #833ab4 0%, #e1306c 55%, #f77737 100%);
+  box-shadow: 0 12px 30px rgba(193, 53, 132, 0.25);
+}
+
+.whatsapp-float {
   background: #25d366;
   box-shadow: 0 12px 30px rgba(26, 135, 71, 0.28);
-  color: white;
+}
+
+.instagram-float:hover,
+.whatsapp-float:hover {
+  transform: translateY(-2px);
+}
+
+.instagram-float:focus-visible,
+.whatsapp-float:focus-visible {
+  outline: 3px solid var(--cocoa);
+  outline-offset: 4px;
+}
+
+.instagram-float svg {
+  width: 27px;
+  height: 27px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.instagram-float .instagram-dot {
+  fill: currentColor;
+  stroke: none;
 }
 
 .whatsapp-float svg {
