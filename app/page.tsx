@@ -1310,12 +1310,20 @@ export default function Home() {
     setCustomerOrders([]);
   };
 
+  const formatOrderTime = (value: unknown) => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "A combinar";
+    const match = raw.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/);
+    if (match) return match[1].padStart(2, "0") + ":" + match[2];
+    return raw;
+  };
+
   const downloadOrderComanda = async (order: any) => {
     try {
       const width = 900;
       const workCanvas = document.createElement("canvas");
       workCanvas.width = width;
-      workCanvas.height = 5200;
+      workCanvas.height = 9000;
       const ctx = workCanvas.getContext("2d");
       if (!ctx) throw new Error("Não foi possível preparar a imagem da comanda.");
 
@@ -1333,47 +1341,53 @@ export default function Home() {
         logo = null;
       }
 
-      ctx.fillStyle = "#fff8ee";
+      const colors = {
+        cream: "#fff8ee",
+        paper: "#fffdf8",
+        cocoa: "#4b2e25",
+        cocoaSoft: "#6f493d",
+        muted: "#806b63",
+        blush: "#f5dcda",
+        blushLight: "#fbefeb",
+        rose: "#c66f78",
+        roseDark: "#9c4f59",
+        line: "#ead7c9",
+      };
+
+      ctx.fillStyle = colors.cream;
       ctx.fillRect(0, 0, width, workCanvas.height);
-      ctx.fillStyle = "#9c4f59";
-      ctx.fillRect(0, 0, width, 215);
-      ctx.fillStyle = "rgba(245,220,218,.13)";
+
+      // Clean, light header: real brand logo and order code only.
+      ctx.fillStyle = colors.paper;
       ctx.beginPath();
-      ctx.arc(850, 18, 125, 0, Math.PI * 2);
+      ctx.roundRect(34, 28, width - 68, 166, 20);
       ctx.fill();
-      ctx.fillStyle = "#fffdf8";
-      ctx.beginPath();
-      ctx.roundRect(36, 24, 190, 166, 18);
-      ctx.fill();
+      ctx.strokeStyle = colors.line;
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
       if (logo && logo.complete && logo.naturalWidth > 0) {
-        const maxW = 170;
-        const maxH = 145;
+        const maxW = 200;
+        const maxH = 140;
         const scale = Math.min(maxW / logo.naturalWidth, maxH / logo.naturalHeight);
         const logoW = logo.naturalWidth * scale;
         const logoH = logo.naturalHeight * scale;
-        ctx.drawImage(logo, 36 + (190 - logoW) / 2, 24 + (166 - logoH) / 2, logoW, logoH);
-      } else {
-        ctx.fillStyle = "#9c4f59";
-        ctx.font = "bold 42px Georgia";
-        ctx.textAlign = "center";
-        ctx.fillText("B&B", 131, 118);
-        ctx.textAlign = "left";
+        ctx.drawImage(logo, 52 + (200 - logoW) / 2, 41 + (140 - logoH) / 2, logoW, logoH);
       }
 
-      ctx.fillStyle = "#f5dcda";
-      ctx.font = "700 17px Arial, sans-serif";
-      ctx.fillText("DOCERIA ARTESANAL", 258, 54);
-      ctx.fillStyle = "#fffdf8";
-      ctx.font = "700 26px Georgia, serif";
-      ctx.fillText("COMANDA DE ENCOMENDA", 258, 95);
-      ctx.font = "700 20px Arial, sans-serif";
-      ctx.fillText(String(order.orderCode || "PEDIDO"), 258, 132);
-      ctx.font = "16px Arial, sans-serif";
-      ctx.fillStyle = "#fffdf8";
-      ctx.fillText("Resumo para consulta do cliente", 258, 166);
+      ctx.fillStyle = colors.blushLight;
+      ctx.beginPath();
+      ctx.roundRect(590, 83, 260, 58, 18);
+      ctx.fill();
+      ctx.fillStyle = colors.cocoaSoft;
+      ctx.font = "700 24px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(order.orderCode || "PEDIDO"), 720, 112);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
 
-      let y = 260;
+      let y = 238;
       const left = 52;
       const maxWidth = width - 104;
 
@@ -1400,7 +1414,7 @@ export default function Home() {
         options: { size?: number; color?: string; weight?: number; x?: number; maxWidth?: number; lineHeight?: number } = {},
       ) => {
         const size = options.size ?? 20;
-        const color = options.color ?? "#4b2e25";
+        const color = options.color ?? colors.cocoa;
         const weight = options.weight ?? 400;
         const x = options.x ?? left;
         const available = options.maxWidth ?? maxWidth;
@@ -1417,52 +1431,115 @@ export default function Home() {
       };
 
       const drawSection = (title: string) => {
-        y += 12;
-        ctx.fillStyle = "#f5dcda";
+        y += 13;
+        ctx.fillStyle = colors.blushLight;
         ctx.beginPath();
-        ctx.roundRect(36, y - 24, width - 72, 42, 12);
+        ctx.roundRect(40, y - 25, width - 80, 40, 12);
         ctx.fill();
-        drawText(title.toUpperCase(), { size: 17, color: "#9c4f59", weight: 700, x: 54, lineHeight: 27 });
-        y += 8;
+        drawText(title, { size: 18, color: colors.cocoaSoft, weight: 700, x: 58, lineHeight: 25 });
+        y += 9;
       };
 
       const drawRule = () => {
-        y += 5;
-        ctx.strokeStyle = "#ead7c9";
+        y += 4;
+        ctx.strokeStyle = colors.line;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(left, y);
         ctx.lineTo(width - left, y);
         ctx.stroke();
-        y += 22;
+        y += 20;
       };
 
       const dateLabel = order.eventDateLabel ||
         (String(order.eventDate || "").match(/^\d{4}-\d{2}-\d{2}$/)
           ? String(order.eventDate).split("-").reverse().join("/")
           : String(order.eventDate || "A combinar"));
-      drawSection("Dados da encomenda");
-      drawText("Cliente: " + (order.name || "Cliente"), { size: 22, weight: 700, lineHeight: 32 });
-      if (order.phone) drawText("WhatsApp: " + order.phone, { size: 18, color: "#6f493d", lineHeight: 28 });
-      drawText("Data: " + dateLabel + "   |   Horário: " + (order.eventTime || "A combinar"), { size: 19, weight: 600, lineHeight: 30 });
+      drawSection("Dados do pedido");
+      drawText("Cliente: " + (order.name || "Cliente"), { size: 22, weight: 700, lineHeight: 33 });
+      if (order.phone) drawText("WhatsApp: " + order.phone, { size: 18, color: colors.cocoaSoft, lineHeight: 28 });
+      drawText("Data: " + dateLabel + "   ·   Horário: " + formatOrderTime(order.eventTime), { size: 19, weight: 600, lineHeight: 31 });
       drawText("Modalidade: " + (order.service || "A combinar"), { size: 18, lineHeight: 28 });
-      if (order.address) drawText((/retirada/i.test(String(order.service || "")) ? "Endereço para retirada: " : "Endereço: ") + order.address, { size: 18, lineHeight: 28 });
-      if (order.status) drawText("Status: " + order.status, { size: 17, color: "#6f493d", lineHeight: 27 });
+      if (order.address) drawText((/retirada/i.test(String(order.service || "")) ? "Retirada em: " : "Endereço: ") + order.address, { size: 18, lineHeight: 28 });
+      if (order.status) drawText("Status: " + order.status, { size: 17, color: colors.cocoaSoft, lineHeight: 27 });
       drawRule();
 
-      drawSection("Itens da encomenda");
-      if (Array.isArray(order.items) && order.items.length) {
-        for (const item of order.items) {
-          const variant = item.variant ? " — " + item.variant : "";
-          drawText((item.quantity || 1) + " × " + (item.name || item.type || "Item") + variant, { size: 19, weight: 600, lineHeight: 29 });
-          if (typeof item.totalCents === "number") {
-            drawText(formatMoney(item.totalCents / 100), { size: 18, color: "#6f493d", x: left + 12, lineHeight: 27 });
-          }
-          y += 4;
-        }
-      } else {
+      drawSection("Itens do pedido");
+      let orderItems = Array.isArray(order.items) ? order.items : [];
+      if (!orderItems.length) {
         const rawItems = String(order.itemsText || "Itens não informados").split(/\r?\n/).filter(Boolean);
-        for (const itemLine of rawItems) drawText(itemLine, { size: 18, lineHeight: 28 });
+        orderItems = rawItems.map((line: string) => {
+          const match = line.match(/^\s*(\d+(?:[.,]\d+)?)\s*[x×]\s*(.*?)\s+[—–-]\s*(R\$\s*[\d.,]+)\s*$/);
+          if (!match) return { quantity: 1, name: line, variant: "", totalCents: undefined };
+          const priceText = match[3].replace("R$", "").trim().replace(/\./g, "").replace(",", ".");
+          const price = Number.parseFloat(priceText);
+          const completeName = match[2].trim();
+          const detailsSplit = completeName.split(/\s+[—–]\s+/, 2);
+          return {
+            quantity: Number(match[1].replace(",", ".")) || 1,
+            name: detailsSplit[0] || completeName,
+            variant: detailsSplit[1] || "",
+            totalCents: Number.isFinite(price) ? Math.round(price * 100) : undefined,
+          };
+        });
+      }
+
+      for (const item of orderItems) {
+        const quantity = String(item.quantity || 1) + "×";
+        const title = String(item.name || item.type || "Item");
+        const details = String(item.variant || "");
+        const titleFont = "700 20px Arial, sans-serif";
+        const detailFont = "400 17px Arial, sans-serif";
+        const titleLines = wrapText(title, titleFont, 510);
+        const detailLines = details ? wrapText(details, detailFont, 510) : [];
+        const rowHeight = Math.max(78, 24 + titleLines.length * 28 + detailLines.length * 24);
+
+        y += 8;
+        const cardTop = y - 18;
+        ctx.fillStyle = colors.paper;
+        ctx.beginPath();
+        ctx.roundRect(42, cardTop, width - 84, rowHeight, 14);
+        ctx.fill();
+        ctx.strokeStyle = colors.line;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = colors.blush;
+        ctx.beginPath();
+        ctx.roundRect(56, cardTop + (rowHeight - 44) / 2, 62, 44, 12);
+        ctx.fill();
+        ctx.fillStyle = colors.cocoaSoft;
+        ctx.font = "700 19px Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(quantity, 87, cardTop + rowHeight / 2);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+
+        ctx.fillStyle = colors.cocoa;
+        ctx.font = titleFont;
+        let itemY = cardTop + 30;
+        for (const line of titleLines) {
+          ctx.fillText(line, 136, itemY);
+          itemY += 28;
+        }
+        if (detailLines.length) {
+          ctx.fillStyle = colors.muted;
+          ctx.font = detailFont;
+          for (const line of detailLines) {
+            ctx.fillText(line, 136, itemY);
+            itemY += 24;
+          }
+        }
+
+        if (typeof item.totalCents === "number") {
+          ctx.fillStyle = colors.cocoaSoft;
+          ctx.font = "700 18px Arial, sans-serif";
+          ctx.textAlign = "right";
+          ctx.fillText(formatMoney(item.totalCents / 100), width - 60, cardTop + 31);
+          ctx.textAlign = "left";
+        }
+        y = cardTop + rowHeight + 10;
       }
       drawRule();
 
@@ -1480,47 +1557,52 @@ export default function Home() {
           for (const line of lines) drawText(line, { size: 18, lineHeight: 28 });
           drawRule();
         }
+      } else if (order.observations) {
+        drawSection("Observações");
+        drawText(String(order.observations), { size: 18, lineHeight: 28 });
+        drawRule();
       }
 
       const total = typeof order.totalCents === "number" ? order.totalCents / 100 : Number(order.total || 0);
       const deposit = typeof order.depositCents === "number" ? order.depositCents / 100 : Number(order.deposit || 0);
       const balance = typeof order.balanceCents === "number" ? order.balanceCents / 100 : Number(order.balance || 0);
       drawSection("Resumo financeiro");
-      drawText("VALOR TOTAL", { size: 16, color: "#806b63", weight: 700, lineHeight: 28 });
-      y += 10;
-      drawText(formatMoney(total), { size: 38, color: "#9c4f59", weight: 700, lineHeight: 52 });
+      drawText("VALOR TOTAL", { size: 16, color: colors.muted, weight: 700, lineHeight: 27 });
+      y += 5;
+      drawText(formatMoney(total), { size: 40, color: colors.roseDark, weight: 700, lineHeight: 54 });
+      y += 1;
       drawText("Entrada prevista (60%): " + formatMoney(deposit), { size: 19, weight: 600, lineHeight: 31 });
       drawText("Saldo previsto (40%): " + formatMoney(balance), { size: 19, lineHeight: 31 });
       const paymentStart = order.paymentInitial || order.paymentMethod || "";
       const paymentBalance = order.paymentBalance || order.balancePaymentMethod || "";
-      if (paymentStart) drawText("Pagamento da entrada: " + paymentStart, { size: 17, lineHeight: 28 });
-      if (paymentBalance) drawText("Pagamento do restante: " + paymentBalance, { size: 17, lineHeight: 28 });
-      y += 20;
+      if (paymentStart) drawText("Pagamento da entrada: " + paymentStart, { size: 17, color: colors.cocoaSoft, lineHeight: 28 });
+      if (paymentBalance) drawText("Pagamento do restante: " + paymentBalance, { size: 17, color: colors.cocoaSoft, lineHeight: 28 });
+      y += 24;
 
-      const finalHeight = y + 90;
+      const finalHeight = y + 82;
       const finalCanvas = document.createElement("canvas");
       finalCanvas.width = width;
       finalCanvas.height = finalHeight;
       const finalCtx = finalCanvas.getContext("2d");
       if (!finalCtx) throw new Error("Não foi possível finalizar a imagem da comanda.");
-      finalCtx.fillStyle = "#fff8ee";
+      finalCtx.fillStyle = colors.cream;
       finalCtx.fillRect(0, 0, width, finalHeight);
       finalCtx.drawImage(workCanvas, 0, 0, width, finalHeight, 0, 0, width, finalHeight);
-      finalCtx.strokeStyle = "#ead7c9";
+      finalCtx.strokeStyle = colors.line;
       finalCtx.lineWidth = 2;
       finalCtx.beginPath();
-      finalCtx.moveTo(left, finalHeight - 64);
-      finalCtx.lineTo(width - left, finalHeight - 64);
+      finalCtx.moveTo(left, finalHeight - 56);
+      finalCtx.lineTo(width - left, finalHeight - 56);
       finalCtx.stroke();
-      finalCtx.fillStyle = "#806b63";
+      finalCtx.fillStyle = colors.muted;
       finalCtx.font = "16px Arial, sans-serif";
       finalCtx.textAlign = "center";
-      finalCtx.fillText("Solicitação registrada • Confirme a data e o pagamento com a doceria", width / 2, finalHeight - 32);
+      finalCtx.fillText("A encomenda será confirmada após a confirmação da data e da entrada.", width / 2, finalHeight - 27);
 
       const blob = await new Promise<Blob>((resolve, reject) => {
         finalCanvas.toBlob((result) => {
           if (result) resolve(result);
-          else reject(new Error("Não foi possível gerar o arquivo PNG."));
+          else reject(new Error("Não foi possível gerar a imagem da comanda."));
         }, "image/png");
       });
       const objectUrl = URL.createObjectURL(blob);
@@ -1549,7 +1631,7 @@ export default function Home() {
       const response = await fetch(`/api/orders?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`, { cache: "no-store" });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "Não encontramos pedidos para esses dados.");
-      setCustomerOrders(Array.isArray(result.orders) ? result.orders.map((order: any) => ({ ...order, name: order.name || name, phone })) : []);
+      setCustomerOrders(Array.isArray(result.orders) ? result.orders.map((order: any) => ({ ...order, eventTime: formatOrderTime(order.eventTime), name: order.name || name, phone })) : []);
       if (!result.orders?.length) setCustomerError("Não encontramos pedidos com esses dados.");
     } catch (error) {
       setCustomerOrders([]);
@@ -3773,7 +3855,7 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <button className="comanda-download-button" type="button" onClick={() => void downloadOrderComanda(lastSubmittedOrder)}>Baixar comanda (PNG)</button>
+              <button className="comanda-download-button" type="button" onClick={() => void downloadOrderComanda(lastSubmittedOrder)}>Baixar comanda</button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); setCart([]); }}>Fechar</button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); openCustomerPortal(); }}>Ver meus pedidos</button>
             </div>
@@ -3809,7 +3891,7 @@ export default function Home() {
                       <div><span>{order.status}</span><strong>{formatMoney(order.totalCents / 100)}</strong></div>
                       <p>{order.itemsText}</p>
                       <small>{order.service}{order.address ? ` · ${order.address}` : ""}</small>
-                      <button className="comanda-download-button" type="button" onClick={() => void downloadOrderComanda(order)}>Baixar comanda (PNG)</button>
+                      <button className="comanda-download-button" type="button" onClick={() => void downloadOrderComanda(order)}>Baixar comanda</button>
                     </article>
                   ))}
                 </div>
