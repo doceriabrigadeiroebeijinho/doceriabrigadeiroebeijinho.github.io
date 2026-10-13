@@ -43,7 +43,7 @@ type OrderRequestBody = {
 
 
 function onlyDigits(value?: string): string {
-  return String(value || "").replace(/\\D/g, "");
+  return String(value || "").replace(/\D/g, "");
 }
 
 function normalizeWhatsappNumber(value?: string): string {
@@ -57,7 +57,7 @@ function normalizeWhatsappNumber(value?: string): string {
 
 function formatDateForMessage(value?: string): string {
   if (!value) return "A combinar";
-  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
 }
 
@@ -94,7 +94,7 @@ async function createClickUpOrderTask(
         const itemName = item.name || item.type || "Item";
         const variant = item.variant ? ` — ${item.variant}` : "";
         return `- ${quantity} × ${itemName}${variant} — ${formatMoneyFromCents(item.totalCents)}`;
-      }).join("\\n")
+      }).join("\n")
     : "- Itens não informados";
   const summary = body.summary || {};
   const totalCents = Number(summary.totalCents ?? body.totalCents ?? 0);
@@ -107,7 +107,7 @@ async function createClickUpOrderTask(
     personalization.decoration ? `- Decoração: ${personalization.decoration}` : "",
     personalization.colors ? `- Cores: ${personalization.colors}` : "",
     personalization.wrappers ? `- Embalagens: ${personalization.wrappers}` : "",
-  ].filter(Boolean).join("\\n") || "Não informado";
+  ].filter(Boolean).join("\n") || "Não informado";
 
   const clientMessage =
     `Oi, ${clientName}! Tudo bem? Confirmamos o recebimento da entrada de 60% da sua encomenda ${orderCode}. Seu pedido está confirmado para ${dateLabel} às ${timeLabel}. Obrigada pela preferência!`;
@@ -123,8 +123,8 @@ async function createClickUpOrderTask(
     `Horário: ${timeLabel}`,
     "Itens:",
     ...items.map((item) => `- ${Number(item.quantity || 1)} × ${item.name || item.type || "Item"}${item.variant ? ` — ${item.variant}` : ""}`),
-    `Observações de personalização: ${personalizationLines.replace(/\\n/g, "; ")}`,
-  ].join("\\n");
+    `Observações de personalização: ${personalizationLines.replace(/\n/g, "; ")}`,
+  ].join("\n");
 
   const customerNumber = normalizeWhatsappNumber(clientPhone);
   const customerWhatsappUrl = customerNumber.length >= 12
@@ -166,7 +166,7 @@ async function createClickUpOrderTask(
     "## Mensagem para o entregador",
     "Revise o endereço e o horário antes de enviar. O link abre o WhatsApp com o resumo preenchido; se o número do entregador não estiver configurado, selecione a conversa manualmente.",
     `[Abrir WhatsApp com o resumo da entrega](${deliveryWhatsappUrl})`,
-  ].join("\\n");
+  ].join("\n");
 
   const dueDate = body.eventDate
     ? new Date(`${body.eventDate}T${body.eventTime || "12:00"}:00-03:00`).getTime()
