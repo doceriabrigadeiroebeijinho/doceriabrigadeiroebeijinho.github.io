@@ -91,7 +91,7 @@ function wrapComandaText(value: string, maxChars = 48): string[] {
   return lines.length ? lines : ["Não informado"];
 }
 
-function buildComandaSvg(body: OrderRequestBody, orderCode: string): string {
+function buildComandaSvg(body: OrderRequestBody, orderCode: string, logoDataUri = ""): string {
   const clientName = body.name?.trim() || "Cliente";
   const clientPhone = body.phone?.trim() || "Não informado";
   const dateLabel = formatDateForMessage(body.eventDate);
@@ -114,7 +114,7 @@ function buildComandaSvg(body: OrderRequestBody, orderCode: string): string {
   ) => {
     const x = opts.x ?? 48;
     const size = opts.size ?? 20;
-    const color = opts.color ?? "#382a2d";
+    const color = opts.color ?? "#4b2e25";
     const weight = opts.weight ?? 400;
     const lines = wrapComandaText(value, opts.maxChars ?? Math.floor(610 / (size * 0.56)));
     for (const line of lines) {
@@ -124,19 +124,19 @@ function buildComandaSvg(body: OrderRequestBody, orderCode: string): string {
   };
   const addSection = (heading: string) => {
     y += 15;
-    parts.push('<rect x="36" y="' + (y - 24) + '" width="648" height="38" rx="9" fill="#f8e6eb"/>');
-    addText(heading.toUpperCase(), { x: 52, size: 16, color: "#9d3655", weight: 700, maxChars: 55, lineHeight: 26 });
+    parts.push('<rect x="36" y="' + (y - 24) + '" width="648" height="38" rx="9" fill="#f5dcda"/>');
+    addText(heading.toUpperCase(), { x: 52, size: 16, color: "#9c4f59", weight: 700, maxChars: 55, lineHeight: 26 });
     y += 12;
   };
   const addRule = () => {
     y += 3;
-    parts.push('<line x1="48" y1="' + y + '" x2="672" y2="' + y + '" stroke="#eadde0" stroke-width="1.5"/>');
+    parts.push('<line x1="48" y1="' + y + '" x2="672" y2="' + y + '" stroke="#ead7c9" stroke-width="1.5"/>');
     y += 20;
   };
 
-  addText("CLIENTE", { size: 14, color: "#9d3655", weight: 700, maxChars: 60, lineHeight: 22 });
+  addText("CLIENTE", { size: 14, color: "#9c4f59", weight: 700, maxChars: 60, lineHeight: 22 });
   addText(clientName, { size: 25, weight: 700, maxChars: 40, lineHeight: 34 });
-  addText("WhatsApp: " + clientPhone, { size: 17, color: "#66565b", maxChars: 58, lineHeight: 25 });
+  addText("WhatsApp: " + clientPhone, { size: 17, color: "#806b63", maxChars: 58, lineHeight: 25 });
   addText("Data: " + dateLabel + "   |   Horário: " + timeLabel, { size: 18, weight: 600, maxChars: 53, lineHeight: 28 });
   addText("Modalidade: " + service, { size: 17, maxChars: 55, lineHeight: 26 });
   addText((isPickup ? "Retirada: " : "Endereço: ") + address, { size: 17, maxChars: 55, lineHeight: 26 });
@@ -149,7 +149,7 @@ function buildComandaSvg(body: OrderRequestBody, orderCode: string): string {
       const itemName = item.name || item.type || "Item";
       const variant = item.variant ? " — " + item.variant : "";
       addText(quantity + " × " + itemName + variant, { size: 19, weight: 600, maxChars: 50, lineHeight: 29 });
-      addText(formatMoneyFromCents(item.totalCents), { x: 58, size: 17, color: "#66565b", maxChars: 58, lineHeight: 25 });
+      addText(formatMoneyFromCents(item.totalCents), { x: 58, size: 17, color: "#6f493d", maxChars: 58, lineHeight: 25 });
       y += 5;
     }
   } else {
@@ -171,28 +171,36 @@ function buildComandaSvg(body: OrderRequestBody, orderCode: string): string {
   }
 
   addSection("Resumo financeiro");
-  addText("VALOR TOTAL", { size: 15, color: "#66565b", weight: 700, maxChars: 55, lineHeight: 23 });
-  addText(formatMoneyFromCents(totalCents), { size: 34, color: "#9d3655", weight: 700, maxChars: 30, lineHeight: 45 });
+  addText("VALOR TOTAL", { size: 15, color: "#806b63", weight: 700, maxChars: 55, lineHeight: 25 });
+  y += 18;
+  addText(formatMoneyFromCents(totalCents), { size: 34, color: "#9c4f59", weight: 700, maxChars: 30, lineHeight: 48 });
+  y += 3;
   addText("Entrada prevista (60%): " + formatMoneyFromCents(depositCents), { size: 18, weight: 600, maxChars: 48, lineHeight: 29 });
   addText("Saldo previsto (40%): " + formatMoneyFromCents(balanceCents), { size: 18, maxChars: 48, lineHeight: 29 });
-  addText("Pagamento informado: " + (body.paymentMethod || "Não informado"), { size: 17, maxChars: 52, lineHeight: 27 });
+  addText("Pagamento informado: " + (body.paymentMethod || "Não informado"), { size: 17, color: "#6f493d", maxChars: 52, lineHeight: 27 });
   y += 22;
 
   const height = y + 100;
+  const logo = logoDataUri
+    ? '<image x="39" y="27" width="123" height="126" preserveAspectRatio="xMidYMid meet" href="' + logoDataUri + '"/>'
+    : '<text x="100" y="96" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#9c4f59">B&amp;B</text>';
+
   return [
     '<svg xmlns="http://www.w3.org/2000/svg" width="720" height="' + height + '" viewBox="0 0 720 ' + height + '">',
-    '<rect width="720" height="' + height + '" fill="#fffaf8"/>',
-    '<rect x="0" y="0" width="720" height="190" fill="#9d3655"/>',
-    '<circle cx="660" cy="30" r="95" fill="#ffffff" opacity=".07"/>',
-    '<circle cx="30" cy="180" r="80" fill="#ffffff" opacity=".07"/>',
-    '<text x="48" y="55" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" letter-spacing="2" fill="#f8dfe7">DOCERIA</text>',
-    '<text x="48" y="91" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" fill="#ffffff">Brigadeiro &amp; Beijinho</text>',
-    '<text x="48" y="126" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" letter-spacing="1.2" fill="#f8dfe7">COMANDA DE ENCOMENDA</text>',
-    '<rect x="48" y="143" width="258" height="31" rx="15" fill="#ffffff"/>',
-    '<text x="177" y="164" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#9d3655">' + escapeXml(orderCode) + '</text>',
+    '<rect width="720" height="' + height + '" fill="#fff8ee"/>',
+    '<rect x="0" y="0" width="720" height="190" fill="#9c4f59"/>',
+    '<circle cx="660" cy="30" r="95" fill="#f5dcda" opacity=".12"/>',
+    '<circle cx="30" cy="180" r="80" fill="#fffdf8" opacity=".08"/>',
+    '<rect x="27" y="21" width="147" height="140" rx="16" fill="#fffdf8"/>',
+    logo,
+    '<text x="194" y="52" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="1.8" fill="#f5dcda">DOCERIA ARTESANAL</text>',
+    '<text x="194" y="86" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#fffdf8">Brigadeiro &amp; Beijinho</text>',
+    '<text x="194" y="116" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" letter-spacing="1.1" fill="#fffdf8">COMANDA DE ENCOMENDA</text>',
+    '<rect x="194" y="135" width="258" height="31" rx="15" fill="#fffdf8"/>',
+    '<text x="323" y="156" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#9c4f59">' + escapeXml(orderCode) + '</text>',
     ...parts,
-    '<line x1="48" y1="' + (height - 63) + '" x2="672" y2="' + (height - 63) + '" stroke="#eadde0" stroke-width="1.5"/>',
-    '<text x="360" y="' + (height - 34) + '" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#806f74">Comanda gerada automaticamente • Confira os detalhes antes de produzir</text>',
+    '<line x1="48" y1="' + (height - 63) + '" x2="672" y2="' + (height - 63) + '" stroke="#ead7c9" stroke-width="1.5"/>',
+    '<text x="360" y="' + (height - 34) + '" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#806b63">Comanda gerada automaticamente • Confira os detalhes antes de produzir</text>',
     '</svg>',
   ].join("");
 }
@@ -204,10 +212,31 @@ async function attachClickUpComanda(
   orderCode: string,
 ): Promise<void> {
   try {
-    const svg = buildComandaSvg(body, orderCode);
+    const sharpModule = await import("sharp");
+    const sharp = sharpModule.default;
+    let logoDataUri = "";
+    try {
+      const logoResponse = await fetch("https://doceriabrigadeiroebeijinho.com.br/assets/logo-complete.webp", {
+        cache: "force-cache",
+        signal: AbortSignal.timeout(5000),
+      });
+      if (logoResponse.ok) {
+        const logoSource = Buffer.from(await logoResponse.arrayBuffer());
+        const logoPng = await sharp(logoSource).png().toBuffer();
+        logoDataUri = "data:image/png;base64," + logoPng.toString("base64");
+      } else {
+        console.warn("Comanda logo unavailable:", logoResponse.status);
+      }
+    } catch (logoError) {
+      console.warn("Comanda logo could not be loaded; using branded fallback:", logoError);
+    }
+
+    const svg = buildComandaSvg(body, orderCode, logoDataUri);
+    const pngBuffer = await sharp(Buffer.from(svg)).png({ compressionLevel: 8 }).toBuffer();
     const form = new FormData();
-    const file = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-    form.append("attachment", file, orderCode + "-comanda.svg");
+    const file = new Blob([new Uint8Array(pngBuffer)], { type: "image/png" });
+    const safeOrderCode = orderCode.replace(/[^a-zA-Z0-9_-]/g, "_");
+    form.append("attachment", file, safeOrderCode + "-comanda.png");
     const response = await fetch("https://api.clickup.com/api/v2/task/" + encodeURIComponent(taskId) + "/attachment", {
       method: "POST",
       headers: { Authorization: token, Accept: "application/json" },
@@ -219,10 +248,10 @@ async function attachClickUpComanda(
       console.error("ClickUp comanda attachment failed:", response.status, details);
       return;
     }
-    console.info("ClickUp comanda image attached for order:", orderCode);
+    console.info("ClickUp PNG comanda attached for order:", orderCode);
   } catch (error) {
     // Attachment is supplementary; never fail an order that was already saved.
-    console.error("ClickUp comanda attachment failed for order:", orderCode, error);
+    console.error("ClickUp PNG comanda attachment failed for order:", orderCode, error);
   }
 }
 
