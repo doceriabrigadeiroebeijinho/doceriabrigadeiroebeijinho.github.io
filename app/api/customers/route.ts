@@ -68,6 +68,164 @@ function formatMoneyFromCents(value?: number): string {
   });
 }
 
+
+function escapeXml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function wrapComandaText(value: string, maxChars = 48): string[] {
+  const words = String(value || "Não informado").split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    if (!line) line = word;
+    else if ((line + " " + word).length <= maxChars) line += " " + word;
+    else { lines.push(line); line = word; }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : ["Não informado"];
+}
+
+function buildComandaSvg(body: OrderRequestBody, orderCode: string): string {
+  const clientName = body.name?.trim() || "Cliente";
+  const clientPhone = body.phone?.trim() || "Não informado";
+  const dateLabel = formatDateForMessage(body.eventDate);
+  const timeLabel = body.eventTime || "A combinar";
+  const service = body.service || "A combinar";
+  const isPickup = service.toLowerCase().includes("retirada");
+  const address = body.address || (isPickup ? "Retirada na doceria" : "Não informado");
+  const summary = body.summary || {};
+  const totalCents = Number(summary.totalCents ?? body.totalCents ?? 0);
+  const depositCents = Number(summary.depositCents ?? Math.round(totalCents * 0.6));
+  const balanceCents = Number(summary.balanceCents ?? Math.max(0, totalCents - depositCents));
+  const items = body.items || [];
+  const personalization = body.personalization || {};
+  const parts: string[] = [];
+  let y = 214;
+
+  const addText = (
+    value: string,
+    opts: { x?: number; size?: number; color?: string; weight?: number | string; maxChars?: number; lineHeight?: number } = {},
+  ) => {
+    const x = opts.x ?? 48;
+    const size = opts.size ?? 20;
+    const color = opts.color ?? "#382a2d";
+    const weight = opts.weight ?? 400;
+    const lines = wrapComandaText(value, opts.maxChars ?? Math.floor(610 / (size * 0.56)));
+    for (const line of lines) {
+      parts.push('<text x="' + x + '" y="' + y + '" font-family="Arial, Helvetica, sans-serif" font-size="' + size + '" font-weight="' + weight + '" fill="' + color + '">' + escapeXml(line) + '</text>');
+      y += opts.lineHeight ?? Math.round(size * 1.55);
+    }
+  };
+  const addSection = (heading: string) => {
+    y += 15;
+    parts.push('<rect x="36" y="' + (y - 24) + '" width="648" height="38" rx="9" fill="#f8e6eb"/>');
+    addText(heading.toUpperCase(), { x: 52, size: 16, color: "#9d3655", weight: 700, maxChars: 55, lineHeight: 26 });
+    y += 12;
+  };
+  const addRule = () => {
+    y += 3;
+    parts.push('<line x1="48" y1="' + y + '" x2="672" y2="' + y + '" stroke="#eadde0" stroke-width="1.5"/>');
+    y += 20;
+  };
+
+  addText("CLIENTE", { size: 14, color: "#9d3655", weight: 700, maxChars: 60, lineHeight: 22 });
+  addText(clientName, { size: 25, weight: 700, maxChars: 40, lineHeight: 34 });
+  addText("WhatsApp: " + clientPhone, { size: 17, color: "#66565b", maxChars: 58, lineHeight: 25 });
+  addText("Data: " + dateLabel + "   |   Horário: " + timeLabel, { size: 18, weight: 600, maxChars: 53, lineHeight: 28 });
+  addText("Modalidade: " + service, { size: 17, maxChars: 55, lineHeight: 26 });
+  addText((isPickup ? "Retirada: " : "Endereço: ") + address, { size: 17, maxChars: 55, lineHeight: 26 });
+  addRule();
+
+  addSection("Itens da encomenda");
+  if (items.length) {
+    for (const item of items) {
+      const quantity = Number(item.quantity || 1);
+      const itemName = item.name || item.type || "Item";
+      const variant = item.variant ? " — " + item.variant : "";
+      addText(quantity + " × " + itemName + variant, { size: 19, weight: 600, maxChars: 50, lineHeight: 29 });
+      addText(formatMoneyFromCents(item.totalCents), { x: 58, size: 17, color: "#66565b", maxChars: 58, lineHeight: 25 });
+      y += 5;
+    }
+  } else {
+    addText("Itens não informados", { size: 18, maxChars: 55 });
+  }
+  addRule();
+
+  const personalLines = [
+    personalization.phrase ? "Frase: " + personalization.phrase : "",
+    personalization.age ? "Idade: " + personalization.age : "",
+    personalization.decoration ? "Decoração: " + personalization.decoration : "",
+    personalization.colors ? "Cores: " + personalization.colors : "",
+    personalization.wrappers ? "Embalagens: " + personalization.wrappers : "",
+  ].filter(Boolean);
+  if (personalLines.length) {
+    addSection("Personalização");
+    for (const line of personalLines) addText(line, { size: 17, maxChars: 55, lineHeight: 26 });
+    addRule();
+  }
+
+  addSection("Resumo financeiro");
+  addText("VALOR TOTAL", { size: 15, color: "#66565b", weight: 700, maxChars: 55, lineHeight: 23 });
+  addText(formatMoneyFromCents(totalCents), { size: 34, color: "#9d3655", weight: 700, maxChars: 30, lineHeight: 45 });
+  addText("Entrada prevista (60%): " + formatMoneyFromCents(depositCents), { size: 18, weight: 600, maxChars: 48, lineHeight: 29 });
+  addText("Saldo previsto (40%): " + formatMoneyFromCents(balanceCents), { size: 18, maxChars: 48, lineHeight: 29 });
+  addText("Pagamento informado: " + (body.paymentMethod || "Não informado"), { size: 17, maxChars: 52, lineHeight: 27 });
+  y += 22;
+
+  const height = y + 100;
+  return [
+    '<svg xmlns="http://www.w3.org/2000/svg" width="720" height="' + height + '" viewBox="0 0 720 ' + height + '">',
+    '<rect width="720" height="' + height + '" fill="#fffaf8"/>',
+    '<rect x="0" y="0" width="720" height="190" fill="#9d3655"/>',
+    '<circle cx="660" cy="30" r="95" fill="#ffffff" opacity=".07"/>',
+    '<circle cx="30" cy="180" r="80" fill="#ffffff" opacity=".07"/>',
+    '<text x="48" y="55" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" letter-spacing="2" fill="#f8dfe7">DOCERIA</text>',
+    '<text x="48" y="91" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" fill="#ffffff">Brigadeiro &amp; Beijinho</text>',
+    '<text x="48" y="126" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" letter-spacing="1.2" fill="#f8dfe7">COMANDA DE ENCOMENDA</text>',
+    '<rect x="48" y="143" width="258" height="31" rx="15" fill="#ffffff"/>',
+    '<text x="177" y="164" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#9d3655">' + escapeXml(orderCode) + '</text>',
+    ...parts,
+    '<line x1="48" y1="' + (height - 63) + '" x2="672" y2="' + (height - 63) + '" stroke="#eadde0" stroke-width="1.5"/>',
+    '<text x="360" y="' + (height - 34) + '" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#806f74">Comanda gerada automaticamente • Confira os detalhes antes de produzir</text>',
+    '</svg>',
+  ].join("");
+}
+
+async function attachClickUpComanda(
+  token: string,
+  taskId: string,
+  body: OrderRequestBody,
+  orderCode: string,
+): Promise<void> {
+  try {
+    const svg = buildComandaSvg(body, orderCode);
+    const form = new FormData();
+    const file = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+    form.append("attachment", file, orderCode + "-comanda.svg");
+    const response = await fetch("https://api.clickup.com/api/v2/task/" + encodeURIComponent(taskId) + "/attachment", {
+      method: "POST",
+      headers: { Authorization: token, Accept: "application/json" },
+      body: form,
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      const details = (await response.text()).slice(0, 500);
+      console.error("ClickUp comanda attachment failed:", response.status, details);
+      return;
+    }
+    console.info("ClickUp comanda image attached for order:", orderCode);
+  } catch (error) {
+    // Attachment is supplementary; never fail an order that was already saved.
+    console.error("ClickUp comanda attachment failed for order:", orderCode, error);
+  }
+}
+
 async function createClickUpOrderTask(
   body: OrderRequestBody,
   orderCode: string,
@@ -230,6 +388,11 @@ async function createClickUpOrderTask(
   const markdownContent = [
     `# Encomenda ${orderCode}`,
     "",
+    "## AÇÕES RÁPIDAS",
+    whatsappMessageLinks,
+    "",
+    "---",
+    "",
     "**Status inicial:** orçamento recebido — conferir a disponibilidade da data e o pagamento da entrada de 60%.",
     "",
     `**Cliente:** ${clientName}`,
@@ -249,8 +412,6 @@ async function createClickUpOrderTask(
     "",
     "## Personalização",
     personalizationLines,
-    "",
-    whatsappMessageLinks,
   ].join("\n");
 
   const dueDate = body.eventDate
@@ -287,6 +448,9 @@ async function createClickUpOrderTask(
     if (!response.ok) {
       console.error("ClickUp task creation failed:", response.status, result.err || result.error || "API error");
       return;
+    }
+    if (result.id) {
+      await attachClickUpComanda(token, result.id, body, orderCode);
     }
     console.info("ClickUp task created for order:", orderCode, result.id || "");
   } catch (error) {
