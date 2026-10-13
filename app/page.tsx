@@ -924,6 +924,8 @@ export default function Home() {
 
   const activeSweetGroup =
     sweetGroups.find((group) => group.id === sweetGroupId) ?? sweetGroups[0];
+  const displayedSweetGroups =
+    catalogTab === "all" ? sweetGroups : [activeSweetGroup];
 
   const requiredLeadHours = useMemo(() => {
     if (!details.eventDate) return 72;
@@ -1948,6 +1950,13 @@ if (
 
         {(catalogTab === "cakes" || catalogTab === "all") && (
           <>
+            {catalogTab === "all" && (
+              <div className="full-menu-heading">
+                <span>01 · BOLOS</span>
+                <h3>Bolos personalizados e bolos de corte</h3>
+                <p>Escolha tamanho, categoria de recheio, massa e decoração.</p>
+              </div>
+            )}
             <div className="cake-guide">
               <div>
                 <span className="section-kicker">Sobre nossos bolos</span>
@@ -2232,6 +2241,13 @@ if (
 
         {(catalogTab === "sweets" || catalogTab === "all") && (
           <>
+            {catalogTab === "all" && (
+              <div className="full-menu-heading">
+                <span>02 · DOCINHOS E BOMBONS</span>
+                <h3>Docinhos, bombons e doces finos</h3>
+                <p>Confira os sabores e os preços por categoria. As quantidades são selecionadas em múltiplos de 25.</p>
+              </div>
+            )}
             <div className="sweet-order-rules" aria-label="Regras para pedidos de doces e bombons">
               <div className="sweet-order-rules-head">
                 <span className="section-kicker">Antes de escolher seus doces</span>
@@ -2244,18 +2260,20 @@ if (
                 <p><b>Disponibilidade:</b> as cores estão sujeitas à disponibilidade e pedidos especiais precisam de antecedência mínima de 72 horas.</p>
               </div>
             </div>
-            <div className="flavor-filters" aria-label="Tipos de doces">
-              {sweetGroups.map((group) => (
-                <button
-                  className={sweetGroupId === group.id ? "active" : ""}
-                  type="button"
-                  key={group.id}
-                  onClick={() => setSweetGroupId(group.id)}
-                >
-                  {group.name}
-                </button>
-              ))}
-            </div>
+            {catalogTab !== "all" && (
+              <div className="flavor-filters" aria-label="Tipos de doces">
+                {sweetGroups.map((group) => (
+                  <button
+                    className={sweetGroupId === group.id ? "active" : ""}
+                    type="button"
+                    key={group.id}
+                    onClick={() => setSweetGroupId(group.id)}
+                  >
+                    {group.name}
+                  </button>
+                ))}
+              </div>
+            )}
             <div
               className="static-photo-strip"
               aria-label="Fotos de doces e bombons da Doceria Brigadeiro & Beijinho"
@@ -2266,94 +2284,98 @@ if (
                 </figure>
               ))}
             </div>
-            <div className="sweet-group-title">
-              <div>
-                <span>Pedido mínimo: 25 por sabor</span>
-                <h3>{activeSweetGroup.name}</h3>
-              </div>
-              <strong>
-                {formatMoney(activeSweetGroup.hundredPrice)} / 100 unidades
-              </strong>
-            </div>
-            <div className="sweet-grid">
-              {activeSweetGroup.items.map((sweet) => {
-                const quantity = sweetQuantities[sweet.id] ?? 25;
-                const wrapperColor = sweetWrappers[sweet.id] ?? "Branca";
-                const wrapper =
-                  wrapperOptions.find(
-                    (option) => option.value === wrapperColor,
-                  ) ?? wrapperOptions[0];
-                const itemTotal =
-                  (activeSweetGroup.hundredPrice / 100) * quantity +
-                  (quantity / 25) * wrapper.fee;
-                return (
-                  <article className="sweet-card" key={sweet.id}>
-                    <img
-                      className="sweet-photo"
-                      src={sweetPhoto(sweet.id, activeSweetGroup.type)}
-                      alt={`Foto de ${sweet.name}`}
-                    />
-                    <div>
-                      <h4>{sweet.name}</h4>
-                      <p>{sweet.description}</p>
-                      <span>
-                        {formatMoney(itemTotal)} para {quantity} unidades
-                      </span>
-                    </div>
-                    <div className="sweet-quantity-control">
-                      <label>
-                        Quantidade
-                        <select
-                          value={quantity}
-                          onChange={(event) =>
-                            setSweetQuantities((current) => ({
-                              ...current,
-                              [sweet.id]: Number(event.target.value),
-                            }))
-                          }
-                        >
-                          {sweetQuantityOptions.map((option) => (
-                            <option value={option} key={option}>
-                              {option} unidades
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label>
-                        Cor da forminha
-                        <select
-                          value={wrapperColor}
-                          onChange={(event) =>
-                            setSweetWrappers((current) => ({
-                              ...current,
-                              [sweet.id]: event.target.value,
-                            }))
-                          }
-                        >
-                          {wrapperOptions.map((option) => (
-                            <option value={option.value} key={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => addSweet(activeSweetGroup, sweet)}
-                      >
-                        Adicionar
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+            {displayedSweetGroups.map((group) => (
+              <section className="sweet-catalog-subsection" key={group.id}>
+                <div className="sweet-group-title">
+                  <div>
+                    <span>Pedido mínimo: 25 por sabor</span>
+                    <h3>{group.name}</h3>
+                  </div>
+                  <strong>{formatMoney(group.hundredPrice)} / 100 unidades</strong>
+                </div>
+                <div className="sweet-grid">
+                  {group.items.map((sweet) => {
+                    const quantity = sweetQuantities[sweet.id] ?? 25;
+                    const wrapperColor = sweetWrappers[sweet.id] ?? "Branca";
+                    const wrapper =
+                      wrapperOptions.find((option) => option.value === wrapperColor) ?? wrapperOptions[0];
+                    const itemTotal =
+                      (group.hundredPrice / 100) * quantity +
+                      (quantity / 25) * wrapper.fee;
+                    return (
+                      <article className="sweet-card" key={sweet.id}>
+                        <img
+                          className="sweet-photo"
+                          src={sweetPhoto(sweet.id, group.type)}
+                          alt={`Foto de ${sweet.name}`}
+                        />
+                        <div>
+                          <h4>{sweet.name}</h4>
+                          <p>{sweet.description}</p>
+                          <span>
+                            {formatMoney(itemTotal)} para {quantity} unidades
+                          </span>
+                        </div>
+                        <div className="sweet-quantity-control">
+                          <label>
+                            Quantidade
+                            <select
+                              value={quantity}
+                              onChange={(event) =>
+                                setSweetQuantities((current) => ({
+                                  ...current,
+                                  [sweet.id]: Number(event.target.value),
+                                }))
+                              }
+                            >
+                              {sweetQuantityOptions.map((option) => (
+                                <option value={option} key={option}>
+                                  {option} unidades
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label>
+                            Cor da forminha
+                            <select
+                              value={wrapperColor}
+                              onChange={(event) =>
+                                setSweetWrappers((current) => ({
+                                  ...current,
+                                  [sweet.id]: event.target.value,
+                                }))
+                              }
+                            >
+                              {wrapperOptions.map((option) => (
+                                <option value={option.value} key={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <button type="button" onClick={() => addSweet(group, sweet)}>
+                            Adicionar
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
 
           </>
         )}
 
         {(catalogTab === "gifts" || catalogTab === "all") && (
           <div className="gift-grid">
+            {catalogTab === "all" && (
+              <div className="full-menu-heading">
+                <span>03 · PRESENTES</span>
+                <h3>Bentôs, cupcakes e presentes</h3>
+                <p>Escolha opções para presentear ou completar sua comemoração.</p>
+              </div>
+            )}
             {gifts.map((gift, index) => (
               <article
                 className="gift-card gift-card-with-image"
