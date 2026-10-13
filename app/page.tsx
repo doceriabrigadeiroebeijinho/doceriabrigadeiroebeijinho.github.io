@@ -1322,11 +1322,12 @@ export default function Home() {
       let logo: HTMLImageElement | null = null;
       try {
         logo = new Image();
-        logo.src = "/assets/logo-complete.webp";
         await new Promise<void>((resolve) => {
           if (!logo) return resolve();
           logo.onload = () => resolve();
           logo.onerror = () => resolve();
+          logo.src = "/assets/logo-complete.webp";
+          if (logo.complete) resolve();
         });
       } catch {
         logo = null;
