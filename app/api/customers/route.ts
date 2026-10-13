@@ -227,18 +227,6 @@ async function createClickUpOrderTask(
         ]),
   ].join("\n");
 
-  const clientMessage = clientOrderConfirmedMessage;
-
-  const customerNumber = normalizeWhatsappNumber(clientPhone);
-  const customerWhatsappUrl = customerNumber.length >= 12
-    ? `https://wa.me/${customerNumber}?text=${encodeURIComponent(clientMessage)}`
-    : `https://wa.me/?text=${encodeURIComponent(clientMessage)}`;
-  const driverNumberRaw = process.env.CLICKUP_DRIVER_WHATSAPP;
-  const driverNumber = driverNumberRaw ? normalizeWhatsappNumber(driverNumberRaw) : "";
-  const deliveryWhatsappUrl = driverNumber.length >= 12
-    ? `https://wa.me/${driverNumber}?text=${encodeURIComponent(deliveryMessage)}`
-    : `https://wa.me/?text=${encodeURIComponent(deliveryMessage)}`;
-
   const markdownContent = [
     `# Encomenda ${orderCode}`,
     "",
