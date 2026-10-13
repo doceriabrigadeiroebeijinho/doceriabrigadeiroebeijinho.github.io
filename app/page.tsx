@@ -1360,7 +1360,7 @@ export default function Home() {
           address: delivery.service === "Entrega" ? formattedAddress : ORIGIN,
           items: cart.map((item) => ({ name: item.name, variant: item.variant, type: item.type, quantity: item.qty, totalCents: Math.round(item.qty * item.unitPrice * 100) })),
           totalCents: Math.round(total * 100),
-          paymentMethod: `${paymentMethod} · restante: `${balancePaymentMethod}`,
+          paymentMethod: `${paymentMethod} · restante: ${balancePaymentMethod}`,
           summary: {
             productsCents: Math.round(regularSubtotal * 100),
             couponCode: appliedCoupon || "",
