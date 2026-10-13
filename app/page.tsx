@@ -1844,6 +1844,15 @@ if (
             <a className="button button-primary" href="#cardapio" onClick={() => setCatalogTab("choose")}>
               Ver cardápio e fazer pedido
             </a>
+            <a
+              className="button button-secondary"
+              href={INSTAGRAM}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Abrir o Instagram da Doceria Brigadeiro e Beijinho em nova aba"
+            >
+              Acompanhe no Instagram <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </div>
 
