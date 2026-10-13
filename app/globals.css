@@ -5532,6 +5532,27 @@ footer a:hover {
   font-size: .88rem;
 }
 
+.comanda-download-button,
+.payment-notice-modal button.comanda-download-button {
+  min-height: 44px;
+  padding: 0 17px;
+  border: 1px solid var(--rose-dark);
+  border-radius: 999px;
+  background: var(--blush);
+  color: var(--cocoa);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.payment-notice-modal > div:last-child {
+  flex-wrap: wrap;
+}
+
+.customer-order-card .comanda-download-button {
+  justify-self: start;
+  width: fit-content;
+}
+
 @media (max-width: 620px) {
   .order-success-summary {
     grid-template-columns: 1fr;
