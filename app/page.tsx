@@ -848,10 +848,6 @@ export default function Home() {
   const [cepLookupStatus, setCepLookupStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  const [paymentNoticeOpen, setPaymentNoticeOpen] = useState(false);
-  const [pendingWhatsAppUrl, setPendingWhatsAppUrl] = useState("");
-  const [pendingWhatsAppMessage, setPendingWhatsAppMessage] = useState("");
-  const [orderMessageCopied, setOrderMessageCopied] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<CouponCode | "">("");
   const [shippingStatus, setShippingStatus] = useState<
@@ -1380,64 +1376,7 @@ export default function Home() {
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "Não foi possível registrar o pedido.");
       const submittedOrderCode = result.orderCode || orderCode;
-      const submittedItems = cart
-        .map(
-          (item) =>
-            `• ${item.qty}x ${item.name}${item.variant ? ` — ${item.variant}` : ""} — ${formatMoney(item.qty * item.unitPrice)}`,
-        )
-        .join("\n");
-      const submittedOrderMessage = [
-        "*PEDIDO PELO SITE*",
-        `Código: *${submittedOrderCode}*`,
-        "",
-        "*CLIENTE*",
-        customer.name.trim(),
-        `WhatsApp: ${customer.phone.trim()}`,
-        "",
-        "*ITENS DO PEDIDO*",
-        submittedItems,
-        "",
-        details.phrase || details.age || details.colors || details.decoration
-          ? [
-              "*PERSONALIZAÇÃO*",
-              details.phrase && `• Frase: ${details.phrase}`,
-              details.age && `• Idade: ${details.age}`,
-              details.colors && `• Cores: ${details.colors}`,
-              details.decoration && `• Observações: ${details.decoration}`,
-            ].filter(Boolean).join("\n")
-          : "",
-        delivery.service === "Entrega"
-          ? `*ENTREGA*\n${formattedAddress}\nTaxa de entrega: ${formatMoney(deliveryFee)}`
-          : "*RETIRADA*\n" + ORIGIN,
-        "",
-        "*RESUMO*",
-        `Data solicitada: ${details.eventDate} às ${details.eventTime}`,
-        `Valor total: *${formatMoney(total)}*`,
-        `Entrada (60%): *${formatMoney(deposit)}*`,
-        `Restante (40%): *${formatMoney(balance)}*`,
-        `Pagamento: ${paymentMethod}`,
-        "",
-        paymentMethod === "Pix"
-          ? [
-              "*DADOS PARA PIX*",
-              `Chave: ${PIX_KEY}`,
-              "Titular: Déborah Bacelar Braga",
-              "Banco: Inter",
-            ].join("\n")
-          : [
-              "*PAGAMENTO POR CARTÃO*",
-              `Link seguro: ${CARD_PAYMENT_URL}`,
-            ].join("\n"),
-        "",
-        "*CONFIRMAÇÃO*",
-        "Peço a conferência das informações e da disponibilidade para confirmação do pedido.",
-      ].filter(Boolean).join("\n");
-
-      setPendingWhatsAppMessage(submittedOrderMessage);
-      setPendingWhatsAppUrl(
-        `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(submittedOrderMessage)}`,
-      );
-      setOrderMessageCopied(false);
+      // A solicitação foi registrada na planilha/agenda. Não é necessário copiar ou enviar mensagem manualmente pelo WhatsApp.
       setLastSubmittedOrder({ orderCode: submittedOrderCode, name: customer.name.trim(), eventDate: details.eventDate, eventTime: details.eventTime, service: delivery.service, total, deposit, balance, paymentMethod });
       setOrderSuccessOpen(true);
       setOrderOpen(false);
@@ -1445,319 +1384,6 @@ export default function Home() {
       setToast(error instanceof Error ? error.message : "Não foi possível registrar o pedido. Tente novamente.");
     } finally {
       setOrderSubmitting(false);
-    }
-  };
-
-  const sendWhatsApp = async () => {
-    if (cart.length === 0) {
-      setCheckoutStep(0);
-      setToast("Adicione pelo menos um item ao pedido");
-      return;
-    }
-if (
-  !customer.name.trim() ||
-  !customer.phone.trim()
-) {
-  setCheckoutStep(2);
-  setToast("Preencha nome e WhatsApp para continuar");
-  return;
-}
-    if (!details.eventDate || !details.eventTime) {
-      setCheckoutStep(1);
-      setToast("Informe a data e o horário da encomenda");
-      return;
-    }
-    const selectedDateTime = new Date(
-      `${details.eventDate}T${details.eventTime}:00`,
-    );
-    const hoursUntilOrder =
-      (selectedDateTime.getTime() - Date.now()) / (60 * 60 * 1000);
-    const leadTimeRuleRespected = hoursUntilOrder >= requiredLeadHours;
-    const eventMinutes =
-      selectedDateTime.getHours() * 60 + selectedDateTime.getMinutes();
-    const isSunday = selectedDateTime.getDay() === 0;
-    const sundayHours =
-      (eventMinutes >= 7 * 60 && eventMinutes <= 8 * 60 + 30) ||
-      (eventMinutes >= 12 * 60 + 30 && eventMinutes <= 16 * 60);
-    const weekdayHours = eventMinutes >= 8 * 60 && eventMinutes <= 18 * 60;
-    if ((isSunday && !sundayHours) || (!isSunday && !weekdayHours)) {
-      setCheckoutStep(1);
-      setToast(
-        isSunday
-          ? "Aos domingos: 07:00–08:30 ou 12:30–16:00"
-          : "De segunda a sábado: 08:00–18:00",
-      );
-      return;
-    }
-    if (
-      delivery.service === "Entrega" &&
-      (
-        cleanCep(delivery.cep).length !== 8 ||
-        !delivery.street.trim() ||
-        !delivery.number.trim() ||
-        !delivery.city.trim() ||
-        !delivery.state.trim()
-      )
-    ) {
-      setCheckoutStep(2);
-      setToast("Informe o CEP e o número para preencher o endereço da entrega");
-      return;
-    }
-    if (
-      delivery.service === "Entrega" &&
-      (shippingStatus !== "success" || deliveryFee <= 0)
-    ) {
-      setCheckoutStep(2);
-      setToast("Aguarde o cálculo da entrega antes de continuar");
-      return;
-    }
-    if (!paymentMethod) {
-      setCheckoutStep(3);
-      setToast("Escolha Pix ou cartão para continuar");
-      return;
-    }
-    const orderCode = `BB-${Date.now().toString().slice(-6)}`;
-
-    const formatCakeItemForWhatsApp = (item: CartItem) => {
-      const parts = item.variant.split(" · ");
-      const sizeLabel = parts[0] ?? "";
-
-      const detailParts = parts.slice(1).filter(
-        (part) =>
-          !/fatias/i.test(part) &&
-          !/pessoas/i.test(part) &&
-          !/^cerca de/i.test(part),
-      );
-
-      const massPart =
-        detailParts.find((part) => /^massa /i.test(part)) ?? "";
-      const modelPart =
-        detailParts.find((part) => /^modelo /i.test(part)) ?? "";
-
-      const remaining = detailParts.filter(
-        (part) => part !== massPart && part !== modelPart,
-      );
-
-      const filling = remaining[0] ?? "";
-      const decoration = remaining.slice(1).join(" · ");
-
-      return [
-        `*${item.qty}x ${item.name}${sizeLabel ? ` — ${sizeLabel}` : ""}*`,
-        massPart ? `• Massa: ${massPart.replace(/^massa /i, "")}` : "",
-        modelPart ? `• Modelo: ${modelPart.replace(/^modelo /i, "")}` : "",
-        filling ? `• Recheio: ${filling}` : "",
-        decoration ? `• Decoração: ${decoration}` : "",
-        `• Valor: *${formatMoney(item.qty * item.unitPrice)}*`,
-      ]
-        .filter(Boolean)
-        .join("\n");
-    };
-
-    const formatGiftOrPlanItemForWhatsApp = (item: CartItem) => {
-      const publicVariant = item.variant.replace(/ · Forminha [^·]+$/, "");
-
-      return [
-        `*${item.qty}x ${item.name}*`,
-        publicVariant ? `• ${publicVariant}` : "",
-        `• Valor: *${formatMoney(item.qty * item.unitPrice)}*`,
-      ]
-        .filter(Boolean)
-        .join("\n");
-    };
-
-    const regularProductBlocks = cart
-      .filter(
-        (item) =>
-          item.type === "cake" ||
-          item.type === "gift",
-      )
-      .map((item) =>
-        item.type === "cake"
-          ? formatCakeItemForWhatsApp(item)
-          : formatGiftOrPlanItemForWhatsApp(item),
-      );
-
-    const sweetGroups = new Map<string, CartItem[]>();
-
-    cart
-      .filter((item) => item.type === "sweet" || item.type === "bonbon")
-      .forEach((item) => {
-        const groupName = item.variant.split(" · ")[0] || "Doces & bombons";
-        const current = sweetGroups.get(groupName) ?? [];
-        current.push(item);
-        sweetGroups.set(groupName, current);
-      });
-
-    const sweetProductBlocks = Array.from(sweetGroups.entries()).map(
-      ([groupName, groupItems]) => {
-        const itemLines = groupItems.flatMap((item) => {
-          const lines = [
-            `• ${item.name} — ${item.qty} un. — *${formatMoney(
-              item.qty * item.unitPrice,
-            )}*`,
-          ];
-
-          if (item.wrapperColor && item.wrapperColor !== "Branca") {
-            lines.push(`  Forminha: ${item.wrapperColor}`);
-          }
-
-          return lines;
-        });
-
-        return [`*${groupName.toUpperCase()}*`, ...itemLines].join("\n");
-      },
-    );
-
-    const itemsBlock = [...regularProductBlocks, ...sweetProductBlocks].join(
-      "\n\n",
-    );
-
-    const wrapperColors = Array.from(
-      new Set(
-        cart
-          .filter(
-            (item) =>
-              (item.type === "sweet" || item.type === "bonbon") &&
-              item.wrapperColor &&
-              item.wrapperColor !== "Branca",
-          )
-          .map((item) => item.wrapperColor as string),
-      ),
-    );
-
-    const personalizationLines = [
-      details.phrase && `• Frase: ${details.phrase}`,
-      details.age && `• Idade: ${details.age}`,
-      details.colors && `• Cores: ${details.colors}`,
-      details.decoration && `• Observações da decoração: ${details.decoration}`,
-      wrapperColors.length > 0 &&
-        `• Forminhas especiais: ${wrapperColors.join(", ")}`,
-    ].filter(Boolean);
-
-    const formattedEventDate = new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      weekday: "long",
-    }).format(selectedDateTime);
-
-    const serviceBlock =
-      delivery.service === "Entrega"
-        ? [
-            "*DATA E ENTREGA*",
-            `Data: ${formattedEventDate}`,
-            `Horário: ${details.eventTime}`,
-            `Endereço: ${formattedAddress}`,
-            `Taxa de entrega: ${formatMoney(deliveryFee)}`,
-          ].join("\n")
-        : [
-            "*DATA E RETIRADA*",
-            `Data: ${formattedEventDate}`,
-            `Horário: ${details.eventTime}`,
-            `Retirada: ${ORIGIN}`,
-          ].join("\n");
-
-    const paymentSummaryLines = [
-      "*PAGAMENTO*",
-      `Produtos: ${formatMoney(regularSubtotal)}`,
-      couponDiscount
-        ? `Cupom ${appliedCoupon} (${couponPercent}%): -${formatMoney(
-            couponDiscount,
-          )}`
-        : "",
-      pixDiscount
-        ? `Desconto Pix (3%): -${formatMoney(pixDiscount)}`
-        : "",
-    ].filter(Boolean);
-
-    const paymentDataBlock =
-      paymentMethod === "Pix"
-        ? [
-            "*DADOS PARA PIX*",
-            `Chave: ${PIX_KEY}`,
-            "Titular: Déborah Bacelar Braga",
-            "Banco: Inter",
-          ].join("\n")
-        : ["*PAGAMENTO POR CARTÃO*", `Link seguro: ${CARD_PAYMENT_URL}`].join(
-            "\n",
-          );
-
-    const messageBlocks = [
-      [`*PEDIDO PELO SITE*`, `Código: *${orderCode}*`].join("\n"),
-      ["*CLIENTE*", customer.name, `WhatsApp: ${customer.phone}`].join("\n"),
-      ["*ITENS DO PEDIDO*", itemsBlock].join("\n\n"),
-      personalizationLines.length > 0
-        ? ["*PERSONALIZAÇÃO*", ...personalizationLines].join("\n")
-        : "",
-      serviceBlock,
-      paymentSummaryLines.join("\n"),
-      paymentDataBlock,
-      [
-        "*CONFIRMAÇÃO*",
-        "Peço a conferência das informações e da disponibilidade para confirmação do pedido.",
-      ].join("\n"),
-    ].filter(Boolean);
-
-    const message = messageBlocks.join("\n\n");
-
-    setPendingWhatsAppMessage(message);
-    setPendingWhatsAppUrl(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,
-    );
-    setOrderMessageCopied(false);
-    setPaymentNoticeOpen(true);
-    setOrderSubmitting(false);
-
-    void fetch("/api/customers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-      body: JSON.stringify({
-        orderCode,
-        name: customer.name,
-        phone: customer.phone,
-        eventDate: details.eventDate,
-        eventTime: details.eventTime,
-        service: delivery.service,
-        address:
-          delivery.service === "Entrega" ? formattedAddress : ORIGIN,
-        items: cart.map((item) => ({
-          name: item.name,
-          variant: item.variant,
-          type: item.type,
-          quantity: item.qty,
-          totalCents: Math.round(item.qty * item.unitPrice * 100),
-        })),
-        totalCents: Math.round(total * 100),
-        paymentMethod: `${paymentMethod} · restante: ${balancePaymentMethod}`,
-        summary: {
-          productsCents: Math.round(regularSubtotal * 100),
-          couponCode: appliedCoupon || "",
-          couponDiscountCents: Math.round(couponDiscount * 100),
-          pixDiscountCents: Math.round(pixDiscount * 100),
-          deliveryCents: Math.round(deliveryFee * 100),
-          totalCents: Math.round(total * 100),
-          depositCents: Math.round(deposit * 100),
-          balanceCents: Math.round(balance * 100),
-          balancePaymentMethod,
-        },
-      }),
-    }).catch(() => {
-      setToast(
-        "A solicitação foi preparada, mas não conseguimos salvar o cadastro agora.",
-      );
-    });
-  };
-
-  const copyWhatsAppMessage = async () => {
-    if (!pendingWhatsAppMessage) return;
-
-    try {
-      await navigator.clipboard.writeText(pendingWhatsAppMessage);
-      setOrderMessageCopied(true);
-      setToast("Mensagem do pedido copiada.");
-    } catch {
-      setToast("Não foi possível copiar a mensagem. Abra o WhatsApp pelo botão ao lado.");
     }
   };
 
@@ -3825,119 +3451,32 @@ if (
         </div>
       )}
 
-      {paymentNoticeOpen && (
-        <div
-          className="payment-notice-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Prazo para confirmação do pedido"
-        >
-          <div className="payment-notice-modal">
-            <span>Antes de enviar</span>
-            <h2>Seu pedido está pronto para o WhatsApp</h2>
-            <p>
-              Sua solicitação está pronta para o WhatsApp. A mensagem completa será
-              preenchida automaticamente para você conferir e enviar.
-            </p>
-            <p>
-              <strong>ATENÇÃO: a disponibilidade da data e do horário escolhidos ainda
-              NÃO foi confirmada.</strong>
-            </p>
-            <p>
-              Você está solicitando um pedido para uma data que pode já estar ocupada
-              ou que pode não seguir as regras de agendamento. A antecedência mínima é
-              de 72 horas nos dias úteis e de 5 dias para pedidos com data no sábado
-              ou domingo.
-            </p>
-            <p>
-              <strong>Você pode finalizar o pedido mesmo assim.</strong> Envie a solicitação
-              pelo WhatsApp para que possamos verificar a agenda e confirmar se será
-              possível realizar o seu pedido na data e horário escolhidos.
-            </p>
-            <p>
-              Após a conferência, o pedido precisa ter o pagamento realizado em até 48 horas
-              para que a reserva seja confirmada.
-            </p>
-            <p>
-              Sem o pagamento dentro do prazo, o pedido não será confirmado.
-              Depois desse período, será necessário consultar novamente se ainda
-              é possível realizar a produção para a data escolhida.
-            </p>
-            <p>
-              A entrada paga não é reembolsável em caso de cancelamento pelo
-              cliente, mas poderá ser transferida para uma nova data por
-              reagendamento, conforme disponibilidade.
-            </p>
-            <div>
-              <button
-                type="button"
-                onClick={() => setPaymentNoticeOpen(false)}
-              >
-                Voltar e revisar
-              </button>
-              <button
-                type="button"
-                onClick={() => void copyWhatsAppMessage()}
-              >
-                {orderMessageCopied ? "Mensagem copiada!" : "Copiar pedido"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const url = pendingWhatsAppUrl;
-                  setPaymentNoticeOpen(false);
-                  if (url) {
-                    window.open(url, "_blank", "noopener,noreferrer");
-                  }
-                }}
-              >
-                Abrir WhatsApp
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {orderSuccessOpen && lastSubmittedOrder && (
-        <div className="payment-notice-overlay" role="dialog" aria-modal="true" aria-label="Pedido recebido">
+        <div className="payment-notice-overlay" role="dialog" aria-modal="true" aria-label="Solicitação recebida">
           <div className="payment-notice-modal customer-portal-modal">
-            <span>Pedido recebido</span>
-            <h2>Seu pedido foi registrado</h2>
-            <p>Obrigada, {lastSubmittedOrder.name}! O pedido <strong>{lastSubmittedOrder.orderCode}</strong> foi enviado para nossa organização de pedidos.</p>
+            <span>Solicitação recebida</span>
+            <h2>Recebemos sua encomenda!</h2>
+            <p>
+              Obrigada, {lastSubmittedOrder.name}! Sua solicitação <strong>{lastSubmittedOrder.orderCode}</strong> foi registrada.
+              Você não precisa copiar nem enviar o pedido manualmente pelo WhatsApp.
+            </p>
             <div className="order-success-summary">
               <div><span>Data solicitada</span><strong>{lastSubmittedOrder.eventDate} às {lastSubmittedOrder.eventTime}</strong></div>
               <div><span>Atendimento</span><strong>{lastSubmittedOrder.service}</strong></div>
-              <div><span>Valor total</span><strong>{formatMoney(lastSubmittedOrder.total)}</strong></div>
-              <div><span>Pagamento inicial</span><strong>{formatMoney(lastSubmittedOrder.deposit)}</strong></div>
-              {lastSubmittedOrder.balance > 0 && <div><span>Restante</span><strong>{formatMoney(lastSubmittedOrder.balance)}</strong></div>}
+              <div><span>Valor estimado</span><strong>{formatMoney(lastSubmittedOrder.total)}</strong></div>
+              <div><span>Entrada prevista (60%)</span><strong>{formatMoney(lastSubmittedOrder.deposit)}</strong></div>
+              {lastSubmittedOrder.balance > 0 && <div><span>Restante (40%)</span><strong>{formatMoney(lastSubmittedOrder.balance)}</strong></div>}
             </div>
             <div className="payment-notice-info">
               <strong>Próximos passos</strong>
               <p>
-                Seu pedido foi recebido com sucesso! Agora vamos conferir a
-                disponibilidade da data e horário escolhidos.
+                Vamos conferir a disponibilidade da data e os detalhes do pedido. A encomenda só será confirmada depois da nossa confirmação e do pagamento da entrada de 60%.
               </p>
               <p>
-                Após essa confirmação, entraremos em contato pelo WhatsApp para
-                finalizar os detalhes do pedido e orientar sobre o pagamento da entrada.
+                Entraremos em contato pelo WhatsApp informado no cadastro. Até lá, não é necessário enviar a mensagem manualmente.
               </p>
             </div>
             <div>
-              <button
-                type="button"
-                onClick={() => void copyWhatsAppMessage()}
-              >
-                {orderMessageCopied ? "Pedido copiado!" : "Copiar pedido"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const url = pendingWhatsAppUrl;
-                  if (url) window.open(url, "_blank", "noopener,noreferrer");
-                }}
-              >
-                Enviar no WhatsApp
-              </button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); setCart([]); }}>Fechar</button>
               <button type="button" onClick={() => { setOrderSuccessOpen(false); openCustomerPortal(); }}>Ver meus pedidos</button>
             </div>
