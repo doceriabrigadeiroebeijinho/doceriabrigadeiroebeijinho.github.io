@@ -173,7 +173,7 @@ async function createClickUpOrderTask(
     : NaN;
   const taskPayload: Record<string, unknown> = {
     name: `${orderCode} — ${clientName} — ${dateLabel}`,
-    markdown_content: markdownContent,
+    description: markdownContent,
     status: "pendente",
   };
   if (Number.isFinite(dueDate)) {
