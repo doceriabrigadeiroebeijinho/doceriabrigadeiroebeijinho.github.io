@@ -1850,10 +1850,10 @@ export default function Home() {
 
       <section className="catalog-section" id="cardapio">
         <div className="section-heading">
-          <span className="section-kicker">Faça seu pedido aqui</span>
-          <h2>O que você precisa?</h2>
+          <span className="section-kicker">Feito com carinho para suas comemorações</span>
+          <h2>Nosso cardápio</h2>
           <p>
-            Escolha uma opção para começar seu pedido.
+            Bolos, doces, bombons e presentes artesanais para deixar cada momento ainda mais especial.
           </p>
         </div>
 
