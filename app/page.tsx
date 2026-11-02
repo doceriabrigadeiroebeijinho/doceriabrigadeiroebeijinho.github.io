@@ -580,6 +580,7 @@ const whiteSweetIds = new Set([
 
 const sweetPhoto = (id: string, type: SweetGroup["type"]) => {
   if (type === "bonbon") return "/assets/gift-bombons.webp";
+  if (id === "brigadeiro") return "/assets/brigadeiro-tradicional.webp";
   return whiteSweetIds.has(id)
     ? "/assets/sweets-ninho.webp"
     : "/assets/sweets-chocolate.webp";
