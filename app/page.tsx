@@ -2609,24 +2609,15 @@ export default function Home() {
           <h2>Um bolo para cada história</h2>
           <p>
             Cada decoração parte da sua referência e ganha o cuidado artesanal
-            da nossa produção. As fotos abaixo são encomendas reais da doceria.
+            da nossa produção. Confira um dos nossos trabalhos.
           </p>
           <a href={INSTAGRAM} target="_blank" rel="noreferrer">
             Veja nossos produtos no Instagram <span>→</span>
           </a>
         </div>
-        <div className="gallery-grid">
+        <div className="gallery-grid gallery-grid-single">
           <figure className="gallery-tall">
             <img src="/assets/cake-theme.webp" alt="Bolo temático personalizado em rosa" />
-          </figure>
-          <figure>
-            <img src="/assets/cake-ribbons.webp" alt="Bolo branco com laços pretos" />
-          </figure>
-          <figure>
-            <img src="/assets/cake-pink.webp" alt="Bolo rosa personalizado para aniversário" />
-          </figure>
-          <figure className="gallery-wide">
-            <img src="/assets/sweets-chocolate.webp" alt="Seleção de doces de chocolate" />
           </figure>
         </div>
       </section>
