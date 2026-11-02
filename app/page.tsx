@@ -3727,13 +3727,10 @@ export default function Home() {
                         cartão de crédito. Os dados do cartão são preenchidos somente
                         na página segura de pagamento.
                       </small>
-                      <a
-                        href={CARD_PAYMENT_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Abrir link seguro do cartão
-                      </a>
+                      <small>
+                        O link para pagamento será disponibilizado após você finalizar
+                        e enviar o pedido.
+                      </small>
                     </div>
                   )}
                   {regularOrderTotal > 0 && (
@@ -3848,6 +3845,15 @@ export default function Home() {
               <div><span>Entrada prevista (60%)</span><strong>{formatMoney(lastSubmittedOrder.deposit)}</strong></div>
               {lastSubmittedOrder.balance > 0 && <div><span>Restante (40%)</span><strong>{formatMoney(lastSubmittedOrder.balance)}</strong></div>}
             </div>
+            {lastSubmittedOrder.paymentMethod === "Cartão" && (
+              <div className="selected-payment-details card-selected">
+                <strong>Pedido registrado com sucesso!</strong>
+                <p>Agora você já pode realizar o pagamento da entrada de {formatMoney(lastSubmittedOrder.deposit)} pelo cartão.</p>
+                <a href={CARD_PAYMENT_URL} target="_blank" rel="noreferrer">
+                  Abrir link seguro para pagamento
+                </a>
+              </div>
+            )}
             <div className="payment-notice-info">
               <strong>Próximos passos</strong>
               <p>
