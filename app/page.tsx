@@ -788,7 +788,7 @@ const sweetsCatalogGallery = [
 export default function Home() {
   const [catalogTab, setCatalogTab] = useState<
     "choose" | "all" | "cakes" | "sweets" | "gifts"
-  >("choose");
+  >("all");
   const [sweetGroupId, setSweetGroupId] = useState(sweetGroups[0].id);
   const [sweetQuantities, setSweetQuantities] = useState<Record<string, number>>(
     {},
