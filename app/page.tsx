@@ -1796,21 +1796,6 @@ export default function Home() {
           </p>
           <p className="hero-deadline">Todos os pedidos precisam de 72 horas de antecedência.</p>
 
-          <div className="hero-categories" aria-label="O que você encontra aqui">
-            <a href="#cardapio" onClick={() => setCatalogTab("cakes")}>
-              <strong>Bolos</strong>
-              <span>Personalizados</span>
-            </a>
-            <a href="#cardapio" onClick={() => setCatalogTab("sweets")}>
-              <strong>Doces & bombons</strong>
-              <span>Para festas e eventos</span>
-            </a>
-            <a href="#cardapio" onClick={() => setCatalogTab("gifts")}>
-              <strong>Bentôs & cupcakes</strong>
-              <span>Presentes e lembranças</span>
-            </a>
-          </div>
-
         </div>
 
         <div className="hero-visual">
