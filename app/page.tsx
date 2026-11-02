@@ -1879,15 +1879,6 @@ export default function Home() {
               <small className="catalog-choice-cta"><span>Ver opções para presentear</span><span aria-hidden="true">→</span></small>
             </button>
           </div>
-          <button
-            className="catalog-full-menu-cta"
-            type="button"
-            onClick={() => setCatalogTab("all")}
-          >
-            <span>Ainda não decidiu?</span>
-            <strong>Ver o cardápio completo <span aria-hidden="true">→</span></strong>
-            <small>Confira bolos, docinhos, bombons, bentôs e cupcakes em uma só página.</small>
-          </button>
           </>
         ) : (
           <>
@@ -1916,13 +1907,6 @@ export default function Home() {
                   type="button"
                 >
                   Bentô, Cupcakes & Presentes
-                </button>
-                <button
-                  className={catalogTab === "all" ? "active" : ""}
-                  onClick={() => setCatalogTab("all")}
-                  type="button"
-                >
-                  Cardápio completo
                 </button>
               </div>
             </div>
