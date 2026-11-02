@@ -578,12 +578,32 @@ const whiteSweetIds = new Set([
   "surpresa-uva",
 ]);
 
+const sweetSpriteIds = new Set([
+  "ninho-nutella", "gota-maracuja", "oreo", "moranguinho",
+  "pacoca", "mms", "amendoas", "surpresa-uva",
+]);
+
 const sweetPhoto = (id: string, type: SweetGroup["type"]) => {
+  if (sweetSpriteIds.has(id)) return "/assets/sweets-sprite.webp";
   if (type === "bonbon") return "/assets/gift-bombons.webp";
   if (id === "brigadeiro") return "/assets/brigadeiro-tradicional.webp";
   return whiteSweetIds.has(id)
     ? "/assets/sweets-ninho.webp"
     : "/assets/sweets-chocolate.webp";
+};
+
+const sweetPhotoPosition = (id: string) => {
+  const positions: Record<string, string> = {
+    "ninho-nutella": "0px 0px",
+    "gota-maracuja": "-56px 0px",
+    oreo: "-112px 0px",
+    moranguinho: "-168px 0px",
+    pacoca: "0px -56px",
+    mms: "-56px -56px",
+    amendoas: "-112px -56px",
+    "surpresa-uva": "-168px -56px",
+  };
+  return positions[id] ?? "0px 0px";
 };
 
 const gifts = [
@@ -2228,8 +2248,9 @@ export default function Home() {
                     return (
                       <article className="sweet-card" key={sweet.id}>
                         <img
-                          className="sweet-photo"
+                          className={`sweet-photo ${sweetSpriteIds.has(sweet.id) ? "sweet-photo--sprite" : ""}`}
                           src={sweetPhoto(sweet.id, group.type)}
+                          style={{ objectPosition: sweetPhotoPosition(sweet.id) }}
                           alt={`Foto de ${sweet.name}`}
                         />
                         <div>
