@@ -630,6 +630,7 @@ img {
 }
 
 .catalog-category-bar > button {
+  display: none;
   flex: 0 0 auto;
   border: 0;
   background: transparent;
@@ -657,14 +658,14 @@ img {
 
 .catalog-tabs button,
 .flavor-filters button {
-  min-height: 44px;
-  padding: 0 24px;
+  min-height: 54px;
+  padding: 0 28px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   white-space: nowrap;
-  font-size: 0.85rem;
-  font-weight: 800;
+  font-size: 1rem;
+  font-weight: 850;
 }
 
 .catalog-tabs button.active,
@@ -6023,5 +6024,40 @@ footer a:hover {
 
   .monthly-carousel {
     min-height: 310px;
+  }
+}
+
+
+/* Navegação do cardápio mais visível desde a primeira visita */
+.catalog-category-bar {
+  justify-content: center;
+  margin-bottom: 38px;
+}
+.catalog-tabs {
+  width: 100%;
+  max-width: 1120px;
+  justify-content: flex-start;
+  gap: 5px;
+  border-radius: 18px;
+  padding: 8px;
+}
+.catalog-tabs button {
+  flex: 1 0 auto;
+  font-size: clamp(0.98rem, 1.2vw, 1.12rem);
+  min-height: 58px;
+  padding: 0 24px;
+}
+@media (max-width: 700px) {
+  .catalog-category-bar { margin-bottom: 26px; }
+  .catalog-tabs {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px;
+    padding: 6px;
+  }
+  .catalog-tabs button {
+    min-height: 52px;
+    padding: 0 18px;
+    font-size: 0.98rem;
   }
 }
