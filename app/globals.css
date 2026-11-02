@@ -946,10 +946,12 @@ textarea:focus {
 .sweet-photo {
   width: 56px;
   height: 56px;
-  border: 5px solid #f7e5d2;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 8px 20px rgba(75, 46, 37, 0.14);
+  display: block;
+  border: 0;
+  border-radius: 0;
+  object-fit: contain;
+  background: transparent;
+  box-shadow: none;
 }
 
 .sweet-card:nth-child(2n) .sweet-photo {
