@@ -923,16 +923,6 @@ export default function Home() {
   const displayedSweetGroups =
     catalogTab === "all" ? sweetGroups : [activeSweetGroup];
 
-  const requiredLeadHours = useMemo(() => {
-    if (!details.eventDate) return 72;
-    const selectedDate = new Date(`${details.eventDate}T12:00:00`);
-    const dayOfWeek = selectedDate.getDay();
-    return dayOfWeek === 0 || dayOfWeek === 6 ? 120 : 72;
-  }, [details.eventDate]);
-
-  const requiredLeadLabel =
-    requiredLeadHours === 120 ? "5 dias de antecedência" : "72 horas de antecedência";
-
   const availableTimeOptions = useMemo(() => {
     if (!details.eventDate) return [];
 
@@ -1800,10 +1790,11 @@ export default function Home() {
           <span className="eyebrow">Bolos e doces artesanais em Belo Horizonte</span>
           <h1>Bolos personalizados para a sua comemoração</h1>
           <p>
-            Sim, fazemos bolos personalizados. Você escolhe o tamanho, sabor,
-            cores e detalhes da decoração. Também temos doces, bombons, bentôs
-            e cupcakes para completar a mesa.
+            Escolha seus produtos no cardápio, personalize os detalhes e envie
+            seu pedido diretamente pelo site. A confirmação acontece após a
+            conferência da disponibilidade.
           </p>
+          <p className="hero-deadline">Todos os pedidos precisam de 72 horas de antecedência.</p>
 
           <div className="hero-categories" aria-label="O que você encontra aqui">
             <a href="#cardapio" onClick={() => setCatalogTab("cakes")}>
@@ -1823,15 +1814,6 @@ export default function Home() {
           <div className="hero-buttons">
             <a className="button button-primary" href="#cardapio" onClick={() => setCatalogTab("choose")}>
               Ver cardápio e fazer pedido
-            </a>
-            <a
-              className="button button-secondary"
-              href={INSTAGRAM}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Abrir o Instagram da Doceria Brigadeiro e Beijinho em nova aba"
-            >
-              Acompanhe no Instagram <span aria-hidden="true">↗</span>
             </a>
           </div>
         </div>
@@ -2165,9 +2147,7 @@ export default function Home() {
                                     })}
                                   </div>
                                   <small className="decoration-picker-help">
-                                    Todos os pedidos precisam de no mínimo 72 horas
-                                    de antecedência. Para sábado ou domingo, são
-                                    necessários 5 dias.
+                                    Todos os pedidos precisam de 72 horas de antecedência.
                                   </small>
                                 </div>
                               </details>
@@ -2196,9 +2176,7 @@ export default function Home() {
             </div>
             <p className="catalog-note cake-catalog-note">
               O tamanho Mini é uma ótima escolha para mesversários,
-              comemorações íntimas e presentes. Todos os pedidos precisam de
-              72 horas de antecedência. Para pedidos com data no sábado ou domingo,
-              a antecedência mínima é de 5 dias.
+              comemorações íntimas e presentes. Todos os pedidos precisam de 72 horas de antecedência.
             </p>
           </>
         )}
@@ -2831,18 +2809,7 @@ export default function Home() {
               <circle className="instagram-dot" cx="17.5" cy="6.5" r="1" />
             </svg>
           </a>
-          <a
-            className="whatsapp-float"
-            href={WHATSAPP_INFO_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Falar pelo WhatsApp"
-          >
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M16 3a12.5 12.5 0 0 0-10.9 18.6L3.5 28l6.6-1.6A12.5 12.5 0 1 0 16 3Zm0 22.8c-2 0-3.9-.6-5.5-1.6l-.4-.2-3.9 1 1-3.8-.2-.4A10.2 10.2 0 1 1 16 25.8Zm5.6-7.6c-.3-.1-1.8-.9-2.1-1-.3-.1-.5-.1-.7.2l-1 1.2c-.2.2-.4.2-.7.1-1.9-.9-3.2-1.8-4.5-4-.3-.5.3-.5.9-1.7.1-.2.1-.4 0-.6l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9 0 1.7 1.2 3.3 1.4 3.5.2.2 2.4 3.7 5.9 5.2.8.4 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 1.8-.7 2.1-1.5.3-.7.3-1.4.2-1.5-.2-.2-.5-.3-.8-.4Z" />
-            </svg>
-          </a>
-        </div>
+     </div>
       </div>
 
       {assistantOpen && (
@@ -3132,8 +3099,7 @@ export default function Home() {
                       data disponível no calendário e finalizar a solicitação do pedido.
                       A data e o horário não ficam reservados automaticamente.
                       <br />
-                      <strong>Antecedência mínima recomendada:</strong> 72 horas nos dias úteis
-                      e 5 dias para pedidos com data no sábado ou domingo.
+                      <strong>Todos os pedidos precisam de 72 horas de antecedência.</strong>
                       <br />
                       <strong>Segunda a sábado:</strong> 08:00 às 18:00 ·{" "}
                       <strong>Domingo:</strong> 07:00 às 08:30 e 12:30 às 16:00.
