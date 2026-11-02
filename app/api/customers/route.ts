@@ -308,6 +308,31 @@ async function createClickUpOrderTask(
       }).join("\n")
     : "- Itens não informados";
   const deliveryFeeCents = Number(summary.deliveryCents || 0);
+  const selectedDepositMethod = String(body.paymentMethod || "").split("·")[0].trim().toLowerCase();
+  const cardPaymentUrl = "https://linknabio.gg/nutribacelar";
+  const isPixDeposit = selectedDepositMethod === "pix";
+  const isCardDeposit = selectedDepositMethod === "cartão" || selectedDepositMethod === "cartao";
+  const initialPaymentInstructions = isPixDeposit
+    ? [
+        "Forma de pagamento escolhida: Pix.",
+        "Chave Pix (celular): 31973416110",
+        "Titular: Déborah Bacelar Braga",
+        "Banco: Inter",
+        "Valor da entrada: " + formatMoneyFromCents(depositCents),
+        "Após realizar o Pix, envie o comprovante por aqui para conferirmos e confirmarmos sua encomenda.",
+      ]
+    : isCardDeposit
+      ? [
+          "Forma de pagamento escolhida: cartão de crédito.",
+          "Valor da entrada: " + formatMoneyFromCents(depositCents),
+          "Link seguro para pagamento: " + cardPaymentUrl,
+          "Após concluir o pagamento, envie a confirmação por aqui para conferirmos e confirmarmos sua encomenda.",
+        ]
+      : [
+          "Entrada de 60% para confirmar: " + formatMoneyFromCents(depositCents),
+          "A forma de pagamento será confirmada pelo WhatsApp.",
+        ];
+
   const clientOrderReceivedMessage = [
     "Olá, " + clientName + "! Tudo bem? Recebemos sua solicitação de encomenda " + orderCode + " na Doceria Brigadeiro & Beijinho.",
     "",
@@ -320,10 +345,10 @@ async function createClickUpOrderTask(
     (isPickup ? "Endereço para retirada: " : "Endereço para entrega: ") + address,
     "",
     "Valor total: " + formatMoneyFromCents(totalCents),
-    "Entrada de 60% para confirmar: " + formatMoneyFromCents(depositCents),
+    ...initialPaymentInstructions,
     "Restante de 40%: " + formatMoneyFromCents(balanceCents),
     "",
-    "Para confirmar sua encomenda, você prefere realizar o pagamento da entrada via Pix ou cartão de crédito? O pedido e a data serão confirmados após a confirmação do pagamento da entrada. 😊",
+    "A data e a encomenda serão confirmadas após a conferência do pagamento da entrada. 😊",
   ].join("\n");
 
   const clientOrderConfirmedMessage = [
@@ -388,10 +413,21 @@ async function createClickUpOrderTask(
     ? "https://wa.me/" + driverNumber + "?text=" + encodeURIComponent(deliveryMessage)
     : "https://wa.me/?text=" + encodeURIComponent(deliveryMessage);
 
+  const initialMessageTitle = isPixDeposit
+    ? "Mensagem 1 — Pedido recebido com dados do Pix"
+    : isCardDeposit
+      ? "Mensagem 1 — Pedido recebido com link do cartão"
+      : "Mensagem 1 — Pedido recebido";
+  const initialMessageLinkLabel = isPixDeposit
+    ? "Abrir WhatsApp — pedido recebido com Pix"
+    : isCardDeposit
+      ? "Abrir WhatsApp — pedido recebido com link do cartão"
+      : "Abrir WhatsApp — pedido recebido";
+
   const whatsappMessageLinks = [
-    "## Mensagem 1 — Pedido recebido",
-    "Enviar após receber a solicitação. O pedido ainda não está confirmado.",
-    "[Abrir WhatsApp — pedido recebido e opções de pagamento](" + customerOrderReceivedUrl + ")",
+    "## " + initialMessageTitle,
+    "Enviar após receber a solicitação. A mensagem já informa a forma de pagamento escolhida e o valor da entrada.",
+    "[" + initialMessageLinkLabel + "](" + customerOrderReceivedUrl + ")",
     "",
     "## Mensagem 2 — Entrada recebida e pedido confirmado",
     "Enviar somente depois de conferir que a entrada de 60% foi recebida.",
