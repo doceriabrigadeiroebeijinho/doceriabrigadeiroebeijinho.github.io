@@ -1391,7 +1391,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
       {!showroom && <section className="home-bolo-showcase boutique-showcase home-photo-section" id="cardapio">
         <div className="home-bolo-heading home-photo-heading">
           <h1>Bolos</h1>
-          <a className="boutique-view-all" href="/bolos">Ver tamanhos e preços <span aria-hidden="true">→</span></a>
+          <a className="home-category-cta" href="/bolos">Ver tamanhos e preços <span aria-hidden="true">→</span></a>
         </div>
         <div className="home-photo-gallery" aria-label="Inspirações de bolos da doceria">
           {homePhotoGalleries.cakes.map((photo, index) =>
@@ -1405,7 +1405,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
       {!showroom && <section className="home-category-section home-sweets-preview home-photo-section" id="doces-destaque">
         <div className="home-category-heading home-photo-heading">
           <h2>Doces e Bombons</h2>
-          <a className="home-sweets-cta" href="/docinhos">Ver sabores e preços <span aria-hidden="true">→</span></a>
+          <a className="home-category-cta" href="/docinhos">Ver sabores e preços <span aria-hidden="true">→</span></a>
         </div>
         <div className="home-photo-gallery" aria-label="Fotografias de doces da doceria">
           {homePhotoGalleries.sweets.map((photo, index) =>
@@ -1419,7 +1419,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
       {!showroom && <section className="home-category-section home-gifts-preview home-photo-section" id="presentes-destaque">
         <div className="home-category-heading home-photo-heading">
           <h2>Presentes e kits</h2>
-          <a href="/presentes">Ver todas as opções <span aria-hidden="true">→</span></a>
+          <a className="home-category-cta" href="/presentes">Ver todas as opções <span aria-hidden="true">→</span></a>
         </div>
         <div className="home-photo-gallery" aria-label="Fotografias de presentes e kits da doceria">
           {homePhotoGalleries.gifts.map((photo, index) =>
