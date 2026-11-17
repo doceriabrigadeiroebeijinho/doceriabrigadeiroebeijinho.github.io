@@ -25,7 +25,7 @@ export default function CatalogoExplorar({categoria}:{categoria:string}){
  const [query,setQuery]=useState("");
  useEffect(()=>{const q=new URLSearchParams(window.location.search).get("q");if(q)setQuery(q)},[]);
  const results=useMemo(()=>{const q=normalize(query.trim());return q?entries.filter(e=>normalize(e.name+" "+e.type+" "+e.detail).includes(q)).slice(0,80):[]},[query]);
- return <main className="new-catalog">
+ return <main className="new-catalog boutique-site">
    <BoutiquePageHeader/>
    <div className="new-wrap">
      <section className="new-section" aria-live="polite">
