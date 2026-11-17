@@ -7623,3 +7623,48 @@ main.decor-page.boutique-site{
 @media(prefers-reduced-motion:reduce){
   .home-page.boutique-site .home-photo-gallery > a{transition:none}
 }
+
+
+/* Destaque do acesso aos sabores e preços na vitrine de doces. */
+.home-page.boutique-site .home-sweets-preview .home-photo-heading a {
+  display: inline-flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 21px !important;
+  min-height: 47px;
+  border: 1px solid #C9576A !important;
+  border-radius: 100px;
+  background: #C9576A;
+  color: #FFFFFF !important;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 14px !important;
+  line-height: 1.2;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  box-shadow: none;
+  white-space: nowrap;
+}
+.home-page.boutique-site .home-sweets-preview .home-photo-heading a:hover {
+  background: #B5485B;
+  border-color: #B5485B !important;
+}
+.home-page.boutique-site .home-sweets-preview .home-photo-heading a:focus-visible {
+  outline: 2px solid #683E2E;
+  outline-offset: 3px;
+}
+.home-page.boutique-site .home-sweets-preview .home-photo-gallery img {
+  object-fit: cover;
+  padding: 0;
+}
+@media (max-width: 760px) {
+  .home-page.boutique-site .home-sweets-preview .home-photo-heading {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .home-page.boutique-site .home-sweets-preview .home-photo-heading a {
+    font-size: 12px !important;
+    padding: 11px 14px !important;
+    min-height: 43px;
+  }
+}
