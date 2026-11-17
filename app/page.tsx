@@ -1359,12 +1359,12 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
           </div>
         </div>
         <nav className="boutique-nav" aria-label="Navegação principal">
-          <a href="/#como-pedir"><StorefrontIcon name="clipboard"/><span>Como pedir</span></a>
-          <a href="/#cardapio"><StorefrontIcon name="grid"/><span>Cardápio</span></a>
-          <a href="/bolos"><StorefrontIcon name="cake"/><span>Bolos</span></a>
-          <a href="/docinhos"><StorefrontIcon name="sweet"/><span>Doces e Bombons</span></a>
-          <a href="/presentes"><StorefrontIcon name="gift"/><span>Presentes</span></a>
-          <a href="/decoracoes"><StorefrontIcon name="sparkles"/><span>Decorações</span></a>
+          <a href="/#como-pedir">Como pedir</a>
+          <a href="/#cardapio">Cardápio</a>
+          <a href="/bolos">Bolos</a>
+          <a href="/docinhos">Doces e Bombons</a>
+          <a href="/presentes">Presentes</a>
+          <a href="/decoracoes">Decorações</a>
         </nav>
       </header>
 
@@ -1389,6 +1389,48 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
         </div>
         <div className="boutique-showcase-more"><a href="/bolos">Todos os bolos</a><span aria-hidden="true">·</span><a href="/decoracoes">Inspirações de decoração</a></div>
       </section>}
+
+      {!showroom && <section className="home-category-section home-sweets-preview" id="doces-destaque">
+        <div className="home-category-heading">
+          <h2>Doces e Bombons</h2>
+          <a href="/docinhos">Ver todos os sabores <span aria-hidden="true">→</span></a>
+        </div>
+        <div className="home-sweets-grid">
+          {sweetGroups[0].items.map(sweet => <article className="home-sweet-tile" key={sweet.id}>
+            <a href={`/docinhos?produto=${sweet.id}#produto-${sweet.id}`}>
+              <h3>{sweet.name}</h3>
+              <span>25 unidades</span>
+              <strong>{formatMoney(sweetGroups[0].hundredPrice / 4)}</strong>
+              <span className="home-tile-action">Quero esse <span aria-hidden="true">→</span></span>
+            </a>
+          </article>)}
+        </div>
+      </section>}
+
+      {!showroom && <section className="home-category-section home-gifts-preview" id="presentes-destaque">
+        <div className="home-category-heading">
+          <h2>Presentes e kits</h2>
+          <a href="/presentes">Ver todas as opções <span aria-hidden="true">→</span></a>
+        </div>
+        <div className="home-gifts-grid">
+          {gifts.filter(gift => ["bento","bento-combo","caixa-encanto"].includes(gift.id)).map(gift => <article className="home-gift-tile" key={gift.id}>
+            <a href={`/presentes?produto=${gift.id}#produto-${gift.id}`}>
+              <img src={gift.image} alt={`Foto de ${gift.name}`} loading="lazy"/>
+              <div className="home-gift-details">
+                <h3>{gift.name}</h3>
+                <strong>A partir de {formatMoney(gift.price)}</strong>
+                <span className="home-tile-action">Quero esse <span aria-hidden="true">→</span></span>
+              </div>
+            </a>
+          </article>)}
+        </div>
+      </section>}
+
+      {!showroom && <section className="home-decorations-teaser">
+        <div><h2>Decorações</h2><p>Ideias para sua comemoração.</p></div>
+        <a href="/decoracoes">Ver inspirações <span aria-hidden="true">→</span></a>
+      </section>}
+
       {!showroom && <section className="boutique-how" id="como-pedir">
         <h2>Como pedir</h2>
         <p>Escolha seu produto, personalize e envie sua solicitação. Confirmamos a disponibilidade pelo WhatsApp.</p>
