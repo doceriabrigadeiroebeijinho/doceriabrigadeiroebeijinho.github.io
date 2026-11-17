@@ -36,14 +36,14 @@ export default function CatalogoExplorar({categoria}:{categoria:string}){
        <input autoFocus id="catalog-search" type="search" placeholder="Digite um doce, sabor ou tamanho..." value={query} onChange={e=>setQuery(e.target.value)} autoComplete="off"/>
        {query&&<button type="button" onClick={()=>setQuery("")}>Limpar</button>}
        </div>
-       <div className="new-quick-links"><a href="/bolos">🎂 Bolos e tamanhos</a><a href="/docinhos">🍬 Docinhos e bombons</a><a href="/combos">🎁 Combos e kits</a></div>
+       
      </div>
      <section className="new-section" aria-live="polite">
        <span className="new-kicker">VITRINE DA DOCERIA</span>
        <h1>{query.trim()?`Encontramos para “${query}”`:"Encontre o que deseja"}</h1>
        <p>{!query.trim()?"Busque pelo nome do produto, sabor, ingrediente ou tamanho. Você pode adicionar os produtos ao pedido diretamente na categoria.":results.length?`${results.length} opção(ões) encontrada(s). Clique em um resultado para escolher os detalhes e adicionar ao pedido.`:"Não encontrei esse nome no catálogo. Tente outra palavra ou consulte as categorias abaixo."}</p>
        {query.trim()&&<div className="new-result-list">{results.map((x,i)=><a key={x.type+x.name+i} className="new-result" href={x.url}>{x.image&&<img className="new-result-photo" src={x.image} alt="" />}<div><small>{x.type}</small><strong>{x.name}</strong><span>{x.detail}</span></div><b aria-hidden="true">Ver e pedir ↗</b></a>)}</div>}
-       {!query.trim()&&<div className="new-filter"><a href="/bolos">🎂 Bolos</a><a href="/docinhos">🍬 Docinhos e bombons</a><a href="/presentes">🎁 Presentes e kits</a></div>}
+       
      </section>
      <div className="new-help"><div><strong>Ainda tem alguma dúvida?</strong><p>Para informações específicas sobre sua encomenda, nossa equipe pode ajudar.</p></div><a href="https://wa.me/5531973416110" target="_blank" rel="noreferrer">Falar no WhatsApp ↗</a></div>
    </div>

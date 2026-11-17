@@ -1363,24 +1363,16 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
       {!showroom && <section className="hero" id="inicio">
         <div className="hero-copy">
           <span className="eyebrow">Bolos e doces artesanais em Belo Horizonte</span>
-          <h1>Bolos personalizados para a sua comemoração</h1>
-          <p>
-            Escolha seus produtos no cardápio, personalize os detalhes e envie
-            seu pedido diretamente pelo site. A confirmação acontece após a
-            conferência da disponibilidade.
-          </p>
+          <h1>Bolos e doces para sua comemoração</h1>
+          <p>Encontre bolos, docinhos e presentes. Confira sabores e preços.</p>
+          <a className="hero-direct-cta" href="/bolos">Ver bolos e preços →</a>
           <p className="hero-deadline">Todos os pedidos precisam de 72 horas de antecedência.</p>
           <div className="hero-search-access">
             <form action="/buscar" method="get" className="hero-search-form" role="search">
               <label htmlFor="hero-product-search">Encontre rápido no cardápio</label>
               <div><input id="hero-product-search" type="search" name="q" placeholder="Busque por doce, recheio ou tamanho..." aria-label="Buscar produtos e sabores"/><button type="submit">Pesquisar →</button></div>
             </form>
-            <nav className="hero-category-shortcuts" aria-label="Acesso rápido ao cardápio">
-              <a href="/bolos">🎂 Bolos e tamanhos</a>
-              <a href="/docinhos">🍬 Docinhos e bombons</a>
-              <a href="/combos">🎁 Combos e kits</a>
-            </nav>
-          </div>
+remove home shortcuts          </div>
 
         </div>
 
@@ -1405,41 +1397,37 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
       {showroom && <section className="storefront-heading" aria-label="Vitrine de produtos">
         <span className="section-kicker">Nossa vitrine · Monte seu pedido por aqui</span>
         <h1>{category === "bolos" ? "Bolos personalizados" : category === "docinhos" ? "Doces e bombons" : category === "combos" ? "Combos e kits" : "Presentes especiais"}</h1>
-        <p>Confira fotos, tamanhos, sabores e valores. Personalize e adicione ao pedido sem sair desta página.</p>
+        <p>{category === "bolos" ? "Escolha pelo tamanho e confira os recheios." : category === "docinhos" ? "Encontre os sabores e confira os valores." : "Veja o que acompanha cada opção."}</p>
         <form action="/buscar" role="search" className="storefront-search"><input name="q" type="search" placeholder="Buscar recheio, doce ou tamanho..." aria-label="Buscar no cardápio"/><button type="submit">Buscar →</button></form>
-        <div className="storefront-links"><a href="/bolos">🎂 Bolos e tamanhos</a><a href="/docinhos">🍬 Docinhos e bombons</a><a href="/combos">🎁 Combos e kits</a></div>
-      </section>}
+remove showroom extra links      </section>}
       <section className="catalog-section" id="cardapio">
         <div className="section-heading">
           <span className="section-kicker">Feito com carinho para suas comemorações</span>
           <h2>{showroom ? (category === "bolos" ? "Escolha seu bolo" : category === "docinhos" ? "Escolha seus docinhos" : category === "combos" ? "Monte seu kit" : "Escolha um presente") : "Nosso cardápio"}</h2>
           <p>
-            {showroom ? "Personalize os detalhes, acompanhe os valores e adicione ao carrinho." : "Bolos, doces, bombons e presentes artesanais para deixar cada momento ainda mais especial."}
+            {showroom ? "Selecione uma opção para escolher os detalhes." : "Bolos, doces e presentes para sua comemoração."}
           </p>
         </div>
 
         {!showroom && (catalogTab === "choose" ? (
           <>
-            <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
-            <button type="button" onClick={() => setCatalogTab("cakes")} aria-label="Ver bolos, tamanhos e sabores">
-              <strong>Quero um bolo</strong>
-              <small>Bolos personalizados e bolos de corte</small>
-              <small className="catalog-choice-price">A partir de R$ 115,00</small>
-              <small className="catalog-choice-cta"><span>Ver bolos, tamanhos e sabores</span><span aria-hidden="true">→</span></small>
-            </button>
-            <button type="button" onClick={() => setCatalogTab("sweets")} aria-label="Ver sabores e preços dos docinhos">
-              <strong>Quero doces</strong>
-              <small>Doces e bombons para festas e eventos</small>
-              <small className="catalog-choice-price">A partir de R$ 160,00 / 100 unidades</small>
-              <small className="catalog-choice-cta"><span>Ver sabores e preços</span><span aria-hidden="true">→</span></small>
-            </button>
-            <button type="button" onClick={() => setCatalogTab("gifts")} aria-label="Ver opções para presentear">
-              <strong>Quero um presente</strong>
-              <small>Bentôs, cupcakes e opções para presentear</small>
-              <small className="catalog-choice-price">A partir de R$ 59,90</small>
-              <small className="catalog-choice-cta"><span>Ver opções para presentear</span><span aria-hidden="true">→</span></small>
-            </button>
-          </div>
+            <div className="catalog-link-list" aria-label="Categorias do cardápio">
+              <a href="/bolos">
+                <span className="catalog-link-symbol">🎂</span>
+                <span><strong>Bolos</strong><small>Tamanhos e recheios</small></span>
+                <b>A partir de R$ 115,00</b><em>Ver bolos →</em>
+              </a>
+              <a href="/docinhos">
+                <span className="catalog-link-symbol">🍬</span>
+                <span><strong>Doces e bombons</strong><small>Sabores e quantidades</small></span>
+                <b>A partir de R$ 40,00 / 25 un.</b><em>Ver doces →</em>
+              </a>
+              <a href="/presentes">
+                <span className="catalog-link-symbol">🎁</span>
+                <span><strong>Presentes e kits</strong><small>Bentôs, cupcakes e combos</small></span>
+                <b>A partir de R$ 59,90</b><em>Ver presentes →</em>
+              </a>
+            </div>
           </>
         ) : (
           <>
@@ -1483,7 +1471,7 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                 <p>Escolha tamanho, categoria de recheio, massa e decoração.</p>
               </div>
             )}
-            <div className="cake-guide">
+            {!showroom && <div className="cake-guide">
               <div>
                 <span className="section-kicker">Sobre nossos bolos</span>
                 <h3>Decoração artesanal em chantilly</h3>
@@ -1500,30 +1488,31 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                 </p>
               </div>
             </div>
+            }
             <div className="cake-category-explanation">
               <div>
-                <span className="section-kicker">Entenda os tipos de recheio</span>
-                <h3>O que muda entre Clássico, Especial e Gourmet?</h3>
+                <span className="section-kicker">Recheios</span>
+                <h3>Tipos de recheio</h3>
               </div>
               <div className="cake-category-grid">
                 <div>
                   <strong>Clássico</strong>
-                  <p>Recheios tradicionais e sabores afetivos, como brigadeiro, Ninho e Prestígio.</p>
+                  <p>Brigadeiro, Ninho, Prestígio e outros.</p>
                 </div>
                 <div>
                   <strong>Especial</strong>
-                  <p>Recheios com combinações mais elaboradas, como Nutella, frutas, nozes e mousses.</p>
+                  <p>Nutella, frutas, nozes e mousses.</p>
                 </div>
                 <div>
                   <strong>Gourmet</strong>
-                  <p>Recheios com ingredientes mais sofisticados, como pistache, amêndoas e castanhas.</p>
+                  <p>Pistache, amêndoas e castanhas.</p>
                 </div>
               </div>
               <p className="cake-category-note">
-                A diferença entre as três categorias está no tipo de recheio escolhido. A massa e a cobertura continuam sendo escolhidas separadamente, e os adicionais de decoração são somados ao valor do bolo.
+                O recheio define a categoria e o preço. Decorações adicionais são cobradas à parte.
               </p>
             </div>
-            <div
+            {!showroom && <div
               className="static-photo-strip"
               aria-label="Fotos de bolos produzidos pela Doceria Brigadeiro & Beijinho"
             >
@@ -1532,7 +1521,7 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                   <img src={photo.src} alt={photo.alt} />
                 </figure>
               ))}
-            </div>
+            </div>}
             <div className="cake-grid">
               {cakeSizeCatalog.map((cake) => {
                 const choice = cakeChoices[cake.id];
@@ -1559,27 +1548,23 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
 
                 return (
                   <article className="product-card cake-card" id={`produto-${cake.id}`} key={cake.id}>
-                    <img className="storefront-cake-image" src={({
-                      mini:"/assets/monthly-cake.webp",
-                      p:"/assets/cake-classic.webp",
-                      m:"/assets/cake-floral.webp",
-                      g:"/assets/cake-lilac.webp",
-                      gg:"/assets/cake-ribbons.webp",
-                      corte:"/assets/cake-theme.webp"
-                    } as Record<string,string>)[cake.id]} alt="Exemplo de bolo da Doceria Brigadeiro e Beijinho" />
-                    <div className="product-card-head cake-size-head">
-                      <div>
-                        <span>Escolha pelo tamanho</span>
-                        <strong>{cake.subtitle}</strong>
-                      </div>
-                      <strong>
-                        A partir de {formatMoney(Math.min(...Object.values(cake.prices)))}
-                      </strong>
-                    </div>
-
-                    <h3>{cake.name}</h3>
-                    <p>{cake.description}</p>
-
+                    <details className="catalog-item-details">
+                      <summary className="catalog-item-summary">
+                        <img className="catalog-summary-img" src={({
+                          mini:"/assets/monthly-cake.webp", p:"/assets/cake-classic.webp",
+                          m:"/assets/cake-floral.webp", g:"/assets/cake-lilac.webp",
+                          gg:"/assets/cake-ribbons.webp", corte:"/assets/cake-theme.webp"
+                        } as Record<string,string>)[cake.id]} alt="" />
+                        <div className="catalog-summary-name"><h3>{cake.name}</h3><span>{cake.subtitle}</span></div>
+                        <div className="catalog-summary-prices">
+                          <span>Clássico <b>{formatMoney(cake.prices.Classico)}</b></span>
+                          <span>Especial <b>{formatMoney(cake.prices.Especial)}</b></span>
+                          <span>Gourmet <b>{formatMoney(cake.prices.Gourmet)}</b></span>
+                        </div>
+                        <strong className="catalog-summary-action">Escolher <span aria-hidden="true">⌄</span></strong>
+                      </summary>
+                      <div className="catalog-item-options">
+                        <p className="catalog-brief-note">{cake.description}</p>
                     <div className="cake-choice-step">
                       <span>1</span>
                       <label>
@@ -1758,6 +1743,8 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                         Adicionar
                       </button>
                     </div>
+                      </div>
+                    </details>
                   </article>
                 );
               })}
@@ -1835,19 +1822,19 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                       (quantity / 25) * wrapper.fee;
                     return (
                       <article className="sweet-card" id={`produto-${sweet.id}`} key={sweet.id}>
-                        <img
-                          className={`sweet-photo ${sweetSpriteIds.has(sweet.id) ? "sweet-photo--sprite" : ""}`}
-                          src={sweetPhoto(sweet.id, group.type)}
-                          style={{ objectPosition: sweetPhotoPosition(sweet.id) }}
-                          alt={`Foto de ${sweet.name}`}
-                        />
-                        <div>
-                          <h4>{sweet.name}</h4>
-                          <p>{sweet.description}</p>
-                          <span>
-                            {formatMoney(itemTotal)} para {quantity} unidades
-                          </span>
-                        </div>
+                        <details className="catalog-item-details">
+                          <summary className="catalog-item-summary">
+                            <img className={`catalog-summary-img ${sweetSpriteIds.has(sweet.id) ? "sweet-photo--sprite" : ""}`}
+                              src={sweetPhoto(sweet.id, group.type)} style={{objectPosition:sweetPhotoPosition(sweet.id)}}
+                              alt={`Foto de ${sweet.name}`} />
+                            <div className="catalog-summary-name"><h4>{sweet.name}</h4><span>{sweet.description}</span></div>
+                            <div className="catalog-summary-prices catalog-summary-single">
+                              <span>25 un. <b>{formatMoney(group.hundredPrice / 4)}</b></span>
+                              <span>100 un. <b>{formatMoney(group.hundredPrice)}</b></span>
+                            </div>
+                            <strong className="catalog-summary-action">Escolher <span aria-hidden="true">⌄</span></strong>
+                          </summary>
+                          <div className="catalog-item-options">
                         <div className="sweet-quantity-control">
                           <label>
                             Quantidade
@@ -1889,6 +1876,8 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                             Adicionar
                           </button>
                         </div>
+                        </div>
+                        </details>
                       </article>
                     );
                   })}
@@ -1909,15 +1898,15 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
               </div>
             )}
             {(category === "combos" ? gifts.filter(gift => gift.id === "bento-combo" || gift.id.startsWith("caixa")) : gifts).map((gift, index) => (
-              <article
-                className="gift-card gift-card-with-image"
-                id={`produto-${gift.id}`}
-                key={gift.id}
-              >
-                <img src={gift.image} alt={gift.name} />
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <h3>{gift.name}</h3>
-                <p>{gift.description}</p>
+              <article className="gift-card gift-card-with-image" id={`produto-${gift.id}`} key={gift.id}>
+                <details className="catalog-item-details">
+                  <summary className="catalog-item-summary">
+                    <img className="catalog-summary-img" src={gift.image} alt="" />
+                    <div className="catalog-summary-name"><h3>{gift.name}</h3><span>{gift.description}</span></div>
+                    <div className="catalog-summary-prices catalog-summary-single"><span>A partir de <b>{formatMoney(gift.price)}</b></span></div>
+                    <strong className="catalog-summary-action">Escolher <span aria-hidden="true">⌄</span></strong>
+                  </summary>
+                  <div className="catalog-item-options">
                 {gift.id === "cupcake" && (
                   <div className="gift-options">
                     <label>
@@ -2166,6 +2155,8 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                     Adicionar
                   </button>
                 </div>
+                </div>
+                </details>
               </article>
             ))}
           </div>
