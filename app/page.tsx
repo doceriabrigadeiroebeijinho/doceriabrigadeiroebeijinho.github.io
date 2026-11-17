@@ -332,12 +332,12 @@ const homePhotoGalleries = {
     "/assets/decoracoes/bolo-18.webp",
   ],
   sweets: [
-    "/assets/docinho-brigadeiro.webp",
-    "/assets/docinho-coco.webp",
-    "/assets/docinho-ninho.webp",
-    "/assets/docinho-casadinho.webp",
-    "/assets/docinho-cajuzinho.webp",
-    "/assets/docinho-olho-sogra.webp",
+    "/assets/doces-reais/vitrine-01.jpg",
+    "/assets/doces-reais/vitrine-02.jpg",
+    "/assets/doces-reais/vitrine-03.jpg",
+    "/assets/doces-reais/vitrine-04.jpg",
+    "/assets/doces-reais/vitrine-05.jpg",
+    "/assets/doces-reais/vitrine-06.jpg",
   ],
   gifts: [
     "/assets/bento-personalized.webp",
@@ -1405,7 +1405,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
       {!showroom && <section className="home-category-section home-sweets-preview home-photo-section" id="doces-destaque">
         <div className="home-category-heading home-photo-heading">
           <h2>Doces e Bombons</h2>
-          <a href="/docinhos">Ver sabores e preços <span aria-hidden="true">→</span></a>
+          <a className="home-sweets-cta" href="/docinhos">Ver sabores e preços <span aria-hidden="true">→</span></a>
         </div>
         <div className="home-photo-gallery" aria-label="Fotografias de doces da doceria">
           {homePhotoGalleries.sweets.map((photo, index) =>
