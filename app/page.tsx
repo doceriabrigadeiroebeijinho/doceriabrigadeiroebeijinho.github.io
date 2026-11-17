@@ -321,14 +321,33 @@ const sweetsCatalogGallery = [
   },
 ] as const;
 
-const showcaseCakeImages:Record<string,string> = {
-  mini:"/assets/monthly-cake.webp",
-  p:"/assets/decoracoes/bolo-01.webp",
-  m:"/assets/decoracoes/bolo-02.webp",
-  g:"/assets/decoracoes/bolo-07.webp",
-  gg:"/assets/decoracoes/bolo-10.webp",
-  corte:"/assets/cake-classic.webp",
-};
+// Fotografias reais para a vitrine visual. Não representam um tamanho ou preço específico.
+const homePhotoGalleries = {
+  cakes: [
+    "/assets/decoracoes/bolo-01.webp",
+    "/assets/decoracoes/bolo-02.webp",
+    "/assets/decoracoes/bolo-07.webp",
+    "/assets/decoracoes/bolo-10.webp",
+    "/assets/decoracoes/bolo-14.webp",
+    "/assets/decoracoes/bolo-18.webp",
+  ],
+  sweets: [
+    "/assets/docinho-brigadeiro.webp",
+    "/assets/docinho-coco.webp",
+    "/assets/docinho-ninho.webp",
+    "/assets/docinho-casadinho.webp",
+    "/assets/docinho-cajuzinho.webp",
+    "/assets/docinho-olho-sogra.webp",
+  ],
+  gifts: [
+    "/assets/bento-personalized.webp",
+    "/assets/gift-combo-bento.webp",
+    "/assets/gift-doce-encanto.webp",
+    "/assets/gift-bombom-gourmet.webp",
+    "/assets/gift-bombons.webp",
+    "/assets/cupcake-vaidehold.webp",
+  ],
+} as const;
 
 export default function Home({ category, selectedProduct }: { category?: "bolos" | "docinhos" | "presentes" | "combos"; selectedProduct?:string } = {}) {
   const focusedCake = category === "bolos" && selectedProduct ? cakeSizeCatalog.find(b=>b.id===selectedProduct) : undefined;
@@ -1369,66 +1388,46 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
       </header>
 
 
-      {!showroom && <section className="home-bolo-showcase boutique-showcase" id="cardapio">
-        <div className="home-bolo-heading">
-          <div><span className="section-kicker">Feitos com carinho</span><h1>Bolos</h1></div>
-          <a className="boutique-view-all" href="/bolos">Ver todos os tamanhos <span aria-hidden="true">→</span></a>
+      {!showroom && <section className="home-bolo-showcase boutique-showcase home-photo-section" id="cardapio">
+        <div className="home-bolo-heading home-photo-heading">
+          <h1>Bolos</h1>
+          <a className="boutique-view-all" href="/bolos">Ver tamanhos e preços <span aria-hidden="true">→</span></a>
         </div>
-        <div className="home-bolo-grid">
-          {cakeSizeCatalog.slice(0,4).map(bolo=><article className="home-bolo-card" key={bolo.id}>
-            <a href={`/bolos/${bolo.id}`} aria-label={`Quero ${bolo.name}, a partir de ${formatMoney(Math.min(...Object.values(bolo.prices)))}`}>
-              <img src={showcaseCakeImages[bolo.id]} alt={`Decoração de exemplo para ${bolo.name}`} loading="lazy"/>
-              <div className="home-bolo-details">
-                <h2>{bolo.name}</h2>
-                <p>{bolo.subtitle}</p>
-                <strong>A partir de {formatMoney(Math.min(...Object.values(bolo.prices)))}</strong>
-                <span className="home-bolo-buy">Quero esse <span aria-hidden="true">→</span></span>
-              </div>
+        <div className="home-photo-gallery" aria-label="Inspirações de bolos da doceria">
+          {homePhotoGalleries.cakes.map((photo, index) =>
+            <a key={photo} href="/decoracoes" aria-label={`Ver decorações de bolos — foto ${index + 1}`}>
+              <img src={photo} alt={`Decoração de bolo da doceria, exemplo ${index + 1}`} loading="lazy"/>
             </a>
-          </article>)}
+          )}
         </div>
-        <div className="boutique-showcase-more"><a href="/bolos">Todos os bolos</a><span aria-hidden="true">·</span><a href="/decoracoes">Inspirações de decoração</a></div>
       </section>}
 
-      {!showroom && <section className="home-category-section home-sweets-preview" id="doces-destaque">
-        <div className="home-category-heading">
+      {!showroom && <section className="home-category-section home-sweets-preview home-photo-section" id="doces-destaque">
+        <div className="home-category-heading home-photo-heading">
           <h2>Doces e Bombons</h2>
-          <a href="/docinhos">Ver todos os sabores <span aria-hidden="true">→</span></a>
+          <a href="/docinhos">Ver sabores e preços <span aria-hidden="true">→</span></a>
         </div>
-        <div className="home-sweets-grid">
-          {sweetGroups[0].items.map(sweet => <article className="home-sweet-tile" key={sweet.id}>
-            <a href={`/docinhos?produto=${sweet.id}#produto-${sweet.id}`}>
-              <h3>{sweet.name}</h3>
-              <span>25 unidades</span>
-              <strong>{formatMoney(sweetGroups[0].hundredPrice / 4)}</strong>
-              <span className="home-tile-action">Quero esse <span aria-hidden="true">→</span></span>
+        <div className="home-photo-gallery" aria-label="Fotografias de doces da doceria">
+          {homePhotoGalleries.sweets.map((photo, index) =>
+            <a key={photo} href="/docinhos" aria-label="Ver o catálogo de doces e bombons">
+              <img src={photo} alt={`Fotografia de um docinho artesanal, exemplo ${index + 1}`} loading="lazy"/>
             </a>
-          </article>)}
+          )}
         </div>
       </section>}
 
-      {!showroom && <section className="home-category-section home-gifts-preview" id="presentes-destaque">
-        <div className="home-category-heading">
+      {!showroom && <section className="home-category-section home-gifts-preview home-photo-section" id="presentes-destaque">
+        <div className="home-category-heading home-photo-heading">
           <h2>Presentes e kits</h2>
           <a href="/presentes">Ver todas as opções <span aria-hidden="true">→</span></a>
         </div>
-        <div className="home-gifts-grid">
-          {gifts.filter(gift => ["bento","bento-combo","caixa-encanto"].includes(gift.id)).map(gift => <article className="home-gift-tile" key={gift.id}>
-            <a href={`/presentes?produto=${gift.id}#produto-${gift.id}`}>
-              <img src={gift.image} alt={`Foto de ${gift.name}`} loading="lazy"/>
-              <div className="home-gift-details">
-                <h3>{gift.name}</h3>
-                <strong>A partir de {formatMoney(gift.price)}</strong>
-                <span className="home-tile-action">Quero esse <span aria-hidden="true">→</span></span>
-              </div>
+        <div className="home-photo-gallery" aria-label="Fotografias de presentes e kits da doceria">
+          {homePhotoGalleries.gifts.map((photo, index) =>
+            <a key={photo} href="/presentes" aria-label="Ver o catálogo de presentes e kits">
+              <img src={photo} alt={`Fotografia de um presente ou kit da doceria, exemplo ${index + 1}`} loading="lazy"/>
             </a>
-          </article>)}
+          )}
         </div>
-      </section>}
-
-      {!showroom && <section className="home-decorations-teaser">
-        <div><h2>Decorações</h2><p>Ideias para sua comemoração.</p></div>
-        <a href="/decoracoes">Ver inspirações <span aria-hidden="true">→</span></a>
       </section>}
 
       {!showroom && <section className="boutique-how" id="como-pedir">
