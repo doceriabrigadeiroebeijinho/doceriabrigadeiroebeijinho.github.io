@@ -148,7 +148,7 @@ const whiteSweetIds = new Set([
   "surpresa-uva",
 ]);
 
-const sweetSpriteIds = new Set<string>();
+const sweetSpriteIds = new Set(["ninho-nutella","gota-maracuja","oreo","moranguinho","pacoca","mms","amendoas","surpresa-uva"]);
 const individualSweetPhotos: Record<string,string> = {
   brigadeiro: "/assets/docinho-brigadeiro.webp",
   coco: "/assets/docinho-coco.webp",
@@ -159,10 +159,14 @@ const individualSweetPhotos: Record<string,string> = {
 };
 const sweetPhoto = (id: string, type: SweetGroup["type"]) => {
   if (individualSweetPhotos[id]) return individualSweetPhotos[id];
+  if (sweetSpriteIds.has(id)) return "/assets/sweets-sprite.webp";
   if (type === "bonbon") return "/assets/gift-bombons.webp";
   return whiteSweetIds.has(id) ? "/assets/sweets-ninho.webp" : "/assets/sweets-chocolate.webp";
 };
-const sweetPhotoPosition = (_id:string) => "center";
+const sweetPhotoPosition = (id:string) => ({
+  "ninho-nutella":"0px 0px", "gota-maracuja":"-56px 0px", oreo:"-112px 0px", moranguinho:"-168px 0px",
+  pacoca:"0px -56px",mms:"-56px -56px",amendoas:"-112px -56px","surpresa-uva":"-168px -56px"
+} as Record<string,string>)[id] ?? "center";
 
 const bentoFillingPrice = (
   giftId: "bento" | "bento-combo",
@@ -1832,7 +1836,7 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
                     return (
                       <article className="sweet-card" id={`produto-${sweet.id}`} key={sweet.id}>
                         <img
-                          className="sweet-photo"
+                          className={`sweet-photo ${sweetSpriteIds.has(sweet.id) ? "sweet-photo--sprite" : ""}`}
                           src={sweetPhoto(sweet.id, group.type)}
                           style={{ objectPosition: sweetPhotoPosition(sweet.id) }}
                           alt={`Foto de ${sweet.name}`}
