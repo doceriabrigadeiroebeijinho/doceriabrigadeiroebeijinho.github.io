@@ -885,6 +885,17 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
     setCustomerError("");
     setCustomerOrders([]);
   };
+  useEffect(() => {
+    const action = new URLSearchParams(window.location.search).get("abrir");
+    if (action === "cliente") {
+      setCustomerPortalOpen(true);
+      setCustomerError("");
+      setCustomerOrders([]);
+    } else if (action === "pedido") {
+      setOrderOpen(true);
+      setCheckoutStep(0);
+    }
+  }, []);
 
   const formatOrderTime = (value: unknown) => {
     const raw = String(value ?? "").trim();
