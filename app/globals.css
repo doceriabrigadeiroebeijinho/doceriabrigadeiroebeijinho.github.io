@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --font-manrope: "Manrope";
+  --font-cormorant: Georgia;
   --cream: #fff8ee;
   --paper: #fffdf8;
   --paper-2: #f9efe4;
