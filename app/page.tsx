@@ -3,6 +3,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import StorefrontIcon from "./components/StorefrontIcon";
 import { cakeTiers, cakeSizeCatalog, cakeMassPrice, classicFillings, specialFillings, gourmetFillings, sweetGroups, gifts } from "./catalogo/dados";
 import type { CakeTier, SweetGroup, CakeSizeId, CakeFillingType } from "./catalogo/dados";
 
@@ -1325,113 +1326,66 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
   };
 
   return (
-    <main className={showroom ? "storefront-page" : "home-page"}>
-      <header className="site-header">
-        <a className="brand" href="/" aria-label="Brigadeiro e Beijinho - início">
-          <img
-            src="/assets/logo-complete.webp"
-            alt="Doceria Brigadeiro & Beijinho"
-            width="900"
-            height="673"
-          />
-        </a>
-        <nav className={mobileMenu ? "nav-open" : ""} aria-label="Navegação principal">
-          <a href="/#como-pedir" onClick={() => setMobileMenu(false)}>Como pedir</a>
-          <a href="/#cardapio" onClick={() => setMobileMenu(false)}>Cardápio</a>
-          <a href="/bolos" onClick={() => setMobileMenu(false)}>Bolos</a>
-          <a href="/docinhos" onClick={() => setMobileMenu(false)}>Doces e Bombons</a>
-          <a href="/presentes" onClick={() => setMobileMenu(false)}>Presentes</a>
-          <a href="/decoracoes" onClick={() => setMobileMenu(false)}>Decorações</a>
-        </nav>
-        <div className="header-actions">
-          <button
-            className="menu-toggle"
-            type="button"
-            aria-label="Abrir menu"
-            aria-expanded={mobileMenu}
-            onClick={() => setMobileMenu((open) => !open)}
-          >
-            <span />
-            <span />
-          </button>
-          <button className="header-cta" type="button" onClick={openCustomerPortal}>
-            Já sou cliente
-          </button>
-          <button
-            className="header-cta"
-            type="button"
-            onClick={() => {
-              setOrderOpen(true);
-              setCheckoutStep(0);
-            }}
-          >
-            Meu pedido
-            {cart.length > 0 && <b>{cart.length}</b>}
-          </button>
+    <main id="inicio" className={showroom ? "storefront-page boutique-site" : "home-page boutique-site"}>
+      <header className="site-header boutique-header">
+        <div className="boutique-header-main">
+          <span className="boutique-header-balance" aria-hidden="true"/>
+          <a className="brand boutique-logo" href="/" aria-label="Página inicial da Doceria Brigadeiro & Beijinho">
+            <img src="/assets/logo-complete.webp" alt="Doceria Brigadeiro & Beijinho" width="900" height="673"/>
+          </a>
+          <div className="boutique-tools">
+            <form action="/buscar" method="get" role="search" className="boutique-search">
+              <input type="search" name="q" aria-label="Pesquisar no cardápio" placeholder="O que você procura?"/>
+              <button type="submit" aria-label="Pesquisar"><StorefrontIcon name="search" size={21}/></button>
+            </form>
+            <button type="button" className="boutique-tool" aria-label="Já sou cliente" title="Já sou cliente" onClick={openCustomerPortal}>
+              <StorefrontIcon name="user" size={22}/>
+            </button>
+            <button type="button" className="boutique-tool boutique-cart" aria-label={`Meu pedido com ${cart.length} itens`} title="Meu pedido" onClick={() => {setOrderOpen(true);setCheckoutStep(0);}}>
+              <StorefrontIcon name="bag" size={23}/>
+              {cart.length>0&&<span className="boutique-cart-count">{cart.length}</span>}
+            </button>
+          </div>
         </div>
+        <nav className="boutique-nav" aria-label="Navegação principal">
+          <a href="/#como-pedir"><StorefrontIcon name="clipboard"/><span>Como pedir</span></a>
+          <a href="/#cardapio"><StorefrontIcon name="grid"/><span>Cardápio</span></a>
+          <a href="/bolos"><StorefrontIcon name="cake"/><span>Bolos</span></a>
+          <a href="/docinhos"><StorefrontIcon name="sweet"/><span>Doces e Bombons</span></a>
+          <a href="/presentes"><StorefrontIcon name="gift"/><span>Presentes</span></a>
+          <a href="/decoracoes"><StorefrontIcon name="sparkles"/><span>Decorações</span></a>
+        </nav>
       </header>
 
-      {!showroom && <section className="hero" id="inicio">
-        <div className="hero-copy">
-          <span className="eyebrow">Bolos e doces artesanais em Belo Horizonte</span>
-          <h1>Bolos e doces para sua comemoração</h1>
-          <p>Encontre bolos, docinhos e presentes. Confira sabores e preços.</p>
-          <p className="hero-deadline">Todos os pedidos precisam de 72 horas de antecedência.</p>
-          <div className="hero-search-access">
-            <form action="/buscar" method="get" className="hero-search-form" role="search">
-              <label htmlFor="hero-product-search">Encontre rápido no cardápio</label>
-              <div><input id="hero-product-search" type="search" name="q" placeholder="Busque por doce, recheio ou tamanho..." aria-label="Buscar produtos e sabores"/><button type="submit">Pesquisar →</button></div>
-            </form>
-          </div>
 
-        </div>
-
-        <div className="hero-visual">
-          <img
-            className="hero-image"
-            src="/assets/hero-pimenta-rosa.webp"
-            alt="Bolo personalizado Pimenta Rosa da Doceria Brigadeiro & Beijinho"
-            width="1560"
-            height="1600"
-          />
-        </div>
-      </section>}
-      {!showroom && <section className="home-bolo-showcase" id="bolos-destaque">
+      {!showroom && <section className="home-bolo-showcase boutique-showcase" id="cardapio">
         <div className="home-bolo-heading">
-          <span className="section-kicker">Bolos personalizados</span>
-          <h2>Escolha seu bolo</h2>
-          <p>Veja o tamanho, a quantidade de fatias e o valor inicial.</p>
+          <div><span className="section-kicker">Feitos com carinho</span><h1>Bolos</h1></div>
+          <a className="boutique-view-all" href="/bolos">Ver todos os tamanhos <span aria-hidden="true">→</span></a>
         </div>
         <div className="home-bolo-grid">
-          {cakeSizeCatalog.map(bolo=><article className="home-bolo-card" key={bolo.id}>
-            <a href={`/bolos/${bolo.id}`} aria-label={`Quero ${bolo.name} a partir de ${formatMoney(Math.min(...Object.values(bolo.prices)))}`}>
-              <img src={showcaseCakeImages[bolo.id]} alt={`Exemplo de decoração feita pela doceria para ${bolo.name}`} loading="lazy"/>
+          {cakeSizeCatalog.slice(0,4).map(bolo=><article className="home-bolo-card" key={bolo.id}>
+            <a href={`/bolos/${bolo.id}`} aria-label={`Quero ${bolo.name}, a partir de ${formatMoney(Math.min(...Object.values(bolo.prices)))}`}>
+              <img src={showcaseCakeImages[bolo.id]} alt={`Decoração de exemplo para ${bolo.name}`} loading="lazy"/>
               <div className="home-bolo-details">
-                <h3>{bolo.name}</h3>
+                <h2>{bolo.name}</h2>
                 <p>{bolo.subtitle}</p>
                 <strong>A partir de {formatMoney(Math.min(...Object.values(bolo.prices)))}</strong>
-                <span className="home-bolo-buy">Quero esse →</span>
+                <span className="home-bolo-buy">Quero esse <span aria-hidden="true">→</span></span>
               </div>
             </a>
           </article>)}
         </div>
-        <div className="home-bolo-note"><span>Fotos ilustrativas das nossas decorações.</span><a href="/decoracoes">Ver ideias de decoração →</a></div>
+        <div className="boutique-showcase-more"><a href="/bolos">Todos os bolos</a><span aria-hidden="true">·</span><a href="/decoracoes">Inspirações de decoração</a></div>
       </section>}
-      {!showroom && <section className="order-explainer" id="como-pedir" aria-label="Como pedir">
-        <div><span className="section-kicker">É simples encomendar</span><h2>Como fazer seu pedido</h2></div>
-        <div className="order-explainer-steps">
-          <p><b>1. Escolha</b> Bolos, docinhos ou presentes na vitrine.</p>
-          <p><b>2. Personalize</b> Veja sabores, quantidades e valores no próprio produto.</p>
-          <p><b>3. Envie</b> Revise e solicite sua encomenda. Confirmamos a disponibilidade antes de fechar.</p>
-        </div>
+      {!showroom && <section className="boutique-how" id="como-pedir">
+        <h2>Como pedir</h2>
+        <p>Escolha seu produto, personalize e envie sua solicitação. Confirmamos a disponibilidade pelo WhatsApp.</p>
       </section>}
-      {showroom && <section className="storefront-heading" aria-label="Vitrine de produtos">
-        <span className="section-kicker">Nossa vitrine · Monte seu pedido por aqui</span>
-        <h1>{focusedCake ? focusedCake.name : category === "bolos" ? "Bolos personalizados" : category === "docinhos" ? "Doces e bombons" : category === "combos" ? "Combos e kits" : "Presentes especiais"}</h1>
-        <p>{focusedCake ? `${focusedCake.subtitle} · A partir de ${formatMoney(Math.min(...Object.values(focusedCake.prices)))}` : category === "bolos" ? "Escolha pelo tamanho e confira os recheios." : category === "docinhos" ? "Encontre os sabores e confira os valores." : "Veja o que acompanha cada opção."}</p>
-        <form action="/buscar" role="search" className="storefront-search"><input name="q" type="search" placeholder="Buscar recheio, doce ou tamanho..." aria-label="Buscar no cardápio"/><button type="submit">Buscar →</button></form>
+      {showroom && <section className="storefront-heading boutique-category-heading">
+        <h1>{category === "bolos" ? (focusedCake ? focusedCake.name : "Bolos") : category === "docinhos" ? "Doces e bombons" : category === "combos" ? "Combos e kits" : "Presentes"}</h1>
       </section>}
-      <section className="catalog-section" id="cardapio">
+      {showroom && <section className="catalog-section" id="catalogo-produtos">
         <div className="section-heading">
           <span className="section-kicker">Feito com carinho para suas comemorações</span>
           <h2>{focusedCake ? "Escolha massa, recheio e decoração" : showroom ? (category === "bolos" ? "Escolha seu bolo" : category === "docinhos" ? "Escolha seus docinhos" : category === "combos" ? "Monte seu kit" : "Escolha um presente") : "Outros produtos"}</h2>
@@ -2190,90 +2144,9 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
             ))}
           </div>
         )}
-      </section>
+      </section>}
 
       {!showroom && <>
-      <section className="gallery-section" id="galeria">
-        <div className="gallery-copy">
-          <span className="section-kicker">Feito de verdade</span>
-          <h2>Um bolo para cada história</h2>
-          <p>
-            Cada decoração parte da sua referência e ganha o cuidado artesanal
-            da nossa produção. Confira um dos nossos trabalhos.
-          </p>
-          <a href={INSTAGRAM} target="_blank" rel="noreferrer">
-            Veja nossos produtos no Instagram <span>→</span>
-          </a>
-        </div>
-        <div className="gallery-grid gallery-grid-single">
-          <figure className="gallery-tall">
-            <img src="/assets/cake-theme.webp" alt="Bolo temático personalizado em rosa" />
-          </figure>
-        </div>
-      </section>
-
-      <section className="google-reviews-section" id="avaliacoes">
-        <div className="google-reviews-heading">
-          <div>
-            <span className="section-kicker">Avaliações no Google</span>
-            <h2>Quem encomenda também conta a experiência</h2>
-          </div>
-          <div className="google-rating-badge" aria-label="Nota 5,0 de 5 no Google">
-            <strong>5,0</strong>
-            <span className="google-stars" aria-hidden="true">★★★★★</span>
-          </div>
-        </div>
-
-        <div className="google-review-cards">
-          <article className="google-review-card">
-            <div className="google-review-card-head">
-              <span className="review-initials" aria-label="Avaliação de cliente">R.</span>
-              <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
-            </div>
-            <p>
-              “O bolo estava simplesmente maravilhoso! Muito gostoso, saboroso e feito com muito
-              capricho. A massa estava fofinha, o recheio delicioso e tudo estava na medida certa.
-              Além de lindo, estava realmente uma delícia! Todo mundo adorou. Dá para perceber o
-              carinho e o cuidado em cada detalhe. Com certeza, recomendo e vou pedir novamente! 💕🎂”
-            </p>
-          </article>
-
-          <article className="google-review-card">
-            <div className="google-review-card-head">
-              <span className="review-initials" aria-label="Avaliação de cliente">K.C.L.</span>
-              <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
-            </div>
-            <p>
-              “Adoro tudo que a Débora faz!! Excelente profissional!! Faz tudo com muito carinho e
-              capricho!!”
-            </p>
-          </article>
-
-          <article className="google-review-card">
-            <div className="google-review-card-head">
-              <span className="review-initials" aria-label="Avaliação de cliente">M.J.</span>
-              <span className="google-stars" aria-label="5 de 5 estrelas">★★★★★</span>
-            </div>
-            <p>
-              “Quero agradecer o capricho da Deborah em todos os detalhes do bolo, desde a decoração
-              do topo até o cuidado da embalagem, bem embalado e ainda veio duas velinhas. O sabor do
-              bolo então nem se fala, muito saboroso, vem bastante recheio na medida certa e uma
-              delícia, massa fofinha e leve. Eu amei todos os detalhes. Super indico, muito impecável
-              o trabalho da Débora!”
-            </p>
-          </article>
-        </div>
-
-        <div className="google-review-actions">
-          <a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noreferrer">
-            Ver mais avaliações no Google
-          </a>
-          <a href={GOOGLE_REVIEW_FORM_URL} target="_blank" rel="noreferrer">
-            Avaliar no Google
-          </a>
-        </div>
-      </section>
-
       <section className="faq-section" id="faq">
         <div className="section-heading">
           <span className="section-kicker">Antes de chamar no WhatsApp</span>
@@ -2307,22 +2180,6 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
           <span>Depois de consultar o cardápio, fale conosco pelo WhatsApp para assuntos específicos do seu pedido.</span>
           <a href={WHATSAPP_INFO_URL} target="_blank" rel="noreferrer">Falar sobre meu pedido →</a>
         </div>
-      </section>
-
-      <section className="instagram-section">
-        <div>
-          <span className="section-kicker">Inspire-se</span>
-          <h2>Veja nossos produtos no Instagram</h2>
-          <p>
-            Acompanhe os bolos mais recentes, detalhes das decorações e ideias
-            para a sua próxima comemoração.
-          </p>
-          <a href={INSTAGRAM} target="_blank" rel="noreferrer">
-            @doceria_brigadeiro_beijinho
-          </a>
-        </div>
-        <img src="/assets/cake-floral.webp" alt="Bolo decorado com flores naturais" />
-        <img src="/assets/cake-lilac.webp" alt="Bolo personalizado em tons de lilás" />
       </section>
 
       </>}
