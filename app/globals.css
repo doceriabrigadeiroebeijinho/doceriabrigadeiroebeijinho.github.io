@@ -6909,3 +6909,425 @@ main.decor-page.boutique-site{
   .decor-page.boutique-site .decor-photo img{height:175px}
   .decor-page.boutique-site .decor-tabs button{font-size:11px;padding:8px 12px}
 }
+
+
+
+/* 2026-11 | Ajustes de usabilidade: navegação textual e vitrines em grade. */
+.site-header.boutique-header nav.boutique-nav,
+.site-header.boutique-header nav.boutique-nav.nav-open {
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:clamp(18px,3.4vw,55px)!important;
+  padding:15px 25px 19px!important;
+  border:0!important;
+  box-shadow:none!important;
+  background:#FFF8F6!important;
+  overflow:visible;
+}
+.site-header.boutique-header nav.boutique-nav a,
+.site-header.boutique-header nav.boutique-nav.nav-open a {
+  display:inline-flex!important;
+  flex-direction:row!important;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  padding:4px 0!important;
+  font-family:"Montserrat",Arial,sans-serif;
+  font-weight:600!important;
+  font-size:14px!important;
+  letter-spacing:-.012em;
+  line-height:1.35;
+  text-transform:none;
+  color:#683E2E;
+}
+.site-header.boutique-header nav.boutique-nav a::after{content:none!important;display:none!important}
+.site-header.boutique-header nav.boutique-nav a:hover{color:#C9576A}
+
+/* Separa a informação do efeito visual: nada se sobrepõe aos preços ou botões. */
+.boutique-site .product-card::before,
+.boutique-site .product-card:nth-child(2)::before,
+.boutique-site .product-card:nth-child(3)::before {
+  content:none!important;
+  display:none!important;
+}
+.boutique-site.storefront-page .cake-card,
+.boutique-site.storefront-page .sweet-card,
+.boutique-site.storefront-page .gift-card{
+  box-shadow:none!important;
+  border:1px solid #EEDFD8!important;
+  background:#FFFFFF!important;
+  border-radius:16px!important;
+}
+.boutique-site.storefront-page .cake-card a,
+.boutique-site.storefront-page .sweet-card summary,
+.boutique-site.storefront-page .gift-card summary{position:relative;z-index:1}
+.boutique-site.storefront-page .cake-line-buy,
+.boutique-site.storefront-page .catalog-summary-action{
+  position:relative;
+  z-index:2;
+  border-radius:9px;
+  background:#C9576A!important;
+  color:white!important;
+  box-shadow:none!important;
+  transition:background .2s;
+}
+.boutique-site.storefront-page .cake-line-purchase:hover .cake-line-buy{background:#B34359!important}
+
+/* Bolos: dois tamanhos por linha, preços legíveis e botão livre. */
+.boutique-site.storefront-page .cake-grid {
+  display:grid!important;
+  width:min(1200px,100%)!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch;
+  column-gap:15px!important;
+  row-gap:15px!important;
+}
+.boutique-site.storefront-page .cake-grid:has(>.cake-card:only-child) {
+  grid-template-columns:minmax(0,1fr)!important;
+  max-width:900px;
+}
+.boutique-site.storefront-page .cake-line-purchase {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:auto auto;
+  gap:17px 12px;
+  padding:23px 22px;
+  height:100%;
+  min-height:175px;
+  align-items:center;
+}
+.boutique-site.storefront-page .cake-line-name{grid-column:1;grid-row:1;min-width:0}
+.boutique-site.storefront-page .cake-line-name strong{font-size:18px;line-height:1.25}
+.boutique-site.storefront-page .cake-line-name span{font-size:12px}
+.boutique-site.storefront-page .cake-line-prices{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-column:1/-1;
+  grid-row:2;
+  gap:8px;
+  background:transparent;
+  padding:0;
+  min-width:0;
+}
+.boutique-site.storefront-page .cake-line-prices span{
+  display:grid;
+  justify-content:stretch;
+  text-align:center;
+  gap:5px;
+  background:#FFF8F6;
+  border-radius:9px;
+  padding:11px 5px;
+  font-size:11px;
+  line-height:1.3;
+  white-space:normal;
+}
+.boutique-site.storefront-page .cake-line-prices b{font-size:13px}
+.boutique-site.storefront-page .cake-line-buy{
+  grid-column:2;
+  grid-row:1;
+  padding:11px 15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+/* Doces: quatro sabores lado a lado, com detalhes opcionais no próprio card. */
+.boutique-site.storefront-page .sweet-grid {
+  display:grid!important;
+  width:min(1200px,100%)!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-items:start;
+  gap:12px!important;
+}
+.boutique-site.storefront-page .sweet-card {
+  display:block!important;
+  width:100%;
+  min-height:0!important;
+  overflow:visible!important;
+}
+.boutique-site.storefront-page .sweet-card .catalog-item-details{height:100%}
+.boutique-site.storefront-page .sweet-card .catalog-item-summary.text-only{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:14px;
+  min-height:197px;
+  padding:18px 17px!important;
+  list-style:none;
+  cursor:pointer;
+}
+.boutique-site.storefront-page .sweet-card .catalog-summary-name{width:100%}
+.boutique-site.storefront-page .sweet-card .catalog-summary-name h4{
+  font-size:16px!important;
+  font-weight:700!important;
+  margin:0!important;
+  line-height:1.25;
+  letter-spacing:-.025em;
+}
+.boutique-site.storefront-page .sweet-card .catalog-summary-name>span{
+  display:none;
+}
+.boutique-site.storefront-page .sweet-card .catalog-summary-prices.catalog-summary-single{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:7px;
+  width:100%;
+  min-width:0;
+}
+.boutique-site.storefront-page .sweet-card .catalog-summary-prices>span{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center;
+  gap:5px;
+  width:100%;
+  padding:0!important;
+  background:transparent!important;
+  font-size:12px;
+  line-height:1.3;
+  white-space:nowrap;
+}
+.boutique-site.storefront-page .sweet-card .catalog-summary-prices b{font-size:12px}
+.boutique-site.storefront-page .sweet-card .catalog-summary-action{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  margin:auto 0 0;
+  min-height:40px;
+  padding:10px!important;
+  font-size:12px;
+}
+.boutique-site.storefront-page .sweet-card:has(.catalog-item-details[open]){
+  grid-column:span 2;
+  overflow:hidden!important;
+}
+.boutique-site.storefront-page .sweet-card .catalog-item-options{
+  display:block;
+  border-top:1px solid #EEDFD8;
+  padding:17px 16px;
+  background:#FFFFFF;
+}
+.boutique-site.storefront-page .sweet-card .sweet-quantity-control{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:11px;
+}
+.boutique-site.storefront-page .sweet-card .sweet-quantity-control>button{
+  grid-column:1/-1;
+  min-height:42px;
+}
+.boutique-site.storefront-page .sweet-group-title{margin-top:24px}
+.boutique-site.storefront-page .sweet-group-title h3{font-size:24px}
+
+/* Página inicial: previews por categoria, sem duplicar a página completa. */
+.home-page.boutique-site .home-category-section{
+  width:min(1250px,calc(100% - 60px));
+  margin:48px auto 0;
+  color:#683E2E;
+}
+.home-page.boutique-site .home-category-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:16px;
+  margin-bottom:20px;
+}
+.home-page.boutique-site .home-category-heading h2{
+  font-family:"Montserrat",Arial,sans-serif;
+  font-weight:700;
+  font-size:clamp(22px,2.3vw,29px);
+  letter-spacing:-.035em;
+  margin:0;
+}
+.home-page.boutique-site .home-category-heading>a{
+  font-size:12px;
+  font-weight:600;
+  color:#9E4C5F;
+  border-bottom:1px solid #E8A2B2;
+  padding-bottom:4px;
+  white-space:nowrap;
+}
+.home-page.boutique-site .home-sweets-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+}
+.home-page.boutique-site .home-sweet-tile{
+  background:white;
+  border:1px solid #EEDFD8;
+  border-radius:14px;
+  overflow:hidden;
+}
+.home-page.boutique-site .home-sweet-tile>a{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  min-height:178px;
+  gap:6px;
+  padding:18px;
+}
+.home-page.boutique-site .home-sweet-tile h3,
+.home-page.boutique-site .home-gift-tile h3{
+  font-family:"Montserrat",Arial,sans-serif;
+  margin:0;
+  font-size:15px;
+  font-weight:650;
+  letter-spacing:-.02em;
+  line-height:1.35;
+}
+.home-page.boutique-site .home-sweet-tile a>span:not(.home-tile-action){color:#97786C;font-size:11px}
+.home-page.boutique-site .home-sweet-tile strong{font-size:15px;margin-top:3px}
+.home-page.boutique-site .home-tile-action{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  min-height:38px;
+  margin-top:auto;
+  width:100%;
+  border:1px solid #C9576A;
+  color:#A5485B;
+  font-size:12px;
+  font-weight:650;
+  border-radius:10px;
+  text-align:center;
+}
+.home-page.boutique-site .home-sweet-tile a:hover .home-tile-action,
+.home-page.boutique-site .home-gift-tile a:hover .home-tile-action{background:#C9576A;color:white}
+.home-page.boutique-site .home-gifts-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+}
+.home-page.boutique-site .home-gift-tile{min-width:0}
+.home-page.boutique-site .home-gift-tile a{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  min-height:0;
+  color:#683E2E;
+}
+.home-page.boutique-site .home-gift-tile img{
+  width:100%;
+  height:205px;
+  border-radius:13px;
+  background:#F9E7D7;
+  object-fit:cover;
+}
+.home-page.boutique-site .home-gift-details{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  padding:13px 0 0;
+  flex:1;
+}
+.home-page.boutique-site .home-gift-details strong{font-size:14px}
+.home-page.boutique-site .home-gift-details .home-tile-action{margin-top:auto}
+.home-page.boutique-site .home-decorations-teaser{
+  width:min(1250px,calc(100% - 60px));
+  margin:42px auto 10px;
+  padding:22px 26px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  border:1px solid #EEDFD8;
+  border-radius:14px;
+  background:#FFFFFF;
+}
+.home-page.boutique-site .home-decorations-teaser h2{
+  font-size:18px;
+  font-weight:700;
+  margin:0 0 5px;
+}
+.home-page.boutique-site .home-decorations-teaser p{font-size:12px;color:#97786C;margin:0}
+.home-page.boutique-site .home-decorations-teaser>a{
+  font-size:12px;
+  color:#A5485B;
+  font-weight:650;
+  white-space:nowrap;
+}
+
+/* Cartões de presentes seguem duas colunas para diminuir a extensão. */
+.boutique-site.storefront-page .gift-grid {
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px!important;
+  width:min(1200px,100%);
+}
+.boutique-site.storefront-page .gift-card .catalog-item-summary.text-only{
+  grid-template-columns:minmax(0,1fr) minmax(125px,160px) 100px;
+  padding:18px 16px;
+  min-height:120px;
+  gap:12px;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-name h3{font-size:17px!important}
+
+@media(max-width:1080px){
+  .boutique-site.storefront-page .sweet-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .boutique-site.storefront-page .gift-grid{grid-template-columns:1fr!important}
+  .site-header.boutique-header nav.boutique-nav{gap:clamp(14px,2vw,25px)!important}
+}
+@media(max-width:760px){
+  .site-header.boutique-header nav.boutique-nav,
+  .site-header.boutique-header nav.boutique-nav.nav-open{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    align-items:center!important;
+    justify-items:center;
+    justify-content:center!important;
+    gap:0!important;
+    padding:8px 10px 13px!important;
+    overflow:visible!important;
+  }
+  .site-header.boutique-header nav.boutique-nav a,
+  .site-header.boutique-header nav.boutique-nav.nav-open a{
+    width:100%;
+    min-height:35px;
+    padding:8px 4px!important;
+    font-size:12px!important;
+    line-height:1.2;
+    text-align:center;
+    white-space:normal;
+  }
+  .home-page.boutique-site .home-category-section,
+  .home-page.boutique-site .home-decorations-teaser{width:calc(100% - 26px);margin-top:32px}
+  .home-page.boutique-site .home-category-heading{margin-bottom:14px}
+  .home-page.boutique-site .home-category-heading h2{font-size:20px}
+  .home-page.boutique-site .home-category-heading>a{font-size:11px}
+  .home-page.boutique-site .home-sweets-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .home-page.boutique-site .home-sweet-tile>a{padding:13px;min-height:160px}
+  .home-page.boutique-site .home-sweet-tile h3{font-size:14px}
+  .home-page.boutique-site .home-gifts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+  .home-page.boutique-site .home-gift-tile img{height:145px}
+  .home-page.boutique-site .home-gift-tile h3{font-size:13px}
+  .home-page.boutique-site .home-gift-details strong{font-size:12px}
+  .home-page.boutique-site .home-decorations-teaser{padding:16px 17px}
+  .home-page.boutique-site .home-decorations-teaser h2{font-size:16px}
+  .home-page.boutique-site .home-decorations-teaser a{font-size:11px}
+  .boutique-site.storefront-page .cake-grid{grid-template-columns:minmax(0,1fr)!important}
+  .boutique-site.storefront-page .sweet-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+  .boutique-site.storefront-page .sweet-card .catalog-item-summary.text-only{padding:14px 12px!important;min-height:180px;gap:12px}
+  .boutique-site.storefront-page .sweet-card .catalog-summary-name h4{font-size:14px!important}
+  .boutique-site.storefront-page .sweet-card .catalog-summary-prices>span{font-size:11px}
+  .boutique-site.storefront-page .sweet-card .catalog-summary-prices b{font-size:11px}
+  .boutique-site.storefront-page .sweet-card .catalog-item-options{padding:15px 11px}
+  .boutique-site.storefront-page .cake-line-purchase{padding:16px;gap:15px 10px}
+  .boutique-site.storefront-page .cake-line-name strong{font-size:17px}
+  .boutique-site.storefront-page .cake-line-prices{gap:5px}
+  .boutique-site.storefront-page .cake-line-prices span{padding:9px 4px}
+  .boutique-site.storefront-page .cake-line-prices b{font-size:12px}
+  .boutique-site.storefront-page .gift-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+@media(max-width:390px){
+  .home-page.boutique-site .home-decorations-teaser{flex-wrap:wrap}
+  .boutique-site.storefront-page .sweet-card:has(.catalog-item-details[open]){grid-column:1/-1}
+  .site-header.boutique-header nav.boutique-nav a{font-size:11px!important}
+}
