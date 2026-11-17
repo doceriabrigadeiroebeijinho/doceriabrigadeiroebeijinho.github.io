@@ -104,6 +104,17 @@ function buildComandaSvg(body: OrderRequestBody, orderCode: string, logoDataUri 
   const depositCents = Number(summary.depositCents ?? Math.round(totalCents * 0.6));
   const balanceCents = Number(summary.balanceCents ?? Math.max(0, totalCents - depositCents));
   const items = body.items || [];
+  const productsCents = Number(summary.productsCents ?? items.reduce((sum, item) => sum + Number(item.totalCents || 0), 0));
+  const couponDiscountCents = Number(summary.couponDiscountCents || 0);
+  const pixDiscountCents = Number(summary.pixDiscountCents || 0);
+  const deliveryCents = typeof summary.deliveryCents === "number" && Number.isFinite(summary.deliveryCents)
+    ? summary.deliveryCents
+    : undefined;
+  const deliveryLine = isPickup
+    ? "Retirada: sem taxa de entrega"
+    : deliveryCents !== undefined
+      ? "Taxa de entrega: " + formatMoneyFromCents(deliveryCents)
+      : "Taxa de entrega: não informada";
   const personalization = body.personalization || {};
   const parts: string[] = [];
   let y = 214;
@@ -171,6 +182,15 @@ function buildComandaSvg(body: OrderRequestBody, orderCode: string, logoDataUri 
   }
 
   addSection("Resumo financeiro");
+  addText("Produtos: " + formatMoneyFromCents(productsCents), { size: 18, weight: 600, maxChars: 48, lineHeight: 29 });
+  if (couponDiscountCents > 0) {
+    addText("Desconto do cupom: -" + formatMoneyFromCents(couponDiscountCents), { size: 17, color: "#6f493d", maxChars: 50, lineHeight: 27 });
+  }
+  if (pixDiscountCents > 0) {
+    addText("Desconto no Pix: -" + formatMoneyFromCents(pixDiscountCents), { size: 17, color: "#6f493d", maxChars: 50, lineHeight: 27 });
+  }
+  addText(deliveryLine, { size: 19, weight: 700, color: "#9c4f59", maxChars: 49, lineHeight: 31 });
+  y += 6;
   addText("VALOR TOTAL", { size: 15, color: "#806b63", weight: 700, maxChars: 55, lineHeight: 25 });
   y += 18;
   addText(formatMoneyFromCents(totalCents), { size: 34, color: "#9c4f59", weight: 700, maxChars: 30, lineHeight: 48 });
@@ -307,7 +327,24 @@ async function createClickUpOrderTask(
         return "- " + quantity + " × " + itemName + variant + " — " + formatMoneyFromCents(item.totalCents);
       }).join("\n")
     : "- Itens não informados";
-  const deliveryFeeCents = Number(summary.deliveryCents || 0);
+  const productsCents = Number(summary.productsCents ?? items.reduce((sum, item) => sum + Number(item.totalCents || 0), 0));
+  const couponDiscountCents = Number(summary.couponDiscountCents || 0);
+  const pixDiscountCents = Number(summary.pixDiscountCents || 0);
+  const deliveryFeeCents = typeof summary.deliveryCents === "number" && Number.isFinite(summary.deliveryCents)
+    ? summary.deliveryCents
+    : undefined;
+  const deliveryLine = isPickup
+    ? "Retirada: sem taxa de entrega"
+    : deliveryFeeCents !== undefined
+      ? "Taxa de entrega: " + formatMoneyFromCents(deliveryFeeCents)
+      : "Taxa de entrega: não informada";
+  const priceBreakdown = [
+    "Produtos: " + formatMoneyFromCents(productsCents),
+    ...(couponDiscountCents > 0 ? ["Desconto do cupom: -" + formatMoneyFromCents(couponDiscountCents)] : []),
+    ...(pixDiscountCents > 0 ? ["Desconto no Pix: -" + formatMoneyFromCents(pixDiscountCents)] : []),
+    deliveryLine,
+    "Valor total (inclui a entrega, quando aplicável): " + formatMoneyFromCents(totalCents),
+  ];
   const selectedDepositMethod = String(body.paymentMethod || "").split("·")[0].trim().toLowerCase();
   const cardPaymentUrl = "https://linknabio.gg/nutribacelar";
   const isPixDeposit = selectedDepositMethod === "pix";
@@ -344,7 +381,7 @@ async function createClickUpOrderTask(
     "Modalidade: " + atendimentoLabel,
     (isPickup ? "Endereço para retirada: " : "Endereço para entrega: ") + address,
     "",
-    "Valor total: " + formatMoneyFromCents(totalCents),
+    ...priceBreakdown,
     ...initialPaymentInstructions,
     "Restante de 40%: " + formatMoneyFromCents(balanceCents),
     "",
@@ -360,7 +397,7 @@ async function createClickUpOrderTask(
     "Modalidade: " + atendimentoLabel,
     (isPickup ? "Endereço para retirada: " : "Endereço para entrega: ") + address,
     "",
-    "Valor total: " + formatMoneyFromCents(totalCents),
+    ...priceBreakdown,
     "Entrada recebida: " + formatMoneyFromCents(depositCents),
     "Restante (" + paymentLocationLabel + "): " + formatMoneyFromCents(balanceCents),
     "",
@@ -394,7 +431,7 @@ async function createClickUpOrderTask(
     "Endereço: " + address,
     "Dia da entrega: " + dateLabel,
     "Horário da entrega: " + timeLabel,
-    "Taxa de entrega: " + formatMoneyFromCents(deliveryFeeCents),
+    deliveryLine,
     "Total a receber na entrega: " + formatMoneyFromCents(balanceCents),
   ].join("\n");
 
@@ -470,7 +507,7 @@ async function createClickUpOrderTask(
     itemsText,
     "",
     "## Valores",
-    `- Total estimado: ${formatMoneyFromCents(totalCents)}`,
+    ...priceBreakdown.map((line) => "- " + line),
     `- Entrada prevista (60%): ${formatMoneyFromCents(depositCents)}`,
     `- Saldo previsto (40%): ${formatMoneyFromCents(balanceCents)}`,
     `- Forma de pagamento informada: ${body.paymentMethod || "Não informada"}`,
