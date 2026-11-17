@@ -7331,3 +7331,182 @@ main.decor-page.boutique-site{
   .boutique-site.storefront-page .sweet-card:has(.catalog-item-details[open]){grid-column:1/-1}
   .site-header.boutique-header nav.boutique-nav a{font-size:11px!important}
 }
+
+
+/* Ajuste dos preços de Presentes e da personalização de Docinhos — 17/11/2026.
+   Garante que o botão Escolher jamais cubra valores ou campos. */
+.boutique-site.storefront-page .gift-card .catalog-item-summary.text-only{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto;
+  align-items:center;
+  column-gap:14px!important;
+  row-gap:13px!important;
+  padding:20px 19px!important;
+  min-height:0!important;
+  width:100%;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-name{
+  grid-column:1/-1!important;
+  grid-row:1!important;
+  min-width:0;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-name h3{
+  margin:0 0 7px!important;
+  font-size:17px!important;
+  line-height:1.35!important;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-name>span{
+  max-width:100%;
+  font-size:12px;
+  line-height:1.5;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-prices.catalog-summary-single{
+  display:flex!important;
+  flex-direction:row;
+  flex-wrap:wrap;
+  justify-content:flex-start!important;
+  align-items:center;
+  align-self:center;
+  gap:7px;
+  grid-column:1!important;
+  grid-row:2!important;
+  min-width:0!important;
+  width:100%!important;
+  justify-self:stretch;
+  margin:0;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-prices>span{
+  display:flex!important;
+  justify-content:flex-start!important;
+  align-items:center;
+  gap:10px!important;
+  width:auto;
+  min-width:0;
+  font-size:12px!important;
+  line-height:1.35;
+  white-space:normal!important;
+  padding:0!important;
+  background:transparent!important;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-prices b{
+  font-size:15px!important;
+  font-weight:750;
+  white-space:nowrap;
+}
+.boutique-site.storefront-page .gift-card .catalog-summary-action{
+  grid-column:2!important;
+  grid-row:2!important;
+  position:static!important;
+  min-width:108px;
+  width:auto!important;
+  min-height:40px;
+  padding:10px 16px!important;
+  margin:0!important;
+  align-self:center;
+  justify-self:end;
+  white-space:nowrap;
+  font-size:12px;
+}
+.boutique-site.storefront-page .gift-card .catalog-item-options{
+  padding:17px 19px;
+  background:#FFFFFF;
+  border-top:1px solid #EEDFD8;
+}
+
+/* No card dos doces, abrir Escolher não aumenta duas colunas nem estica a lista. */
+.boutique-site.storefront-page .sweet-grid>.sweet-card:has(.catalog-item-details[open]){
+  grid-column:auto!important;
+  overflow:hidden!important;
+}
+.boutique-site.storefront-page .sweet-card .catalog-item-summary.text-only{
+  min-height:165px!important;
+  padding:15px 14px!important;
+  gap:10px!important;
+}
+.boutique-site.storefront-page .sweet-card .catalog-item-options{
+  display:block!important;
+  padding:12px 13px 14px!important;
+  margin:0!important;
+  border-top:1px solid #EEDFD8;
+  min-height:0!important;
+  max-height:none!important;
+}
+.boutique-site.storefront-page .sweet-card .sweet-quantity-control{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto;
+  gap:9px!important;
+  width:100%;
+  align-items:stretch;
+  margin:0!important;
+  padding:0!important;
+}
+.boutique-site.storefront-page .sweet-card .sweet-quantity-control label{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr);
+  min-width:0!important;
+  gap:5px!important;
+  margin:0!important;
+  padding:0!important;
+  font-size:11px!important;
+  line-height:1.3!important;
+  font-weight:600!important;
+  color:#683E2E;
+}
+.boutique-site.storefront-page .sweet-card .sweet-quantity-control label select{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:0 9px!important;
+  margin:0!important;
+  border-radius:9px!important;
+  background:#FFF8F6!important;
+  border:1px solid #EEDFD8!important;
+  font-size:12px!important;
+  line-height:1.2;
+}
+.boutique-site.storefront-page .sweet-card .sweet-quantity-control>button{
+  display:block;
+  width:100%!important;
+  min-height:39px!important;
+  height:39px!important;
+  padding:9px 13px!important;
+  margin:2px 0 0!important;
+  grid-column:1!important;
+  border-radius:9px!important;
+  font-size:12px;
+}
+.boutique-site.storefront-page .sweet-card .catalog-item-details[open]>.catalog-item-summary{
+  min-height:0!important;
+}
+@media(max-width:760px){
+  .boutique-site.storefront-page .gift-card .catalog-item-summary.text-only{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    padding:15px 13px!important;
+    column-gap:9px!important;
+  }
+  .boutique-site.storefront-page .gift-card .catalog-summary-prices.catalog-summary-single{
+    grid-column:1!important;
+    grid-row:2!important;
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .boutique-site.storefront-page .gift-card .catalog-summary-action{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-width:100px;
+    padding:10px 12px!important;
+  }
+  .boutique-site.storefront-page .gift-card .catalog-summary-prices>span{display:flex!important;gap:6px!important;font-size:11px!important}
+  .boutique-site.storefront-page .gift-card .catalog-summary-prices b{font-size:13px!important}
+  .boutique-site.storefront-page .sweet-card .catalog-item-summary.text-only{min-height:160px!important;padding:13px 10px!important}
+  .boutique-site.storefront-page .sweet-card .catalog-item-options{padding:11px 10px 12px!important}
+  .boutique-site.storefront-page .sweet-card .sweet-quantity-control{gap:8px!important}
+}
+@media(max-width:390px){
+  .boutique-site.storefront-page .gift-card .catalog-summary-prices>span{display:grid!important;gap:3px!important}
+  .boutique-site.storefront-page .sweet-grid>.sweet-card:has(.catalog-item-details[open]){grid-column:auto!important}
+}
