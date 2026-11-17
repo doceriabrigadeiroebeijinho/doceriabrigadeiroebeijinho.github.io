@@ -37,7 +37,7 @@ export default function DecoracoesGaleria(){
  const [filter,setFilter]=useState<"todos"|Tag>("todos");
  const [opened,setOpened]=useState<Photo|null>(null);
  const visible=fotos.filter(p=>filter==="todos"||p.tags.includes(filter));
- return <main className="decor-page">
+ return <main className="decor-page boutique-site">
    <BoutiquePageHeader/>
    <section className="decor-hero"><h1>Decorações</h1></section>
    <section className="decor-content" aria-label="Galeria de decorações">
