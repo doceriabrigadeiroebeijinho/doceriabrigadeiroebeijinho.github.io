@@ -16,7 +16,7 @@ const normalize = (s:string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g,""
 const money = (n:number) => n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const catalogResults:Result[] = [
   ...cakeSizeCatalog.map(x=>({type:"Bolo",name:x.name,detail:`${x.subtitle} · A partir de ${money(x.prices.Classico)}`,url:"/bolos",image:"/assets/cake-classic.webp"})),
-  ...[["Clássicos",classicFillings],["Especiais",specialFillings],["Gourmet",gourmetFillings]] as const].flatMap(([g,items])=>items.map(name=>({type:`Recheio ${g}`,name,detail:"Sabor disponível para bolos",url:"/recheios"}))),
+  ...([["Clássicos",classicFillings],["Especiais",specialFillings],["Gourmet",gourmetFillings]] as const).flatMap(([g,items])=>items.map(name=>({type:`Recheio ${g}`,name,detail:"Sabor disponível para bolos",url:"/recheios"}))),
   ...sweetGroups.flatMap(g=>g.items.map(x=>({type:g.name,name:x.name,detail:`${money(g.hundredPrice)} por 100 unidades · Mínimo 25 por sabor`,url:"/docinhos",image:g.type==="bonbon"?"/assets/gift-bombons.webp":"/assets/sweets-chocolate.webp"}))),
   ...gifts.map(g=>({type:"Presentes e kits",name:g.name,detail:`${money(g.price)} · ${g.description}`,url:g.id.includes("combo")||g.id.includes("caixa")?"/combos":"/presentes",image:g.image.startsWith("/")?g.image:undefined})),
 ];
