@@ -1411,26 +1411,23 @@ remove showroom extra links      </section>}
 
         {!showroom && (catalogTab === "choose" ? (
           <>
-            <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
-            <button type="button" onClick={() => setCatalogTab("cakes")} aria-label="Ver bolos, tamanhos e sabores">
-              <strong>Quero um bolo</strong>
-              <small>Bolos personalizados e bolos de corte</small>
-              <small className="catalog-choice-price">A partir de R$ 115,00</small>
-              <small className="catalog-choice-cta"><span>Ver bolos, tamanhos e sabores</span><span aria-hidden="true">→</span></small>
-            </button>
-            <button type="button" onClick={() => setCatalogTab("sweets")} aria-label="Ver sabores e preços dos docinhos">
-              <strong>Quero doces</strong>
-              <small>Doces e bombons para festas e eventos</small>
-              <small className="catalog-choice-price">A partir de R$ 160,00 / 100 unidades</small>
-              <small className="catalog-choice-cta"><span>Ver sabores e preços</span><span aria-hidden="true">→</span></small>
-            </button>
-            <button type="button" onClick={() => setCatalogTab("gifts")} aria-label="Ver opções para presentear">
-              <strong>Quero um presente</strong>
-              <small>Bentôs, cupcakes e opções para presentear</small>
-              <small className="catalog-choice-price">A partir de R$ 59,90</small>
-              <small className="catalog-choice-cta"><span>Ver opções para presentear</span><span aria-hidden="true">→</span></small>
-            </button>
-          </div>
+            <div className="catalog-link-list" aria-label="Categorias do cardápio">
+              <a href="/bolos">
+                <span className="catalog-link-symbol">🎂</span>
+                <span><strong>Bolos</strong><small>Tamanhos e recheios</small></span>
+                <b>A partir de R$ 115,00</b><em>Ver bolos →</em>
+              </a>
+              <a href="/docinhos">
+                <span className="catalog-link-symbol">🍬</span>
+                <span><strong>Doces e bombons</strong><small>Sabores e quantidades</small></span>
+                <b>A partir de R$ 40,00 / 25 un.</b><em>Ver doces →</em>
+              </a>
+              <a href="/presentes">
+                <span className="catalog-link-symbol">🎁</span>
+                <span><strong>Presentes e kits</strong><small>Bentôs, cupcakes e combos</small></span>
+                <b>A partir de R$ 59,90</b><em>Ver presentes →</em>
+              </a>
+            </div>
           </>
         ) : (
           <>
