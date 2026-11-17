@@ -7666,3 +7666,72 @@ main.decor-page.boutique-site{
     white-space:normal;
   }
 }
+
+
+/* Botões de categoria padronizados e próximos aos respectivos títulos. */
+.home-page.boutique-site .home-photo-heading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  column-gap: 20px;
+  row-gap: 10px;
+  margin-bottom: 18px;
+}
+.home-page.boutique-site .home-photo-heading h1,
+.home-page.boutique-site .home-photo-heading h2 {
+  flex: 0 0 auto;
+}
+.home-page.boutique-site .home-photo-heading a.home-category-cta {
+  display: inline-flex;
+  flex: 0 0 238px;
+  width: 238px;
+  min-width: 238px;
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 14px;
+  margin: 0;
+  border: 1px solid #C9576A;
+  border-radius: 12px;
+  background: #C9576A;
+  color: #FFF8F6;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s ease;
+}
+.home-page.boutique-site .home-photo-heading a.home-category-cta:hover {
+  background: #B6465D;
+  color: #FFF8F6;
+}
+.home-page.boutique-site .home-photo-heading a.home-category-cta:focus-visible {
+  outline: 3px solid #683E2E;
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  .home-page.boutique-site .home-photo-heading {
+    align-items: center;
+    justify-content: flex-start;
+    column-gap: 12px;
+    row-gap: 8px;
+    margin-bottom: 13px;
+  }
+  .home-page.boutique-site .home-photo-heading a.home-category-cta {
+    flex-basis: 220px;
+    width: 220px;
+    min-width: 220px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0 11px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
