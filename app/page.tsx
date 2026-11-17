@@ -1172,7 +1172,34 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
       const total = typeof order.totalCents === "number" ? order.totalCents / 100 : Number(order.total || 0);
       const deposit = typeof order.depositCents === "number" ? order.depositCents / 100 : Number(order.deposit || 0);
       const balance = typeof order.balanceCents === "number" ? order.balanceCents / 100 : Number(order.balance || 0);
+      const summary = order.summary && typeof order.summary === "object" ? order.summary : {};
+      const readCents = (value: unknown): number | null => {
+        if (value === null || value === undefined || value === "") return null;
+        const amount = Number(value);
+        return Number.isFinite(amount) ? amount : null;
+      };
+      const productsCents = readCents(summary.productsCents ?? order.productsCents);
+      const couponDiscountCents = readCents(summary.couponDiscountCents ?? order.couponDiscountCents) ?? 0;
+      const pixDiscountCents = readCents(summary.pixDiscountCents ?? order.pixDiscountCents) ?? 0;
+      const deliveryCents = readCents(summary.deliveryCents ?? order.deliveryCents ?? order.deliveryFeeCents);
+      const isPickup = /retirada/i.test(String(order.service || ""));
       drawSection("Resumo financeiro");
+      if (productsCents !== null) {
+        drawText("Produtos: " + formatMoney(productsCents / 100), { size: 19, weight: 600, lineHeight: 30 });
+      }
+      if (couponDiscountCents > 0) {
+        drawText("Desconto do cupom: -" + formatMoney(couponDiscountCents / 100), { size: 18, color: colors.cocoaSoft, lineHeight: 28 });
+      }
+      if (pixDiscountCents > 0) {
+        drawText("Desconto no Pix: -" + formatMoney(pixDiscountCents / 100), { size: 18, color: colors.cocoaSoft, lineHeight: 28 });
+      }
+      const deliveryLine = isPickup
+        ? "Retirada: sem taxa de entrega"
+        : deliveryCents !== null
+          ? "Taxa de entrega: " + formatMoney(deliveryCents / 100)
+          : "Taxa de entrega: não informada neste registro";
+      drawText(deliveryLine, { size: 20, color: colors.roseDark, weight: 700, lineHeight: 32 });
+      y += 5;
       drawText("VALOR TOTAL", { size: 16, color: colors.muted, weight: 700, lineHeight: 27 });
       y += 5;
       drawText(formatMoney(total), { size: 40, color: colors.roseDark, weight: 700, lineHeight: 54 });
@@ -1316,6 +1343,16 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
           age: details.age,
           decoration: details.decoration,
           colors: details.colors,
+        },
+        summary: {
+          productsCents: Math.round(regularSubtotal * 100),
+          couponCode: appliedCoupon || "",
+          couponDiscountCents: Math.round(couponDiscount * 100),
+          pixDiscountCents: Math.round(pixDiscount * 100),
+          deliveryCents: Math.round(deliveryFee * 100),
+          totalCents: Math.round(total * 100),
+          depositCents: Math.round(deposit * 100),
+          balanceCents: Math.round(balance * 100),
         },
         status: "Solicitação recebida — aguardando confirmação da data e da entrada",
       });
