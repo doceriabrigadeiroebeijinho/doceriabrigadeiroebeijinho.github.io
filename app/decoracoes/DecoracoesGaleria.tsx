@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import "./decoracoes.css";
+import BoutiquePageHeader from "../components/BoutiquePageHeader";
 
 type Tag = "infantil" | "adulto" | "feminino" | "masculino";
 type Photo = {image:string; title:string; tags:Tag[]};
@@ -37,14 +38,8 @@ export default function DecoracoesGaleria(){
  const [opened,setOpened]=useState<Photo|null>(null);
  const visible=fotos.filter(p=>filter==="todos"||p.tags.includes(filter));
  return <main className="decor-page">
-   <header className="decor-header">
-     <a href="/" className="decor-logo"><img src="/assets/logo-complete.webp" alt="Doceria Brigadeiro & Beijinho"/></a>
-     <nav aria-label="Navegação"><a href="/#como-pedir">Como pedir</a><a href="/bolos">Bolos</a><a href="/docinhos">Doces e Bombons</a><a href="/presentes">Presentes</a><a href="/decoracoes" aria-current="page">Decorações</a></nav>
-     <a className="decor-order" href="/bolos">Encomendar bolo →</a>
-   </header>
-   <section className="decor-hero"><span>INSPIRAÇÕES DA DOCERIA</span><h1>Decorações de bolos</h1>
-     <p>Confira alguns dos bolos que já produzimos e encontre ideias para sua comemoração.</p>
-   </section>
+   <BoutiquePageHeader/>
+   <section className="decor-hero"><h1>Decorações</h1></section>
    <section className="decor-content" aria-label="Galeria de decorações">
      <div className="decor-tabs" aria-label="Filtrar decorações">
       {filters.map(f=><button type="button" key={f.id} className={filter===f.id?"active":""} onClick={()=>setFilter(f.id)} aria-pressed={filter===f.id}>{f.label}</button>)}
