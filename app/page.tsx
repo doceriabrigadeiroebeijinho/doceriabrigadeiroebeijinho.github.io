@@ -1574,13 +1574,19 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
 
                 return (
                   <article className="product-card cake-card" id={`produto-${cake.id}`} key={cake.id}>
-                    <details className="catalog-item-details">
-                      <summary className="catalog-item-summary">
-                        <img className="catalog-summary-img" src={({
-                          mini:"/assets/monthly-cake.webp", p:"/assets/cake-classic.webp",
-                          m:"/assets/cake-floral.webp", g:"/assets/cake-lilac.webp",
-                          gg:"/assets/cake-ribbons.webp", corte:"/assets/cake-theme.webp"
-                        } as Record<string,string>)[cake.id]} alt="" />
+                    {category === "bolos" && !focusedCake ? (
+                     <a className="cake-line-purchase" href={`/bolos/${cake.id}?recheio=${encodeURIComponent(choice.filling)}`}>
+                       <div className="cake-line-name"><strong>{cake.name}</strong><span>{cake.subtitle}</span></div>
+                       <div className="cake-line-prices">
+                         <span>Clássico <b>{formatMoney(cake.prices.Classico)}</b></span>
+                         <span>Especial <b>{formatMoney(cake.prices.Especial)}</b></span>
+                         <span>Gourmet <b>{formatMoney(cake.prices.Gourmet)}</b></span>
+                       </div>
+                       <span className="cake-line-buy">Quero esse →</span>
+                     </a>
+                    ) : (
+                    <details className="catalog-item-details catalog-cake-detail" defaultOpen={Boolean(focusedCake)}>
+                      <summary className="catalog-item-summary text-only">
                         <div className="catalog-summary-name"><h3>{cake.name}</h3><span>{cake.subtitle}</span></div>
                         <div className="catalog-summary-prices">
                           <span>Clássico <b>{formatMoney(cake.prices.Classico)}</b></span>
@@ -1590,7 +1596,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
                         <strong className="catalog-summary-action">Escolher <span aria-hidden="true">⌄</span></strong>
                       </summary>
                       <div className="catalog-item-options">
-                        <p className="catalog-brief-note">{cake.description}</p>
+                        <p className="catalog-brief-note">{cake.description} <a className="cake-decoration-link" href="/decoracoes">Ver exemplos de decoração →</a></p>
                     <div className="cake-choice-step">
                       <span>1</span>
                       <label>
@@ -1750,6 +1756,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
                                   </small>
                                 </div>
                               </details>
+                    )}
                             </div>
                           </div>
                         );
@@ -1849,10 +1856,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
                     return (
                       <article className="sweet-card" id={`produto-${sweet.id}`} key={sweet.id}>
                         <details className="catalog-item-details">
-                          <summary className="catalog-item-summary">
-                            <img className={`catalog-summary-img ${sweetSpriteIds.has(sweet.id) ? "sweet-photo--sprite" : ""}`}
-                              src={sweetPhoto(sweet.id, group.type)} style={{objectPosition:sweetPhotoPosition(sweet.id)}}
-                              alt={`Foto de ${sweet.name}`} />
+                          <summary className="catalog-item-summary text-only">
                             <div className="catalog-summary-name"><h4>{sweet.name}</h4><span>{sweet.description}</span></div>
                             <div className="catalog-summary-prices catalog-summary-single">
                               <span>25 un. <b>{formatMoney(group.hundredPrice / 4)}</b></span>
@@ -1926,8 +1930,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
             {(category === "combos" ? gifts.filter(gift => gift.id === "bento-combo" || gift.id.startsWith("caixa")) : gifts).map((gift, index) => (
               <article className="gift-card gift-card-with-image" id={`produto-${gift.id}`} key={gift.id}>
                 <details className="catalog-item-details">
-                  <summary className="catalog-item-summary">
-                    <img className="catalog-summary-img" src={gift.image} alt="" />
+                  <summary className="catalog-item-summary text-only">
                     <div className="catalog-summary-name"><h3>{gift.name}</h3><span>{gift.description}</span></div>
                     <div className="catalog-summary-prices catalog-summary-single"><span>A partir de <b>{formatMoney(gift.price)}</b></span></div>
                     <strong className="catalog-summary-action">Escolher <span aria-hidden="true">⌄</span></strong>
