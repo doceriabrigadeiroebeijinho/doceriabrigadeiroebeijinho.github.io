@@ -332,6 +332,14 @@ export default function Home() {
   const [catalogTab, setCatalogTab] = useState<
     "choose" | "all" | "cakes" | "sweets" | "gifts"
   >("choose");
+  useEffect(() => {
+    const section = new URLSearchParams(window.location.search).get("categoria");
+    const destinations = { bolos: "cakes", docinhos: "sweets", presentes: "gifts", combos: "gifts" } as const;
+    if (section && section in destinations) {
+      setCatalogTab(destinations[section as keyof typeof destinations]);
+    }
+  }, []);
+
   const [sweetGroupId, setSweetGroupId] = useState(sweetGroups[0].id);
   const [sweetQuantities, setSweetQuantities] = useState<Record<string, number>>(
     {},
