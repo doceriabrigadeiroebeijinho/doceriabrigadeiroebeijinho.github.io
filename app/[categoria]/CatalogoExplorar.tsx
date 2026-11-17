@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { cakeSizeCatalog, classicFillings, specialFillings, gourmetFillings, sweetGroups, gifts } from "../catalogo/dados";
 import "./catalogo.css";
+import BoutiquePageHeader from "../components/BoutiquePageHeader";
 
 type Result={type:string;name:string;detail:string;url:string;image?:string};
 const money=(n:number)=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -24,24 +25,13 @@ export default function CatalogoExplorar({categoria}:{categoria:string}){
  const [query,setQuery]=useState("");
  useEffect(()=>{const q=new URLSearchParams(window.location.search).get("q");if(q)setQuery(q)},[]);
  const results=useMemo(()=>{const q=normalize(query.trim());return q?entries.filter(e=>normalize(e.name+" "+e.type+" "+e.detail).includes(q)).slice(0,80):[]},[query]);
- return <main className="new-catalog">
-   <header className="new-header"><a href="/" className="new-brand"><img src="/assets/logo-complete.webp" alt="Doceria Brigadeiro e Beijinho"/></a>
-    <nav aria-label="Navegação"><a href="/#como-pedir">Como pedir</a><a href="/#cardapio">Cardápio</a><a href="/bolos">Bolos</a><a href="/docinhos">Doces e Bombons</a><a href="/presentes">Presentes</a><a href="/decoracoes">Decorações</a></nav>
-    <a className="new-home" href="/">Meu pedido ↗</a>
-   </header>
+ return <main className="new-catalog boutique-site">
+   <BoutiquePageHeader/>
    <div className="new-wrap">
-     <div className="new-search-band" role="search">
-       <label htmlFor="catalog-search">O que você está procurando?</label>
-       <div className="new-search-field"><span aria-hidden="true">⌕</span>
-       <input autoFocus id="catalog-search" type="search" placeholder="Digite um doce, sabor ou tamanho..." value={query} onChange={e=>setQuery(e.target.value)} autoComplete="off"/>
-       {query&&<button type="button" onClick={()=>setQuery("")}>Limpar</button>}
-       </div>
-       
-     </div>
      <section className="new-section" aria-live="polite">
        <span className="new-kicker">VITRINE DA DOCERIA</span>
-       <h1>{query.trim()?`Encontramos para “${query}”`:"Encontre o que deseja"}</h1>
-       <p>{!query.trim()?"Busque pelo nome do produto, sabor, ingrediente ou tamanho. Você pode adicionar os produtos ao pedido diretamente na categoria.":results.length?`${results.length} opção(ões) encontrada(s). Clique em um resultado para escolher os detalhes e adicionar ao pedido.`:"Não encontrei esse nome no catálogo. Tente outra palavra ou consulte as categorias abaixo."}</p>
+       <h1>{query.trim()?`Resultados para “${query}”`:"O que você procura?"}</h1>
+       <p>{!query.trim()?"Use a pesquisa no alto da página.":results.length?`${results.length} opção(ões) encontrada(s).`:"Não encontrei esse nome no catálogo. Tente outra palavra ou consulte as categorias abaixo."}</p>
        {query.trim()&&<div className="new-result-list">{results.map((x,i)=><a key={x.type+x.name+i} className="new-result" href={x.url}>{x.image&&<img className="new-result-photo" src={x.image} alt="" />}<div><small>{x.type}</small><strong>{x.name}</strong><span>{x.detail}</span></div><b aria-hidden="true">Ver e pedir ↗</b></a>)}</div>}
        
      </section>

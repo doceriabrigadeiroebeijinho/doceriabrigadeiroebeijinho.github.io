@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --font-manrope: "Manrope";
-  --font-cormorant: Georgia;
-  --cream: #fff8ee;
-  --paper: #fffdf8;
-  --paper-2: #f9efe4;
-  --cocoa: #4b2e25;
-  --cocoa-2: #6f493d;
-  --blush: #f5dcda;
-  --rose: #c66f78;
-  --rose-dark: #9c4f59;
-  --blue: #dcecf1;
+  --font-manrope: "Montserrat";
+  --font-cormorant: "Montserrat";
+  --cream: #FFF8F6;
+  --paper: #FFF8F6;
+  --paper-2: #F9E7D7;
+  --cocoa: #683E2E;
+  --cocoa-2: #775145;
+  --blush: #F8E1E4;
+  --rose: #E8A2B2;
+  --rose-dark: #C9576A;
+  --blue: #A9D8E8;
   --green: #278558;
   --muted: #806b63;
   --line: rgba(75, 46, 37, 0.14);
@@ -6444,4 +6444,468 @@ footer a:hover {
 .catalog-item-summary.text-only .catalog-summary-prices{grid-column:1/-1;grid-row:2}
 .catalog-item-summary.text-only .catalog-summary-action{grid-column:2;grid-row:1}
 .home-bolo-note{display:block}.home-bolo-note a{display:inline-block;margin-top:10px}
+}
+
+
+
+/* Refinamento da identidade: cabeçalho minimalista inspirado na referência enviada.
+   A marca é sempre a arte oficial; Montserrat é usada nas informações e preços. */
+.boutique-site{
+  background:#FFF8F6;
+  color:#683E2E;
+  font-family:"Montserrat",Arial,sans-serif;
+}
+.site-header.boutique-header{
+  position:relative!important;
+  top:auto!important;
+  display:block!important;
+  width:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#FFF8F6!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  z-index:40;
+}
+.boutique-header-main{
+  width:min(1370px,calc(100% - 70px));
+  min-height:134px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 220px 1fr;
+  gap:15px;
+  align-items:center;
+}
+.site-header.boutique-header .boutique-header-balance{display:block}
+.site-header.boutique-header .brand.boutique-logo{
+  display:block!important;
+  width:205px!important;
+  height:126px!important;
+  padding:0;
+  margin:0 auto;
+  grid-row:auto!important;
+  grid-column:2!important;
+  overflow:visible;
+}
+.site-header.boutique-header .brand.boutique-logo img{width:100%;height:100%;object-fit:contain}
+.boutique-tools{justify-self:end;display:flex;align-items:center;gap:12px;min-width:0}
+.boutique-search{
+  display:flex;
+  width:clamp(200px,19vw,286px);
+  height:46px;
+  align-items:center;
+  background:#FFFFFF;
+  border:1px solid #E9D4CF;
+  border-radius:12px;
+  overflow:hidden;
+}
+.boutique-search input{
+  flex:1;
+  min-width:0;
+  width:100%;
+  height:100%;
+  margin:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  padding:0 8px 0 15px;
+  font-family:"Montserrat",Arial,sans-serif;
+  font-size:12px;
+  color:#683E2E;
+  box-shadow:none;
+}
+.boutique-search input::placeholder{color:#9D8178}
+.boutique-search:focus-within{outline:2px solid #E8A2B2;outline-offset:2px}
+.boutique-search button{display:flex;justify-content:center;align-items:center;flex:none;width:42px;height:100%;padding:0;background:none;color:#B64D66;border:0}
+.boutique-tool{
+  position:relative;
+  width:38px;height:40px;
+  display:grid;place-items:center;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:#683E2E;
+  padding:0;
+  flex:none;
+}
+.boutique-tool:hover{background:#F9E7D7}
+.boutique-cart-count{
+  position:absolute;right:-4px;top:-3px;
+  display:grid;place-items:center;
+  width:16px;height:16px;
+  background:#C9576A;color:white;
+  border-radius:50%;
+  font-size:10px;font-weight:700;
+}
+.site-header.boutique-header nav.boutique-nav,
+.site-header.boutique-header nav.boutique-nav.nav-open{
+  position:static!important;
+  inset:auto!important;
+  display:flex!important;
+  width:100%!important;
+  margin:0!important;
+  padding:9px 22px 10px!important;
+  justify-content:center!important;
+  align-items:center;
+  gap:clamp(15px,3.8vw,64px)!important;
+  background:#FFF8F6!important;
+  border-top:1px solid #EEDFD8!important;
+  border-bottom:1px solid #EEDFD8!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.site-header.boutique-header nav.boutique-nav::-webkit-scrollbar{display:none}
+.site-header.boutique-header nav.boutique-nav a{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  flex:none;
+  padding:4px 6px!important;
+  color:#683E2E;
+  font-size:11px!important;
+  line-height:1.2;
+  font-weight:600!important;
+  text-align:center;
+  white-space:nowrap;
+}
+.site-header.boutique-header nav.boutique-nav a svg{color:#C9576A;transition:transform .2s}
+.site-header.boutique-header nav.boutique-nav a:hover svg{transform:translateY(-2px)}
+.site-header.boutique-header nav.boutique-nav a::after{bottom:0;background:#E8A2B2}
+.site-header.boutique-header nav.boutique-nav a:focus-visible,
+.boutique-tools button:focus-visible,
+.boutique-view-all:focus-visible{outline:2px solid #C9576A;outline-offset:3px}
+
+/* Vitrine inicial: 4 produtos visíveis, nenhum banner gigante ou texto repetido. */
+.home-page.boutique-site .boutique-showcase{
+  max-width:1250px;
+  margin:36px auto 25px;
+  padding:0 30px;
+}
+.boutique-showcase .home-bolo-heading{
+  margin:0 0 18px;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:15px;
+  text-align:left;
+}
+.boutique-showcase .home-bolo-heading .section-kicker{
+  font-size:10px;
+  text-transform:uppercase;
+  font-weight:600;
+  letter-spacing:.12em;
+  color:#B75A69;
+}
+.boutique-showcase .home-bolo-heading h1{
+  font-size:clamp(23px,2.3vw,30px);
+  line-height:1.15;
+  letter-spacing:-.035em;
+  margin:7px 0 0;
+  font-weight:700;
+}
+.boutique-view-all{
+  font-size:12px;
+  font-weight:600;
+  color:#9E4C5F;
+  border-bottom:1px solid #E8A2B2;
+  padding-bottom:4px;
+  white-space:nowrap;
+}
+.home-page.boutique-site .home-bolo-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:18px;
+}
+.boutique-site .home-bolo-card{
+  border:0;
+  border-radius:14px;
+  background:transparent;
+  box-shadow:none;
+  overflow:hidden;
+  transition:none;
+}
+.boutique-site .home-bolo-card:hover{transform:none;box-shadow:none}
+.boutique-site .home-bolo-card a{display:block}
+.boutique-site .home-bolo-card img{
+  height:190px;
+  width:100%;
+  border-radius:13px;
+  object-fit:cover;
+  background:#F9E7D7;
+}
+.boutique-site .home-bolo-details{
+  padding:12px 2px 5px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
+}
+.boutique-site .home-bolo-details h2{
+  margin:0;
+  font-size:15px;
+  letter-spacing:-.02em;
+  font-weight:650;
+  font-family:"Montserrat",Arial,sans-serif;
+}
+.boutique-site .home-bolo-details p{font-size:11px;color:#97786C;margin:0;line-height:1.4}
+.boutique-site .home-bolo-details strong{font-size:14px;font-weight:700;margin:5px 0}
+.boutique-site .home-bolo-buy{
+  width:100%;
+  min-height:38px;
+  margin-top:5px;
+  background:transparent;
+  border:1px solid #C9576A;
+  border-radius:10px;
+  color:#9D4958;
+  font-size:12px;
+  font-weight:650;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  align-items:center;
+  transition:background .2s,color .2s;
+}
+.boutique-site .home-bolo-card a:hover .home-bolo-buy{background:#C9576A;color:white}
+.boutique-showcase-more{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:28px;
+  color:#9D4958;
+  font-size:12px;
+  font-weight:600;
+}
+.boutique-how{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+  border-top:1px solid #EEDFD8;
+  border-bottom:1px solid #EEDFD8;
+  margin:40px auto 55px;
+  padding:18px 25px;
+  max-width:1200px;
+  text-align:left;
+}
+.boutique-how h2{margin:0;white-space:nowrap;font-size:16px;font-weight:700}
+.boutique-how p{margin:0;font-size:12px;line-height:1.6;color:#775145}
+.home-page.boutique-site .faq-section{max-width:990px;margin:0 auto 60px;padding:0 22px}
+.home-page.boutique-site .faq-section .section-heading{margin-bottom:24px}
+.home-page.boutique-site .faq-section .section-heading h2{font-size:23px;letter-spacing:-.03em}
+.home-page.boutique-site .faq-section .section-heading p{font-size:12px}
+.boutique-site .boutique-category-heading{
+  width:min(1200px,calc(100% - 48px));
+  max-width:1200px;
+  margin:30px auto 12px;
+  padding:0;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  min-height:0;
+}
+.boutique-site .boutique-category-heading h1{
+  margin:0;
+  font-size:clamp(22px,2.6vw,30px);
+  font-weight:700;
+  letter-spacing:-.035em;
+}
+.boutique-site.storefront-page .catalog-section{padding-top:0;margin-bottom:50px}
+.boutique-site.storefront-page .catalog-section .section-heading{display:none}
+.boutique-site .cake-line-buy,
+.boutique-site .catalog-summary-action{background:#C9576A}
+.boutique-site .cake-line-prices b,
+.boutique-site .catalog-summary-prices b{color:#683E2E}
+
+@media(max-width:1080px){
+  .boutique-header-main{width:min(100%,calc(100% - 30px));grid-template-columns:.65fr 170px 1fr}
+  .site-header.boutique-header .brand.boutique-logo{width:160px!important;height:116px!important}
+  .boutique-tools{gap:6px}
+  .boutique-search{width:clamp(170px,21vw,245px)}
+  .site-header.boutique-header nav.boutique-nav{gap:clamp(10px,2vw,34px)!important}
+}
+@media(max-width:760px){
+  .site-header.boutique-header{
+    display:block!important;
+    grid-template-columns:none!important;
+  }
+  .boutique-header-main{
+    display:grid;
+    width:calc(100% - 20px);
+    min-height:0;
+    grid-template-columns:1fr 1fr 1fr;
+    grid-template-rows:98px auto;
+    gap:0;
+  }
+  .site-header.boutique-header .boutique-header-balance{grid-column:1;grid-row:1}
+  .site-header.boutique-header .brand.boutique-logo{
+    grid-row:1!important;
+    grid-column:2!important;
+    width:144px!important;
+    height:92px!important;
+    justify-self:center;
+  }
+  .boutique-tools{
+    display:contents;
+  }
+  .boutique-search{
+    grid-column:1 / 4;
+    grid-row:2;
+    width:100%;
+    height:42px;
+    margin:0 0 12px;
+    border-radius:11px;
+  }
+  .boutique-tools .boutique-tool{position:absolute;top:31px;right:52px;width:35px;height:37px}
+  .boutique-tools .boutique-cart{right:13px}
+  .site-header.boutique-header nav.boutique-nav,
+  .site-header.boutique-header nav.boutique-nav.nav-open{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    overflow-x:auto!important;
+    justify-content:flex-start!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    gap:17px!important;
+    padding:9px 15px!important;
+  }
+  .site-header.boutique-header nav.boutique-nav a{
+    padding:4px 0!important;
+    min-width:62px;
+    font-size:10px!important;
+  }
+  .site-header.boutique-header nav.boutique-nav a svg{width:18px;height:18px}
+  .home-page.boutique-site .boutique-showcase{margin:24px auto 15px;padding:0 13px}
+  .home-page.boutique-site .home-bolo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}
+  .boutique-site .home-bolo-card img{height:clamp(125px,31vw,178px)}
+  .boutique-site .home-bolo-details{padding:10px 0}
+  .boutique-site .home-bolo-details h2{font-size:14px}
+  .boutique-site .home-bolo-details strong{font-size:13px}
+  .boutique-showcase .home-bolo-heading h1{font-size:24px}
+  .boutique-view-all{font-size:11px}
+  .boutique-how{margin:25px 14px 35px;display:block;padding:15px 6px}
+  .boutique-how h2{font-size:14px;margin-bottom:6px}
+  .boutique-how p{font-size:11px}
+  .boutique-site .boutique-category-heading{margin:20px auto 10px;width:calc(100% - 26px)}
+  .boutique-site .boutique-category-heading h1{font-size:24px}
+}
+
+
+/* A busca e a galeria recebem a mesma linguagem visual da página inicial. */
+main.new-catalog.boutique-site,
+main.decor-page.boutique-site{
+  background:#FFF8F6;
+  color:#683E2E;
+  min-height:100vh;
+  font-family:"Montserrat",Arial,sans-serif;
+}
+main.decor-page.boutique-site{
+  --choc:#683E2E;
+  --rose:#C9576A;
+  --cream:#FFF8F6;
+  --pink:#F8E1E4;
+}
+.new-catalog.boutique-site .new-wrap{
+  max-width:1120px;
+  margin:0 auto;
+  padding:24px 24px 55px;
+}
+.new-catalog.boutique-site .new-section{
+  padding:18px 0 12px;
+}
+.new-catalog.boutique-site .new-section h1{
+  font-family:"Montserrat",Arial,sans-serif;
+  font-size:clamp(22px,2.8vw,32px);
+  line-height:1.3;
+  letter-spacing:-.035em;
+  font-weight:700;
+}
+.new-catalog.boutique-site .new-section>p{
+  font-size:12px;
+  margin:4px 0 20px;
+}
+.new-catalog.boutique-site .new-kicker{display:none}
+.new-catalog.boutique-site .new-result{
+  background:#FFFFFF;
+  border-color:#EEDFD8;
+  box-shadow:none;
+}
+.new-catalog.boutique-site .new-result strong{font-size:14px}
+.new-catalog.boutique-site .new-result>b{color:#C9576A}
+.new-catalog.boutique-site .new-help{
+  background:#F9E7D7;
+  margin-top:38px;
+  padding:18px 22px;
+  border-radius:16px;
+}
+.new-catalog.boutique-site .new-help strong{font-size:14px}
+.new-catalog.boutique-site .new-help p{font-size:12px}
+.new-catalog.boutique-site .new-footer{border-top-color:#EEDFD8}
+.decor-page.boutique-site .decor-hero{
+  width:min(1200px,calc(100% - 46px));
+  max-width:1200px;
+  margin:26px auto 0;
+  padding:0;
+  min-height:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.decor-page.boutique-site .decor-hero h1{
+  margin:0;
+  font-family:"Montserrat",Arial,sans-serif;
+  font-size:clamp(23px,2.9vw,31px);
+  line-height:1.3;
+  font-weight:700;
+  letter-spacing:-.035em;
+}
+.decor-page.boutique-site .decor-content{
+  max-width:1200px;
+  padding:22px 24px 58px;
+}
+.decor-page.boutique-site .decor-tabs{margin:0 0 16px;gap:8px}
+.decor-page.boutique-site .decor-tabs button{
+  font-family:"Montserrat",Arial,sans-serif;
+  font-size:12px;
+  font-weight:600;
+  min-height:40px;
+  padding:9px 16px;
+  border:1px solid #E9D4CF;
+  background:white;
+  color:#683E2E;
+}
+.decor-page.boutique-site .decor-tabs button.active,
+.decor-page.boutique-site .decor-tabs button:hover{
+  background:#C9576A;
+  color:#fff;
+  border-color:#C9576A;
+}
+.decor-page.boutique-site .decor-gallery{gap:15px}
+.decor-page.boutique-site .decor-photo{
+  border-radius:12px;
+  box-shadow:none;
+  border:1px solid #EEDFD8;
+  background:white;
+}
+.decor-page.boutique-site .decor-photo:hover{box-shadow:0 6px 18px rgba(104,62,46,.08);transform:translateY(-2px)}
+.decor-page.boutique-site .decor-photo img{height:220px}
+.decor-page.boutique-site .decor-footer-cta{background:#F9E7D7;border-radius:18px}
+.decor-page.boutique-site .decor-footer-cta h2{font-size:22px}
+.decor-page.boutique-site .decor-small{font-size:11px}
+@media(max-width:760px){
+  .new-catalog.boutique-site .new-wrap{padding:18px 14px 30px}
+  .decor-page.boutique-site .decor-hero{width:calc(100% - 28px);margin-top:21px}
+  .decor-page.boutique-site .decor-content{padding:18px 14px 42px}
+  .decor-page.boutique-site .decor-gallery{gap:9px}
+  .decor-page.boutique-site .decor-photo img{height:175px}
+  .decor-page.boutique-site .decor-tabs button{font-size:11px;padding:8px 12px}
 }
