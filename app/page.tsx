@@ -383,6 +383,14 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
       }
     >,
   );
+  useEffect(() => {
+    if (category !== "bolos") return;
+    const wanted = new URLSearchParams(window.location.search).get("recheio");
+    if (!wanted) return;
+    const group = classicFillings.includes(wanted) ? "Classico" : specialFillings.includes(wanted) ? "Especial" : gourmetFillings.includes(wanted) ? "Gourmet" : null;
+    if (!group) return;
+    setCakeChoices(prev => Object.fromEntries(Object.entries(prev).map(([id,choice]) => [id, {...choice, fillingType:group, filling:wanted}])) as typeof prev);
+  }, [category]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartReady, setCartReady] = useState(false);
   useEffect(() => {
