@@ -1756,7 +1756,6 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
                                   </small>
                                 </div>
                               </details>
-                    )}
                             </div>
                           </div>
                         );
@@ -1778,6 +1777,7 @@ export default function Home({ category, selectedProduct }: { category?: "bolos"
                     </div>
                       </div>
                     </details>
+                    )}
                   </article>
                 );
               })}
