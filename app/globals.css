@@ -6255,3 +6255,58 @@ footer a:hover {
 .section-heading h2,.cake-guide h3,.cake-category-explanation h3,.full-menu-heading h3,.gallery-section h2,.faq-section h2,.about-copy h2,.instagram-section h2,.gift-card h3,.product-card h3,.sweet-group-title h3{font-family:var(--font-manrope),Arial,sans-serif;font-weight:800;letter-spacing:-.055em;line-height:1.16}
 .section-heading h2,.gallery-section h2,.faq-section h2,.about-copy h2,.instagram-section h2{font-size:clamp(2rem,4vw,3.4rem)}
 .gift-card h3,.product-card h3,.sweet-group-title h3,.cake-guide h3,.cake-category-explanation h3,.full-menu-heading h3{font-size:clamp(1.35rem,2vw,2rem)}
+
+
+/* Vitrine integrada: uma experiência para consultar, personalizar e encomendar. */
+.storefront-page{min-height:100vh}
+.storefront-heading{width:min(1280px,calc(100% - 32px));margin:32px auto 0;padding:38px 43px;background:linear-gradient(120deg,#fffdf8 50%,#f5dcdac4);border:1px solid rgba(156,79,89,.13);border-radius:35px;box-shadow:0 12px 34px rgba(75,46,37,.07)}
+.storefront-heading h1{font-family:var(--font-manrope),Arial,sans-serif;font-size:clamp(2.5rem,5vw,4.8rem);font-weight:800;line-height:1.08;letter-spacing:-.06em;margin:15px 0}
+.storefront-heading>p{max-width:770px;line-height:1.65;font-size:1rem;color:var(--cocoa-2)}
+.storefront-search{margin-top:24px;display:flex;max-width:650px;gap:9px;background:white;padding:7px;border-radius:100px;border:1px solid rgba(75,46,37,.17)}
+.storefront-search input{flex:1;min-width:0;border:none;outline:0;background:transparent;padding:10px 15px}
+.storefront-search button{border:0;border-radius:100px;padding:11px 23px;background:var(--rose-dark);font-weight:800;color:white}
+.storefront-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.storefront-links a{display:inline-flex;padding:12px 18px;align-items:center;justify-content:center;font-weight:800;background:#fffdf8;border:1px solid #eecfcf;border-radius:100px;font-size:.85rem}
+.storefront-page .catalog-section{padding-top:42px}
+.storefront-page .catalog-section .section-heading h2{font-size:clamp(2rem,4vw,3.6rem)}
+.storefront-page .cake-grid{align-items:stretch}
+.storefront-cake-image{width:100%;height:200px;object-fit:cover;object-position:center;border-radius:25px 25px 15px 15px;margin-bottom:15px;box-shadow:0 6px 18px rgba(75,46,37,.07)}
+.storefront-page .cake-card{border-radius:29px}
+.storefront-page .sweet-card{border-radius:23px}
+.storefront-page .sweet-photo{object-fit:contain;background:transparent;border-radius:0}
+.storefront-page .sweet-catalog-subsection{scroll-margin-top:108px}
+.storefront-page [id^="produto-"]{scroll-margin-top:125px}
+.order-explainer{width:min(1280px,calc(100% - 44px));margin:50px auto 30px;padding:32px 38px;background:#fffdf8;border:1px solid rgba(75,46,37,.09);border-radius:30px;box-shadow:0 12px 35px rgba(75,46,37,.06)}
+.order-explainer h2{font-family:var(--font-manrope),Arial,sans-serif;letter-spacing:-.06em;font-size:clamp(1.7rem,3.4vw,2.75rem);line-height:1.12;margin:8px 0 20px}
+.order-explainer-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.order-explainer-steps p{background:#f9efe4;padding:20px;border-radius:19px;line-height:1.6;font-size:.9rem;margin:0}
+.order-explainer-steps b{display:block;color:var(--rose-dark);font-size:1rem}
+.hero-category-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:1000px){.storefront-heading{padding:27px}.order-explainer-steps{grid-template-columns:1fr}.hero-category-shortcuts{grid-template-columns:1fr}}
+@media(max-width:760px){.storefront-heading{width:calc(100% - 20px);padding:24px 19px;margin-top:18px;border-radius:25px}
+.storefront-heading h1{font-size:clamp(2.25rem,11vw,3.25rem)}
+.storefront-heading>p{font-size:.9rem}
+.storefront-search{border-radius:25px;display:grid}
+.storefront-search input{min-height:44px}
+.storefront-search button{min-height:45px}
+.storefront-links{display:grid;grid-template-columns:1fr;gap:7px}
+.storefront-links a{min-height:45px}
+.order-explainer{width:calc(100% - 20px);padding:23px 18px;margin:25px auto 15px}
+.order-explainer-steps p{padding:14px 16px}
+.storefront-cake-image{height:170px}
+.hero-category-shortcuts{grid-template-columns:1fr;gap:9px}
+.hero-category-shortcuts a{min-height:49px}
+}
+
+/* Foto individual, sem forminha e sem fundo, em destaque no card do produto. */
+.storefront-page .sweet-card{grid-template-columns:85px minmax(0,1fr) auto;gap:13px;padding:17px}
+.storefront-page .sweet-photo{width:85px;height:85px;object-fit:contain}
+.storefront-page .sweet-card h4{font-family:var(--font-manrope),Arial,sans-serif;font-size:1.04rem;font-weight:800;letter-spacing:-.035em;line-height:1.25}
+@media(max-width:1100px){.storefront-page .sweet-card{grid-template-columns:72px minmax(0,1fr)}.storefront-page .sweet-photo{width:72px;height:72px}.storefront-page .sweet-quantity-control{grid-column:1/-1}}
+@media(max-width:760px){.storefront-page .sweet-card{grid-template-columns:78px minmax(0,1fr);gap:11px;padding:14px}.storefront-page .sweet-photo{width:78px;height:78px}}
+
+/* Sprite original de sabores: mantem a fotografia exclusiva em cada recorte. */
+.storefront-page .sweet-photo--sprite{width:56px;height:56px;object-fit:none;background:transparent;border-radius:0;justify-self:center}
+.new-result-photo{width:64px;height:64px;object-fit:contain;border-radius:12px;flex-shrink:0;background:#f9efe4}
+.new-result{gap:12px}.new-result>div{flex:1;min-width:0}
+@media(max-width:760px){.new-result>b{font-size:11px;white-space:nowrap}}
