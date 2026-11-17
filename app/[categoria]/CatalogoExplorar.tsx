@@ -6,10 +6,18 @@ import "./catalogo.css";
 type Result={type:string;name:string;detail:string;url:string;image?:string};
 const money=(n:number)=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const normalize=(s:string)=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const isolatedPhotos:Record<string,string>={
+ brigadeiro:"/assets/docinho-brigadeiro.webp",
+ coco:"/assets/docinho-coco.webp",
+ ninho:"/assets/docinho-ninho.webp",
+ casadinho:"/assets/docinho-casadinho.webp",
+ cajuzinho:"/assets/docinho-cajuzinho.webp",
+ "olho-sogra":"/assets/docinho-olho-sogra.webp"
+};
 const entries:Result[]=[
  ...cakeSizeCatalog.map(c=>({type:"Bolos e tamanhos",name:c.name,detail:`${c.subtitle} · A partir de ${money(c.prices.Classico)}`,url:`/bolos?produto=${c.id}#produto-${c.id}`,image:"/assets/cake-classic.webp"})),
  ...([["Clássico",classicFillings],["Especial",specialFillings],["Gourmet",gourmetFillings]] as const).flatMap(([group,names])=>names.map(name=>({type:`Recheio ${group}`,name,detail:"Escolha o recheio e personalize seu bolo",url:`/bolos?recheio=${encodeURIComponent(name)}#cardapio`,image:"/assets/cake-floral.webp"}))),
- ...sweetGroups.flatMap(g=>g.items.map(s=>({type:g.name,name:s.name,detail:`${money(g.hundredPrice)} / 100 unidades · Mínimo 25 por sabor`,url:`/docinhos?produto=${s.id}#produto-${s.id}`,image:g.type==="bonbon"?"/assets/gift-bombons.webp":"/assets/sweets-chocolate.webp"}))),
+ ...sweetGroups.flatMap(g=>g.items.map(s=>({type:g.name,name:s.name,detail:`${money(g.hundredPrice)} / 100 unidades · Mínimo 25 por sabor`,url:`/docinhos?produto=${s.id}#produto-${s.id}`,image:isolatedPhotos[s.id]??(g.type==="bonbon"?"/assets/gift-bombons.webp":"/assets/sweets-chocolate.webp")}))),
  ...gifts.map(g=>({type:"Presentes e kits",name:g.name,detail:`${money(g.price)} · ${g.description}`,url:`${g.id==="bento-combo"||g.id.startsWith("caixa")?"/combos":"/presentes"}?produto=${g.id}#produto-${g.id}`,image:g.image.startsWith("/")?g.image:undefined}))
 ];
 export default function CatalogoExplorar({categoria}:{categoria:string}){
