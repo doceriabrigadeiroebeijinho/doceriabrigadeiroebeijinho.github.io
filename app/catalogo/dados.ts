@@ -442,7 +442,7 @@ export const gifts = [
     id: "bento-combo",
     name: "Combo Bentô",
     description:
-      "Bentô personalizado acompanhado de uma caixa com 6 docinhos à sua escolha.",
+      "Bentô personalizado + 6 docinhos. Opções: 3 brigadeiros + 3 Ninhos, 6 brigadeiros ou 6 Ninhos.",
     price: 74.9,
     minQty: 1,
     image: "/assets/gift-combo-bento.webp",
