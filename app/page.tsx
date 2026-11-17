@@ -7,7 +7,7 @@ import { cakeTiers, cakeSizeCatalog, cakeMassPrice, classicFillings, specialFill
 import type { CakeTier, SweetGroup, CakeSizeId, CakeFillingType } from "./catalogo/dados";
 
 const WHATSAPP_NUMBER = "5531973416110";
-const WHATSAPP_CATALOG = "https://wa.me/c/553173416110";
+const WHATSAPP_CATALOG = "https://wa.me/c/5531973416110";
 const INSTAGRAM = "https://www.instagram.com/doceria_brigadeiro_beijinho/";
 const PIX_KEY = "31973416110";
 const CARD_PAYMENT_URL = "https://linknabio.gg/nutribacelar";
@@ -328,19 +328,21 @@ const sweetsCatalogGallery = [
   },
 ] as const;
 
-export default function Home() {
+export default function Home({ category }: { category?: "bolos" | "docinhos" | "presentes" | "combos" } = {}) {
+  const showroom = Boolean(category);
+  const starterTab = category === "bolos" ? "cakes" : category === "docinhos" ? "sweets" : category ? "gifts" : "choose";
   const [catalogTab, setCatalogTab] = useState<
     "choose" | "all" | "cakes" | "sweets" | "gifts"
-  >("choose");
+  >(starterTab);
   useEffect(() => {
     const section = new URLSearchParams(window.location.search).get("categoria");
     const destinations = { bolos: "cakes", docinhos: "sweets", presentes: "gifts", combos: "gifts" } as const;
-    if (section && section in destinations) {
+    if (!category && section && section in destinations) {
       setCatalogTab(destinations[section as keyof typeof destinations]);
     }
-  }, []);
+  }, [category]);
 
-  const [sweetGroupId, setSweetGroupId] = useState(sweetGroups[0].id);
+  const [sweetGroupId, setSweetGroupId] = useState(category === "docinhos" ? "all" : sweetGroups[0].id);
   const [sweetQuantities, setSweetQuantities] = useState<Record<string, number>>(
     {},
   );
@@ -382,6 +384,28 @@ export default function Home() {
     >,
   );
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartReady, setCartReady] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("doceria-carrinho-v1");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setCart(parsed.filter((v) => v && typeof v.key === "string" && typeof v.unitPrice === "number" && typeof v.qty === "number"));
+      }
+    } catch { /* Navegação continua mesmo sem armazenamento local. */ }
+    setCartReady(true);
+  }, []);
+  useEffect(() => {
+    if (!cartReady) return;
+    try { window.localStorage.setItem("doceria-carrinho-v1", JSON.stringify(cart)); } catch { /* Armazenamento opcional. */ }
+  }, [cart, cartReady]);
+  useEffect(() => {
+    if (!category) return;
+    const produto = new URLSearchParams(window.location.search).get("produto");
+    if (!produto) return;
+    const id = window.setTimeout(() => document.getElementById("produto-" + produto)?.scrollIntoView({block:"center",behavior:"smooth"}), 400);
+    return () => window.clearTimeout(id);
+  }, [category, catalogTab, sweetGroupId]);
   const [orderOpen, setOrderOpen] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(0);
@@ -472,7 +496,7 @@ export default function Home() {
   const activeSweetGroup =
     sweetGroups.find((group) => group.id === sweetGroupId) ?? sweetGroups[0];
   const displayedSweetGroups =
-    catalogTab === "all" ? sweetGroups : [activeSweetGroup];
+    catalogTab === "all" || (category === "docinhos" && sweetGroupId === "all") ? sweetGroups : [activeSweetGroup];
 
   const availableTimeOptions = useMemo(() => {
     if (!details.eventDate) return [];
@@ -1291,9 +1315,9 @@ export default function Home() {
   };
 
   return (
-    <main>
+    <main className={showroom ? "storefront-page" : "home-page"}>
       <header className="site-header">
-        <a className="brand" href="#inicio" aria-label="Brigadeiro e Beijinho - início">
+        <a className="brand" href="/" aria-label="Brigadeiro e Beijinho - início">
           <img
             src="/assets/logo-complete.webp"
             alt="Doceria Brigadeiro & Beijinho"
@@ -1302,13 +1326,11 @@ export default function Home() {
           />
         </a>
         <nav className={mobileMenu ? "nav-open" : ""} aria-label="Navegação principal">
-          <a href="#faq" onClick={() => setMobileMenu(false)}>Como pedir</a>
-          <a href="#cardapio" onClick={() => setMobileMenu(false)}>Cardápio</a>
-          <a href="/recheios" onClick={() => setMobileMenu(false)}>Recheios</a>
-          <a href="/docinhos" onClick={() => setMobileMenu(false)}>Docinhos</a>
-          <a href="#galeria" onClick={() => setMobileMenu(false)}>Galeria</a>
-          <a href="#avaliacoes" onClick={() => setMobileMenu(false)}>Avaliações</a>
-          <a href="#quem-somos" onClick={() => setMobileMenu(false)}>Quem somos</a>
+          <a href="/#como-pedir" onClick={() => setMobileMenu(false)}>Como pedir</a>
+          <a href="/#cardapio" onClick={() => setMobileMenu(false)}>Cardápio</a>
+          <a href="/bolos" onClick={() => setMobileMenu(false)}>Bolos</a>
+          <a href="/docinhos" onClick={() => setMobileMenu(false)}>Doces e Bombons</a>
+          <a href="/presentes" onClick={() => setMobileMenu(false)}>Presentes</a>
         </nav>
         <div className="header-actions">
           <button
@@ -1338,7 +1360,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="hero" id="inicio">
+      {!showroom && <section className="hero" id="inicio">
         <div className="hero-copy">
           <span className="eyebrow">Bolos e doces artesanais em Belo Horizonte</span>
           <h1>Bolos personalizados para a sua comemoração</h1>
@@ -1355,7 +1377,6 @@ export default function Home() {
             </form>
             <nav className="hero-category-shortcuts" aria-label="Acesso rápido ao cardápio">
               <a href="/bolos">🎂 Bolos e tamanhos</a>
-              <a href="/recheios">♡ Recheios</a>
               <a href="/docinhos">🍬 Docinhos e bombons</a>
               <a href="/combos">🎁 Combos e kits</a>
             </nav>
@@ -1372,18 +1393,32 @@ export default function Home() {
             height="1600"
           />
         </div>
-      </section>
-
+      </section>}
+      {!showroom && <section className="order-explainer" id="como-pedir" aria-label="Como pedir">
+        <div><span className="section-kicker">É simples encomendar</span><h2>Como fazer seu pedido</h2></div>
+        <div className="order-explainer-steps">
+          <p><b>1. Escolha</b> Bolos, docinhos ou presentes na vitrine.</p>
+          <p><b>2. Personalize</b> Veja sabores, quantidades e valores no próprio produto.</p>
+          <p><b>3. Envie</b> Revise e solicite sua encomenda. Confirmamos a disponibilidade antes de fechar.</p>
+        </div>
+      </section>}
+      {showroom && <section className="storefront-heading" aria-label="Vitrine de produtos">
+        <span className="section-kicker">Nossa vitrine · Monte seu pedido por aqui</span>
+        <h1>{category === "bolos" ? "Bolos personalizados" : category === "docinhos" ? "Doces e bombons" : category === "combos" ? "Combos e kits" : "Presentes especiais"}</h1>
+        <p>Confira fotos, tamanhos, sabores e valores. Personalize e adicione ao pedido sem sair desta página.</p>
+        <form action="/buscar" role="search" className="storefront-search"><input name="q" type="search" placeholder="Buscar recheio, doce ou tamanho..." aria-label="Buscar no cardápio"/><button type="submit">Buscar →</button></form>
+        <div className="storefront-links"><a href="/bolos">🎂 Bolos e tamanhos</a><a href="/docinhos">🍬 Docinhos e bombons</a><a href="/combos">🎁 Combos e kits</a></div>
+      </section>}
       <section className="catalog-section" id="cardapio">
         <div className="section-heading">
           <span className="section-kicker">Feito com carinho para suas comemorações</span>
-          <h2>Nosso cardápio</h2>
+          <h2>{showroom ? (category === "bolos" ? "Escolha seu bolo" : category === "docinhos" ? "Escolha seus docinhos" : category === "combos" ? "Monte seu kit" : "Escolha um presente") : "Nosso cardápio"}</h2>
           <p>
-            Bolos, doces, bombons e presentes artesanais para deixar cada momento ainda mais especial.
+            {showroom ? "Personalize os detalhes, acompanhe os valores e adicione ao carrinho." : "Bolos, doces, bombons e presentes artesanais para deixar cada momento ainda mais especial."}
           </p>
         </div>
 
-        {catalogTab === "choose" ? (
+        {!showroom && (catalogTab === "choose" ? (
           <>
             <div className="catalog-choice-grid" aria-label="Escolha uma categoria">
             <button type="button" onClick={() => setCatalogTab("cakes")} aria-label="Ver bolos, tamanhos e sabores">
@@ -1437,7 +1472,7 @@ export default function Home() {
               </div>
             </div>
           </>
-        )}
+        ))}
 
         {(catalogTab === "cakes" || catalogTab === "all") && (
           <>
@@ -1523,7 +1558,15 @@ export default function Home() {
                       : "Gourmet";
 
                 return (
-                  <article className="product-card cake-card" key={cake.id}>
+                  <article className="product-card cake-card" id={`produto-${cake.id}`} key={cake.id}>
+                    <img className="storefront-cake-image" src={({
+                      mini:"/assets/monthly-cake.webp",
+                      p:"/assets/cake-classic.webp",
+                      m:"/assets/cake-floral.webp",
+                      g:"/assets/cake-lilac.webp",
+                      gg:"/assets/cake-ribbons.webp",
+                      corte:"/assets/cake-theme.webp"
+                    } as Record<string,string>)[cake.id]} alt="Exemplo de bolo da Doceria Brigadeiro e Beijinho" />
                     <div className="product-card-head cake-size-head">
                       <div>
                         <span>Escolha pelo tamanho</span>
@@ -1749,6 +1792,7 @@ export default function Home() {
             </div>
             {catalogTab !== "all" && (
               <div className="flavor-filters" aria-label="Tipos de doces">
+                {category === "docinhos" && <button type="button" className={sweetGroupId === "all" ? "active" : ""} onClick={() => setSweetGroupId("all")}>Todos</button>}
                 {sweetGroups.map((group) => (
                   <button
                     className={sweetGroupId === group.id ? "active" : ""}
@@ -1761,7 +1805,7 @@ export default function Home() {
                 ))}
               </div>
             )}
-            <div
+            {category !== "docinhos" && <div
               className="static-photo-strip"
               aria-label="Fotos de doces e bombons da Doceria Brigadeiro & Beijinho"
             >
@@ -1770,9 +1814,9 @@ export default function Home() {
                   <img src={photo.src} alt={photo.alt} />
                 </figure>
               ))}
-            </div>
+            </div>}
             {displayedSweetGroups.map((group) => (
-              <section className="sweet-catalog-subsection" key={group.id}>
+              <section className="sweet-catalog-subsection" id={group.id} key={group.id}>
                 <div className="sweet-group-title">
                   <div>
                     <span>Pedido mínimo: 25 por sabor</span>
@@ -1790,7 +1834,7 @@ export default function Home() {
                       (group.hundredPrice / 100) * quantity +
                       (quantity / 25) * wrapper.fee;
                     return (
-                      <article className="sweet-card" key={sweet.id}>
+                      <article className="sweet-card" id={`produto-${sweet.id}`} key={sweet.id}>
                         <img
                           className={`sweet-photo ${sweetSpriteIds.has(sweet.id) ? "sweet-photo--sprite" : ""}`}
                           src={sweetPhoto(sweet.id, group.type)}
@@ -1864,9 +1908,10 @@ export default function Home() {
                 <p>Escolha opções para presentear ou completar sua comemoração.</p>
               </div>
             )}
-            {gifts.map((gift, index) => (
+            {(category === "combos" ? gifts.filter(gift => gift.id === "bento-combo" || gift.id.startsWith("caixa")) : gifts).map((gift, index) => (
               <article
                 className="gift-card gift-card-with-image"
+                id={`produto-${gift.id}`}
                 key={gift.id}
               >
                 <img src={gift.image} alt={gift.name} />
@@ -2127,6 +2172,7 @@ export default function Home() {
         )}
       </section>
 
+      {!showroom && <>
       <section className="gallery-section" id="galeria">
         <div className="gallery-copy">
           <span className="section-kicker">Feito de verdade</span>
@@ -2243,37 +2289,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="about-section" id="quem-somos">
-        <div className="about-image">
-          <img
-            src="/assets/about-deborah.webp"
-            alt="Deborah Bacelar, responsável pela Doceria Brigadeiro & Beijinho"
-          />
-          <span>Confeitaria artística em Belo Horizonte</span>
-        </div>
-        <div className="about-copy">
-          <span className="section-kicker">Quem somos</span>
-          <h2>Do carinho pelo feito à mão nasceu uma doceria cheia de significado</h2>
-          <p>
-            À frente da Doceria Brigadeiro & Beijinho está Deborah Bacelar,
-            apaixonada por transformar ideias, temas e celebrações em bolos e
-            doces que fazem parte das melhores lembranças.
-          </p>
-          <p>
-            Cada encomenda é produzida com olhar artístico, atenção aos
-            detalhes e cuidado na escolha das combinações. Aqui, o pedido não é
-            apenas uma sobremesa: é uma parte importante da sua comemoração.
-          </p>
-          <div className="about-signature">
-            <img src="/assets/brand-mark.webp" alt="" aria-hidden="true" />
-            <div>
-              <strong>Deborah Bacelar</strong>
-              <span>Doceria Brigadeiro & Beijinho</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="instagram-section">
         <div>
           <span className="section-kicker">Inspire-se</span>
@@ -2290,6 +2305,7 @@ export default function Home() {
         <img src="/assets/cake-lilac.webp" alt="Bolo personalizado em tons de lilás" />
       </section>
 
+      </>}
       <footer>
         <div className="footer-brand">
           <img src="/assets/logo-complete.webp" alt="Brigadeiro & Beijinho" />
