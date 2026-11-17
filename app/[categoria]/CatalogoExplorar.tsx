@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cakeSizeCatalog, classicFillings, specialFillings, gourmetFillings, sweetGroups, gifts } from "../catalogo/dados";
 import "./catalogo.css";
 
@@ -27,6 +27,7 @@ const giftDescription:Record<string,string> = {
 };
 export default function CatalogoExplorar({categoria}:{categoria:string}) {
   const [query,setQuery]=useState("");
+  useEffect(()=>{const q=new URLSearchParams(window.location.search).get("q");if(q)setQuery(q)},[]);
   const [filter,setFilter]=useState("all");
   const [copied,setCopied]=useState(false);
   const result = useMemo(()=>{
