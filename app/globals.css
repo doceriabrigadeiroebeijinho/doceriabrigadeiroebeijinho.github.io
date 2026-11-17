@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --font-manrope: "Manrope";
+  --font-cormorant: Georgia;
   --cream: #fff8ee;
   --paper: #fffdf8;
   --paper-2: #f9efe4;
@@ -6233,3 +6235,23 @@ footer a:hover {
     height: 360px;
   }
 }
+
+
+/* Navegação direta e busca: preserva a paleta e adota formas suaves. */
+.hero-search-access{margin-top:22px;max-width:620px;display:grid;gap:15px}
+.hero-search-form{padding:16px 18px;background:#fffdf8;border:1px solid rgba(156,79,89,.18);border-radius:25px;box-shadow:0 10px 30px rgba(75,46,37,.08)}
+.hero-search-form label{display:block;font:800 13px var(--font-manrope),sans-serif;color:#4b2e25;margin-bottom:10px}
+.hero-search-form>div{display:flex;gap:7px;min-width:0}
+.hero-search-form input{min-width:0;flex:1;width:100%;padding:13px;border:1px solid rgba(75,46,37,.16);border-radius:100px;background:white;font:500 13px var(--font-manrope),sans-serif}
+.hero-search-form button{border:0;flex-shrink:0;background:#9c4f59;color:#fff;font-weight:800;border-radius:100px;padding:12px 15px;font-size:12px}
+.hero-category-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hero-category-shortcuts a{display:flex;align-items:center;justify-content:center;min-height:51px;background:#fffdf8;color:#4b2e25;border:1px solid #ecd8d4;border-radius:19px;text-align:center;font:800 12px var(--font-manrope),sans-serif;padding:10px;box-shadow:0 9px 23px rgba(75,46,37,.05);transition:transform .2s,border-color .2s}
+.hero-category-shortcuts a:hover{transform:translateY(-2px);border-color:#c66f78}
+.hero h1{font-family:var(--font-manrope),Arial,sans-serif;font-weight:800;letter-spacing:-.065em;line-height:1.08;font-size:clamp(3rem,5.4vw,5.4rem)}
+@media(max-width:760px){.hero h1{font-size:clamp(2.75rem,12vw,4.3rem);line-height:1.04}.hero-search-access{margin-top:18px}.hero-search-form{padding:14px}.hero-search-form>div{flex-wrap:wrap}.hero-search-form input{min-width:100%}.hero-search-form button{width:100%;min-height:42px}.hero-category-shortcuts{gap:7px}.hero-category-shortcuts a{min-height:50px;padding:8px;font-size:11px}.hero-visual{min-height:300px}.hero-image{height:300px}}
+
+
+/* Tipografia contemporânea sem alterar a identidade cromática da doceria. */
+.section-heading h2,.cake-guide h3,.cake-category-explanation h3,.full-menu-heading h3,.gallery-section h2,.faq-section h2,.about-copy h2,.instagram-section h2,.gift-card h3,.product-card h3,.sweet-group-title h3{font-family:var(--font-manrope),Arial,sans-serif;font-weight:800;letter-spacing:-.055em;line-height:1.16}
+.section-heading h2,.gallery-section h2,.faq-section h2,.about-copy h2,.instagram-section h2{font-size:clamp(2rem,4vw,3.4rem)}
+.gift-card h3,.product-card h3,.sweet-group-title h3,.cake-guide h3,.cake-category-explanation h3,.full-menu-heading h3{font-size:clamp(1.35rem,2vw,2rem)}
