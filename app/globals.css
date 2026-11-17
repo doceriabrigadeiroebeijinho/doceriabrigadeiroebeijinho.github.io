@@ -7623,3 +7623,46 @@ main.decor-page.boutique-site{
 @media(prefers-reduced-motion:reduce){
   .home-page.boutique-site .home-photo-gallery > a{transition:none}
 }
+
+
+/* Fotos reais da produção: aproveita o enquadramento sem preenchimento artificial. */
+.home-page.boutique-site .home-sweets-preview .home-photo-gallery > a {
+  background:#FFF8F6;
+}
+.home-page.boutique-site .home-sweets-preview .home-photo-gallery img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  padding:0;
+}
+/* Ação principal da seção Doces: maior e facilmente reconhecível. */
+.home-page.boutique-site .home-photo-heading a.home-sweets-cta {
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-height:48px;
+  padding:13px 22px;
+  border:1px solid #C9576A;
+  border-radius:12px;
+  background:#C9576A;
+  color:#FFF8F6;
+  font-family:"Montserrat",Arial,sans-serif;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.3;
+  text-decoration:none;
+  white-space:nowrap;
+  transition:background .2s ease;
+}
+.home-page.boutique-site .home-photo-heading a.home-sweets-cta:hover {
+  background:#B6465D;
+}
+@media(max-width:760px){
+  .home-page.boutique-site .home-photo-heading a.home-sweets-cta {
+    min-height:46px;
+    padding:11px 14px;
+    font-size:12px;
+    text-align:center;
+    white-space:normal;
+  }
+}
