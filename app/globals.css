@@ -6396,3 +6396,52 @@ footer a:hover {
 .storefront-page .storefront-heading{padding:20px 17px}
 .storefront-page .cake-category-explanation{display:none}
 }
+
+
+/* Vitrine de bolos inspirada em lojas de confeitaria, com detalhes em uma página própria. */
+.home-bolo-showcase{max-width:1270px;margin:48px auto 35px;padding:0 22px;color:#4b2e25}
+.home-bolo-heading{text-align:center;margin-bottom:24px}
+.home-bolo-heading h2{font-family:var(--font-manrope),"Manrope",Arial,sans-serif;font-size:clamp(28px,4vw,45px);letter-spacing:-.055em;margin:11px 0;line-height:1.12}
+.home-bolo-heading p{color:#796054;margin:0;font-size:14px}
+.home-bolo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.home-bolo-card{background:#fffdf8;border:1px solid #edddd5;border-radius:26px;overflow:hidden;box-shadow:0 10px 28px #4b2e250c;transition:transform .18s,box-shadow .18s}
+.home-bolo-card:hover{transform:translateY(-4px);box-shadow:0 16px 38px #4b2e2520}
+.home-bolo-card>a{display:block;text-decoration:none;color:#4b2e25;height:100%}
+.home-bolo-card img{display:block;width:100%;height:235px;object-fit:cover;object-position:center;background:#f9e7e4}
+.home-bolo-details{padding:17px 19px 20px;display:grid;gap:7px;align-content:start}
+.home-bolo-details h3{font-family:var(--font-manrope),"Manrope",Arial,sans-serif;font-size:22px;letter-spacing:-.045em;margin:0;line-height:1.2}
+.home-bolo-details p{margin:0;color:#80665f;font-size:13px}
+.home-bolo-details>strong{font-size:18px;font-weight:850;margin:5px 0}
+.home-bolo-buy{display:flex;align-items:center;justify-content:center;text-align:center;min-height:45px;background:#9c4f59;color:#fff;border-radius:100px;font-weight:850;font-size:13px;max-width:100%}
+.home-bolo-note{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:17px;color:#80685e;font-size:12px}
+.home-bolo-note a,.cake-decoration-link{color:#9c4f59!important;font-weight:850;text-decoration:none}
+.cake-line-purchase{display:grid;grid-template-columns:minmax(150px,1fr) minmax(240px,290px) auto;gap:18px;align-items:center;padding:20px 24px;text-decoration:none;color:#4b2e25;min-height:108px}
+.cake-line-purchase:hover{background:#fff6f1}
+.cake-line-name{display:grid;gap:6px}
+.cake-line-name strong{font-size:21px;font-weight:850;letter-spacing:-.04em}
+.cake-line-name span{font-size:13px;color:#765e54}
+.cake-line-prices{display:grid;gap:7px}
+.cake-line-prices span{display:flex;gap:16px;justify-content:space-between;font-size:12px;color:#765e54}
+.cake-line-prices b{font-size:13px;color:#4b2e25}
+.cake-line-buy{font-size:13px;font-weight:850;color:#fff;background:#9c4f59;border-radius:100px;padding:13px 16px;white-space:nowrap}
+.catalog-item-summary.text-only{grid-template-columns:minmax(0,1fr) minmax(165px,240px) 120px;min-height:100px}
+.catalog-cake-detail[open] .catalog-item-summary{background:#faeee6}
+.catalog-cake-detail .catalog-item-options{align-items:start}
+.catalog-cake-detail .catalog-item-options .cake-decoration-link{display:inline-block;margin-left:4px}
+.storefront-page .catalog-item-summary.text-only .catalog-summary-name h3,.storefront-page .catalog-item-summary.text-only .catalog-summary-name h4{font-size:19px!important}
+.storefront-page .gift-card .catalog-item-details>.catalog-item-summary.text-only,.storefront-page .sweet-card .catalog-item-details>.catalog-item-summary.text-only{padding:16px 20px}
+@media(max-width:980px){.home-bolo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-bolo-card img{height:210px}.cake-line-purchase{grid-template-columns:minmax(0,1fr) minmax(200px,270px) auto;gap:12px}.cake-line-buy{padding:11px 13px}}
+@media(max-width:660px){
+.home-bolo-showcase{margin:25px auto;padding:0 13px}.home-bolo-heading{margin-bottom:19px}
+.home-bolo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.home-bolo-card{border-radius:20px}.home-bolo-card img{height:142px}
+.home-bolo-details{padding:12px;gap:5px}.home-bolo-details h3{font-size:16px}.home-bolo-details p{font-size:11px;line-height:1.4}.home-bolo-details>strong{font-size:14px}
+.home-bolo-buy{font-size:12px;min-height:39px;margin-top:4px}
+.cake-line-purchase{grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 16px}.cake-line-name strong{font-size:17px}.cake-line-name span{font-size:11px}
+.cake-line-prices{grid-column:1/-1;grid-row:2;background:#faf0eb;padding:10px;border-radius:12px}
+.cake-line-buy{grid-column:2;grid-row:1;font-size:12px;min-height:43px;display:flex;align-items:center}
+.catalog-item-summary.text-only{grid-template-columns:minmax(0,1fr) 100px}
+.catalog-item-summary.text-only .catalog-summary-prices{grid-column:1/-1;grid-row:2}
+.catalog-item-summary.text-only .catalog-summary-action{grid-column:2;grid-row:1}
+.home-bolo-note{display:block}.home-bolo-note a{display:inline-block;margin-top:10px}
+}

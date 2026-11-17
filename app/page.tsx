@@ -320,7 +320,17 @@ const sweetsCatalogGallery = [
   },
 ] as const;
 
-export default function Home({ category }: { category?: "bolos" | "docinhos" | "presentes" | "combos" } = {}) {
+const showcaseCakeImages:Record<string,string> = {
+  mini:"/assets/monthly-cake.webp",
+  p:"/assets/decoracoes/bolo-01.webp",
+  m:"/assets/decoracoes/bolo-02.webp",
+  g:"/assets/decoracoes/bolo-07.webp",
+  gg:"/assets/decoracoes/bolo-10.webp",
+  corte:"/assets/cake-classic.webp",
+};
+
+export default function Home({ category, selectedProduct }: { category?: "bolos" | "docinhos" | "presentes" | "combos"; selectedProduct?:string } = {}) {
+  const focusedCake = category === "bolos" && selectedProduct ? cakeSizeCatalog.find(b=>b.id===selectedProduct) : undefined;
   const showroom = Boolean(category);
   const starterTab = category === "bolos" ? "cakes" : category === "docinhos" ? "sweets" : category ? "gifts" : "choose";
   const [catalogTab, setCatalogTab] = useState<
@@ -1331,6 +1341,7 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
           <a href="/bolos" onClick={() => setMobileMenu(false)}>Bolos</a>
           <a href="/docinhos" onClick={() => setMobileMenu(false)}>Doces e Bombons</a>
           <a href="/presentes" onClick={() => setMobileMenu(false)}>Presentes</a>
+          <a href="/decoracoes" onClick={() => setMobileMenu(false)}>Decorações</a>
         </nav>
         <div className="header-actions">
           <button
@@ -1365,14 +1376,13 @@ export default function Home({ category }: { category?: "bolos" | "docinhos" | "
           <span className="eyebrow">Bolos e doces artesanais em Belo Horizonte</span>
           <h1>Bolos e doces para sua comemoração</h1>
           <p>Encontre bolos, docinhos e presentes. Confira sabores e preços.</p>
-          <a className="hero-direct-cta" href="/bolos">Ver bolos e preços →</a>
           <p className="hero-deadline">Todos os pedidos precisam de 72 horas de antecedência.</p>
           <div className="hero-search-access">
             <form action="/buscar" method="get" className="hero-search-form" role="search">
               <label htmlFor="hero-product-search">Encontre rápido no cardápio</label>
               <div><input id="hero-product-search" type="search" name="q" placeholder="Busque por doce, recheio ou tamanho..." aria-label="Buscar produtos e sabores"/><button type="submit">Pesquisar →</button></div>
             </form>
-remove home shortcuts          </div>
+          </div>
 
         </div>
 
@@ -1386,6 +1396,27 @@ remove home shortcuts          </div>
           />
         </div>
       </section>}
+      {!showroom && <section className="home-bolo-showcase" id="bolos-destaque">
+        <div className="home-bolo-heading">
+          <span className="section-kicker">Bolos personalizados</span>
+          <h2>Escolha seu bolo</h2>
+          <p>Veja o tamanho, a quantidade de fatias e o valor inicial.</p>
+        </div>
+        <div className="home-bolo-grid">
+          {cakeSizeCatalog.map(bolo=><article className="home-bolo-card" key={bolo.id}>
+            <a href={`/bolos/${bolo.id}`} aria-label={`Quero ${bolo.name} a partir de ${formatMoney(Math.min(...Object.values(bolo.prices)))}`}>
+              <img src={showcaseCakeImages[bolo.id]} alt={`Exemplo de decoração feita pela doceria para ${bolo.name}`} loading="lazy"/>
+              <div className="home-bolo-details">
+                <h3>{bolo.name}</h3>
+                <p>{bolo.subtitle}</p>
+                <strong>A partir de {formatMoney(Math.min(...Object.values(bolo.prices)))}</strong>
+                <span className="home-bolo-buy">Quero esse →</span>
+              </div>
+            </a>
+          </article>)}
+        </div>
+        <div className="home-bolo-note"><span>Fotos ilustrativas das nossas decorações.</span><a href="/decoracoes">Ver ideias de decoração →</a></div>
+      </section>}
       {!showroom && <section className="order-explainer" id="como-pedir" aria-label="Como pedir">
         <div><span className="section-kicker">É simples encomendar</span><h2>Como fazer seu pedido</h2></div>
         <div className="order-explainer-steps">
@@ -1396,27 +1427,22 @@ remove home shortcuts          </div>
       </section>}
       {showroom && <section className="storefront-heading" aria-label="Vitrine de produtos">
         <span className="section-kicker">Nossa vitrine · Monte seu pedido por aqui</span>
-        <h1>{category === "bolos" ? "Bolos personalizados" : category === "docinhos" ? "Doces e bombons" : category === "combos" ? "Combos e kits" : "Presentes especiais"}</h1>
-        <p>{category === "bolos" ? "Escolha pelo tamanho e confira os recheios." : category === "docinhos" ? "Encontre os sabores e confira os valores." : "Veja o que acompanha cada opção."}</p>
+        <h1>{focusedCake ? focusedCake.name : category === "bolos" ? "Bolos personalizados" : category === "docinhos" ? "Doces e bombons" : category === "combos" ? "Combos e kits" : "Presentes especiais"}</h1>
+        <p>{focusedCake ? `${focusedCake.subtitle} · A partir de ${formatMoney(Math.min(...Object.values(focusedCake.prices)))}` : category === "bolos" ? "Escolha pelo tamanho e confira os recheios." : category === "docinhos" ? "Encontre os sabores e confira os valores." : "Veja o que acompanha cada opção."}</p>
         <form action="/buscar" role="search" className="storefront-search"><input name="q" type="search" placeholder="Buscar recheio, doce ou tamanho..." aria-label="Buscar no cardápio"/><button type="submit">Buscar →</button></form>
-remove showroom extra links      </section>}
+      </section>}
       <section className="catalog-section" id="cardapio">
         <div className="section-heading">
           <span className="section-kicker">Feito com carinho para suas comemorações</span>
-          <h2>{showroom ? (category === "bolos" ? "Escolha seu bolo" : category === "docinhos" ? "Escolha seus docinhos" : category === "combos" ? "Monte seu kit" : "Escolha um presente") : "Nosso cardápio"}</h2>
+          <h2>{focusedCake ? "Escolha massa, recheio e decoração" : showroom ? (category === "bolos" ? "Escolha seu bolo" : category === "docinhos" ? "Escolha seus docinhos" : category === "combos" ? "Monte seu kit" : "Escolha um presente") : "Outros produtos"}</h2>
           <p>
-            {showroom ? "Selecione uma opção para escolher os detalhes." : "Bolos, doces e presentes para sua comemoração."}
+            {focusedCake ? "Escolha as opções abaixo e acompanhe o valor." : showroom ? "Veja os produtos e seus preços." : "Encontre doces, bombons e presentes."}
           </p>
         </div>
 
         {!showroom && (catalogTab === "choose" ? (
           <>
             <div className="catalog-link-list" aria-label="Categorias do cardápio">
-              <a href="/bolos">
-                <span className="catalog-link-symbol">🎂</span>
-                <span><strong>Bolos</strong><small>Tamanhos e recheios</small></span>
-                <b>A partir de R$ 115,00</b><em>Ver bolos →</em>
-              </a>
               <a href="/docinhos">
                 <span className="catalog-link-symbol">🍬</span>
                 <span><strong>Doces e bombons</strong><small>Sabores e quantidades</small></span>
@@ -1489,7 +1515,7 @@ remove showroom extra links      </section>}
               </div>
             </div>
             }
-            <div className="cake-category-explanation">
+            {!showroom && <div className="cake-category-explanation">
               <div>
                 <span className="section-kicker">Recheios</span>
                 <h3>Tipos de recheio</h3>
@@ -1511,7 +1537,7 @@ remove showroom extra links      </section>}
               <p className="cake-category-note">
                 O recheio define a categoria e o preço. Decorações adicionais são cobradas à parte.
               </p>
-            </div>
+            </div>}
             {!showroom && <div
               className="static-photo-strip"
               aria-label="Fotos de bolos produzidos pela Doceria Brigadeiro & Beijinho"
@@ -1523,7 +1549,7 @@ remove showroom extra links      </section>}
               ))}
             </div>}
             <div className="cake-grid">
-              {cakeSizeCatalog.map((cake) => {
+              {(focusedCake ? cakeSizeCatalog.filter(cake=>cake.id===focusedCake.id) : cakeSizeCatalog).map((cake) => {
                 const choice = cakeChoices[cake.id];
                 const fillingOptions = cake.fillings[choice.fillingType];
                 const decorationTotal =
@@ -1548,13 +1574,19 @@ remove showroom extra links      </section>}
 
                 return (
                   <article className="product-card cake-card" id={`produto-${cake.id}`} key={cake.id}>
-                    <details className="catalog-item-details">
-                      <summary className="catalog-item-summary">
-                        <img className="catalog-summary-img" src={({
-                          mini:"/assets/monthly-cake.webp", p:"/assets/cake-classic.webp",
-                          m:"/assets/cake-floral.webp", g:"/assets/cake-lilac.webp",
-                          gg:"/assets/cake-ribbons.webp", corte:"/assets/cake-theme.webp"
-                        } as Record<string,string>)[cake.id]} alt="" />
+                    {category === "bolos" && !focusedCake ? (
+                     <a className="cake-line-purchase" href={`/bolos/${cake.id}?recheio=${encodeURIComponent(choice.filling)}`}>
+                       <div className="cake-line-name"><strong>{cake.name}</strong><span>{cake.subtitle}</span></div>
+                       <div className="cake-line-prices">
+                         <span>Clássico <b>{formatMoney(cake.prices.Classico)}</b></span>
+                         <span>Especial <b>{formatMoney(cake.prices.Especial)}</b></span>
+                         <span>Gourmet <b>{formatMoney(cake.prices.Gourmet)}</b></span>
+                       </div>
+                       <span className="cake-line-buy">Quero esse →</span>
+                     </a>
+                    ) : (
+                    <details className="catalog-item-details catalog-cake-detail" defaultOpen={Boolean(focusedCake)}>
+                      <summary className="catalog-item-summary text-only">
                         <div className="catalog-summary-name"><h3>{cake.name}</h3><span>{cake.subtitle}</span></div>
                         <div className="catalog-summary-prices">
                           <span>Clássico <b>{formatMoney(cake.prices.Classico)}</b></span>
@@ -1564,7 +1596,7 @@ remove showroom extra links      </section>}
                         <strong className="catalog-summary-action">Escolher <span aria-hidden="true">⌄</span></strong>
                       </summary>
                       <div className="catalog-item-options">
-                        <p className="catalog-brief-note">{cake.description}</p>
+                        <p className="catalog-brief-note">{cake.description} <a className="cake-decoration-link" href="/decoracoes">Ver exemplos de decoração →</a></p>
                     <div className="cake-choice-step">
                       <span>1</span>
                       <label>
@@ -1745,6 +1777,7 @@ remove showroom extra links      </section>}
                     </div>
                       </div>
                     </details>
+                    )}
                   </article>
                 );
               })}
@@ -1823,10 +1856,7 @@ remove showroom extra links      </section>}
                     return (
                       <article className="sweet-card" id={`produto-${sweet.id}`} key={sweet.id}>
                         <details className="catalog-item-details">
-                          <summary className="catalog-item-summary">
-                            <img className={`catalog-summary-img ${sweetSpriteIds.has(sweet.id) ? "sweet-photo--sprite" : ""}`}
-                              src={sweetPhoto(sweet.id, group.type)} style={{objectPosition:sweetPhotoPosition(sweet.id)}}
-                              alt={`Foto de ${sweet.name}`} />
+                          <summary className="catalog-item-summary text-only">
                             <div className="catalog-summary-name"><h4>{sweet.name}</h4><span>{sweet.description}</span></div>
                             <div className="catalog-summary-prices catalog-summary-single">
                               <span>25 un. <b>{formatMoney(group.hundredPrice / 4)}</b></span>
@@ -1900,8 +1930,7 @@ remove showroom extra links      </section>}
             {(category === "combos" ? gifts.filter(gift => gift.id === "bento-combo" || gift.id.startsWith("caixa")) : gifts).map((gift, index) => (
               <article className="gift-card gift-card-with-image" id={`produto-${gift.id}`} key={gift.id}>
                 <details className="catalog-item-details">
-                  <summary className="catalog-item-summary">
-                    <img className="catalog-summary-img" src={gift.image} alt="" />
+                  <summary className="catalog-item-summary text-only">
                     <div className="catalog-summary-name"><h3>{gift.name}</h3><span>{gift.description}</span></div>
                     <div className="catalog-summary-prices catalog-summary-single"><span>A partir de <b>{formatMoney(gift.price)}</b></span></div>
                     <strong className="catalog-summary-action">Escolher <span aria-hidden="true">⌄</span></strong>

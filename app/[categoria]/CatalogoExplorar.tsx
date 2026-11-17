@@ -15,7 +15,7 @@ const isolatedPhotos:Record<string,string>={
  "olho-sogra":"/assets/docinho-olho-sogra.webp"
 };
 const entries:Result[]=[
- ...cakeSizeCatalog.map(c=>({type:"Bolos e tamanhos",name:c.name,detail:`${c.subtitle} · A partir de ${money(c.prices.Classico)}`,url:`/bolos?produto=${c.id}#produto-${c.id}`,image:"/assets/cake-classic.webp"})),
+ ...cakeSizeCatalog.map(c=>({type:"Bolos e tamanhos",name:c.name,detail:`${c.subtitle} · A partir de ${money(c.prices.Classico)}`,url:`/bolos/${c.id}`,image:"/assets/cake-classic.webp"})),
  ...([["Clássico",classicFillings],["Especial",specialFillings],["Gourmet",gourmetFillings]] as const).flatMap(([group,names])=>names.map(name=>({type:`Recheio ${group}`,name,detail:"Escolha o recheio e personalize seu bolo",url:`/bolos?recheio=${encodeURIComponent(name)}#cardapio`,image:"/assets/cake-floral.webp"}))),
  ...sweetGroups.flatMap(g=>g.items.map(s=>({type:g.name,name:s.name,detail:`${money(g.hundredPrice)} / 100 unidades · Mínimo 25 por sabor`,url:`/docinhos?produto=${s.id}#produto-${s.id}`,image:isolatedPhotos[s.id]??(g.type==="bonbon"?"/assets/gift-bombons.webp":"/assets/sweets-chocolate.webp")}))),
  ...gifts.map(g=>({type:"Presentes e kits",name:g.name,detail:`${money(g.price)} · ${g.description}`,url:`${g.id==="bento-combo"||g.id.startsWith("caixa")?"/combos":"/presentes"}?produto=${g.id}#produto-${g.id}`,image:g.image.startsWith("/")?g.image:undefined}))
@@ -26,7 +26,7 @@ export default function CatalogoExplorar({categoria}:{categoria:string}){
  const results=useMemo(()=>{const q=normalize(query.trim());return q?entries.filter(e=>normalize(e.name+" "+e.type+" "+e.detail).includes(q)).slice(0,80):[]},[query]);
  return <main className="new-catalog">
    <header className="new-header"><a href="/" className="new-brand"><img src="/assets/logo-complete.webp" alt="Doceria Brigadeiro e Beijinho"/></a>
-    <nav aria-label="Navegação"><a href="/#como-pedir">Como pedir</a><a href="/#cardapio">Cardápio</a><a href="/bolos">Bolos</a><a href="/docinhos">Doces e Bombons</a><a href="/presentes">Presentes</a></nav>
+    <nav aria-label="Navegação"><a href="/#como-pedir">Como pedir</a><a href="/#cardapio">Cardápio</a><a href="/bolos">Bolos</a><a href="/docinhos">Doces e Bombons</a><a href="/presentes">Presentes</a><a href="/decoracoes">Decorações</a></nav>
     <a className="new-home" href="/">Meu pedido ↗</a>
    </header>
    <div className="new-wrap">
