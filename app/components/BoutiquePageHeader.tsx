@@ -16,12 +16,12 @@ export default function BoutiquePageHeader() {
       </div>
     </div>
     <nav className="boutique-nav" aria-label="Navegação principal">
-      <a href="/#como-pedir"><StorefrontIcon name="clipboard"/><span>Como pedir</span></a>
-      <a href="/#cardapio"><StorefrontIcon name="grid"/><span>Cardápio</span></a>
-      <a href="/bolos"><StorefrontIcon name="cake"/><span>Bolos</span></a>
-      <a href="/docinhos"><StorefrontIcon name="sweet"/><span>Doces e Bombons</span></a>
-      <a href="/presentes"><StorefrontIcon name="gift"/><span>Presentes</span></a>
-      <a href="/decoracoes"><StorefrontIcon name="sparkles"/><span>Decorações</span></a>
+      <a href="/#como-pedir">Como pedir</a>
+      <a href="/#cardapio">Cardápio</a>
+      <a href="/bolos">Bolos</a>
+      <a href="/docinhos">Doces e Bombons</a>
+      <a href="/presentes">Presentes</a>
+      <a href="/decoracoes">Decorações</a>
     </nav>
   </header>;
 }
